@@ -50,9 +50,11 @@ public class FileBoxServerGUI extends JFrame implements ActionListener, FileBoxS
         upperPanel.add(btnStart);
         upperPanel.add(btnStop);
         add(upperPanel, BorderLayout.NORTH);
-        add(log, BorderLayout.CENTER);
+     //   add(log, BorderLayout.CENTER);
 
         log.setEditable(false);
+        JScrollPane scrollLog = new JScrollPane(log);
+        add(scrollLog, BorderLayout.CENTER);
     }
 
     @Override

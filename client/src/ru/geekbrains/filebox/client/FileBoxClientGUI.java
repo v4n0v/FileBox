@@ -1,13 +1,21 @@
 package ru.geekbrains.filebox.client;
 
 import ru.geekbrains.filebox.client.core.FileBoxClient;
+import ru.geekbrains.filebox.network.SocketThread;
+import ru.geekbrains.filebox.network.SocketThreadListener;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.net.Socket;
 
-public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler {
+public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
+
+    enum State {CONNECTED, NOT_CONNECTED};
+    State state = State.NOT_CONNECTED;
     private static final int WIDTH = 1000;
     private static final int HEIGHT = 600;
     //    private static final int POS_X= (screenSize.width - WIDTH) / 2;
@@ -15,9 +23,11 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
     private static final String TITLE = "FileBox Client";
 
     private static final String LOGIN = "Login";
+    private static final String LOGOUT= "LogOut";
     private static final String REGISTER = "Register";
     private final String IP_ADRESS = "localhost";
-    private final String PORT = "8199";
+  //  private final String IP_ADRESS = "127.0.0.1";
+    private final int PORT = 8189;
 
     private static final String DOWNLOAD = "Download";
     private static final String UPLOAD = "Upload";
@@ -39,11 +49,11 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
     private final JTextField fieldLogin = new JTextField("root");
     private final JPasswordField fieldPassword = new JPasswordField("1234567");
     private final JButton btnLogin = new JButton(LOGIN);
-
-    FileBoxClient client= new FileBoxClient();
-    private final JPanel midPanel = new JPanel(new BorderLayout());
+    private final JButton btnLogout = new JButton(LOGOUT);
+    FileBoxClient client = new FileBoxClient();
+  //  private final JPanel midPanel = new JPanel(new BorderLayout());
     private final JList<String> fileList = new JList<>();
-    private final JPanel midButtonsPanel = new JPanel(new GridLayout(4, 1));
+    private final JPanel midButtonsPanel = new JPanel(new GridLayout(5, 1));
     private final JButton btnDownload = new JButton(DOWNLOAD);
     private final JButton btnUpload = new JButton(UPLOAD);
     private final JButton btnRename = new JButton(RENAME);
@@ -57,6 +67,7 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
         setTitle(TITLE);
 
         btnLogin.addActionListener(this);
+        btnLogout.addActionListener(this);
         btnDownload.addActionListener(this);
         btnUpload.addActionListener(this);
         btnRename.addActionListener(this);
@@ -66,6 +77,7 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
         upperPanel.add(fieldLogin);
         upperPanel.add(fieldPassword);
         upperPanel.add(btnLogin);
+
         System.out.println(upperPanel.getHeight());
 
         add(upperPanel, BorderLayout.NORTH);
@@ -74,11 +86,14 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
         midButtonsPanel.add(btnUpload);
         midButtonsPanel.add(btnRename);
         midButtonsPanel.add(btnDelete);
-
+        midButtonsPanel.add(btnLogout);
         add(fileList, BorderLayout.CENTER);
         add(midButtonsPanel, BorderLayout.EAST);
 
         log.setEditable(false);
+        log.setLineWrap(true);
+        JScrollPane scrollLog = new JScrollPane(log);
+        add(scrollLog, BorderLayout.CENTER);
 
         setVisible(true);
     }
@@ -87,15 +102,21 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
         if (src == btnLogin) {
-            client.login();
+            if (state==State.NOT_CONNECTED)
+           connect();
+            else
+                disconect();
         } else if (src == btnDownload) {
-            client. downloadFile();
+            ///client.downloadFile();
+
         } else if (src == btnUpload) {
             client.uploadFile();
         } else if (src == btnRename) {
             client.renameFile();
         } else if (src == btnDelete) {
             client.deleteFile();
+        } else if (src == btnLogout) {
+            disconect();
         } else {
             throw new RuntimeException("Unknown src=" + src);
         }
@@ -121,5 +142,92 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
         }
         JOptionPane.showMessageDialog(null, msg, "Exception: ", JOptionPane.ERROR_MESSAGE);
         System.exit(1);
+    }
+
+    private SocketThread socketThread;
+
+    private void connect() {
+        //    upperPanel.setVisible(false);
+        try {
+            Socket socket = new Socket(IP_ADRESS, PORT);
+            socketThread = new SocketThread(this, "SocketThread", socket);
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.append("Exception: " + e.getMessage() + "\n");
+            log.setCaretPosition(log.getDocument().getLength());
+        }
+        upperPanel.setVisible(false);
+
+    }
+
+    private void disconect() {
+        socketThread.close();
+      upperPanel.setVisible(true);
+
+    }
+
+    @Override
+    public void onStartSocketThread(SocketThread socketThread) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                log.append("SocketThread started. Connection\n");
+                log.setCaretPosition(log.getDocument().getLength());
+            }
+        });
+    }
+
+    @Override
+    public void onStopSocketThread(SocketThread socketThread) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                log.append("SocketThread stopped. Connection lost\n");
+                log.setCaretPosition(log.getDocument().getLength());
+            }
+        });
+    }
+
+    @Override
+    public void onReadySocketThread(SocketThread socketThread, Socket socket) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                log.append("SocketThread is ready. Connected\n");
+                log.setCaretPosition(log.getDocument().getLength());
+            }
+        });
+    }
+
+    @Override
+    public void onReceiveString(SocketThread socketThread, Socket socket, String msg) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        });
+    }
+
+    @Override
+    public void onReceiveFile(SocketThread socketThread, Socket socket, File file) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        });
+    }
+
+    @Override
+    public void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                e.printStackTrace();
+                log.append("Exception: "+e.getMessage()+"\n");
+                log.setCaretPosition(log.getDocument().getLength());
+            }
+        });
     }
 }
