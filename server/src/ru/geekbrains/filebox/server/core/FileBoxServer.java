@@ -7,6 +7,9 @@ import ru.geekbrains.filebox.network.SocketThreadListener;
 import ru.geekbrains.filebox.server.core.authorization.SQLLoginManager;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.DateFormat;
@@ -21,7 +24,8 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     private ServerSocketThread serverSocketThread;
     private final int port = 8189;
     private final Vector<SocketThread> clients = new Vector<>();
-
+    PrintWriter log;
+    FileWriter logFile;
     enum ServerState {WORKING, STOPPED}
 
     private ServerState state = ServerState.STOPPED;
@@ -62,6 +66,22 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
         msg = dateFormat.format(System.currentTimeMillis()) +
                 Thread.currentThread().getName() + ": " + msg;
         eventListener.onFileBoxServerLog(this, msg);
+
+        // логирую все, что происходит на сервере в файл
+        try {
+            logFile = new FileWriter("server.log", true);
+            log = new PrintWriter((java.io.Writer) logFile);
+        } catch (IOException ex) {
+            log.printf(msg);
+            ex.printStackTrace();
+            return;
+        }
+        try {
+            throw new Exception();
+        } catch (Exception ex) {
+            log.printf(msg+"\n");
+            log.flush();
+        }
     }
 
     // методы SSTListener'a
@@ -125,7 +145,6 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
     @Override
     public synchronized void onReceiveFile(SocketThread socketThread, Socket socket, String file) {
-
         putLog("Moved file '"+file+"' to "+" directory");
     }
 
