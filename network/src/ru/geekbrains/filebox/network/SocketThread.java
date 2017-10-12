@@ -25,7 +25,7 @@ public class SocketThread extends Thread {
         eventListener.onStartSocketThread(this);
         try {
             outD = new DataOutputStream(socket.getOutputStream());
-            System.out.println("Wait connect...");
+            System.out.println("Waiting for upload...");
             eventListener.onReadySocketThread(this, socket);
             while (!isInterrupted()) {
         //    while (true) {
@@ -58,7 +58,7 @@ public class SocketThread extends Thread {
                     outFile.close();
                     System.out.println("Upload complete\n");
                     // обрабатываем полученный файл
-                    //eventListener.onReceiveFile(this, socket, fileName);
+                    eventListener.onReceiveFile(this, socket, fileName);
                 }
 
             }

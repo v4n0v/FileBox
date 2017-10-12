@@ -10,6 +10,7 @@ public interface SocketThreadListener {
 
     void onReadySocketThread(SocketThread socketThread, Socket socket);
     void onReceiveString(SocketThread socketThread, Socket socket, String msg);
+
     void onReceiveFile(SocketThread socketThread, Socket socket, String file);
 
     void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e);
