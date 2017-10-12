@@ -32,17 +32,18 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     }
 
     public void startListening(int port) {
-        if(serverSocketThread != null && serverSocketThread.isAlive()) {
-            putLog("Сервер уже запущен.");
-            return;
-        }
-        //if (state != ServerState.WORKING) {
+//        if(serverSocketThread != null && serverSocketThread.isAlive()) {
+//            putLog("Сервер уже запущен.");
+//            return;
+//        }
+         if (state != ServerState.WORKING) {
             serverSocketThread = new ServerSocketThread(this, "ServerSocketThread", port, 1000);
             loginManager.init();
             putLog("Server is working");
 //            putLog(loginManager.getMail("admin"));
             state = ServerState.WORKING;
-    //    }
+         } else
+             putLog("Server is working.");
     }
 
     public void stopListening() {
@@ -108,6 +109,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     @Override
     public synchronized void onStopSocketThread(SocketThread socketThread) {
         clients.remove(socketThread);
+        putLog("stopped.");
     }
 
     @Override
@@ -122,8 +124,9 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     }
 
     @Override
-    public synchronized void onReceiveFile(SocketThread socketThread, Socket socket, File file) {
+    public synchronized void onReceiveFile(SocketThread socketThread, Socket socket, String file) {
 
+        putLog("Moved file '"+file+"' to "+" directory");
     }
 
     @Override

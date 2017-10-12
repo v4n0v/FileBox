@@ -10,13 +10,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class FileBoxServerGUI extends JFrame implements ActionListener, FileBoxServerListener, Thread.UncaughtExceptionHandler{
-    //  private static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
     private static final int WIDTH = 1000;
     private static final int HEIGHT = 600;
-    //    private static final int POS_X= (screenSize.width - WIDTH) / 2;
-//    private static final int POS_Y= (screenSize.height-HEIGHT)/2;
-    private static final String TITLE = "FileBox Server";
 
+    private static final String TITLE = "FileBox Server";
     private static final String START_SERVER = "Start Server";
     private static final String STOP_SERVER = "Stop Server";
 
@@ -50,7 +48,6 @@ public class FileBoxServerGUI extends JFrame implements ActionListener, FileBoxS
         upperPanel.add(btnStart);
         upperPanel.add(btnStop);
         add(upperPanel, BorderLayout.NORTH);
-     //   add(log, BorderLayout.CENTER);
 
         log.setEditable(false);
         JScrollPane scrollLog = new JScrollPane(log);

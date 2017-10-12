@@ -8,14 +8,22 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
 
     enum State {CONNECTED, NOT_CONNECTED};
     State state = State.NOT_CONNECTED;
+
+
+    ArrayList<String> selectFiles;
     private static final int WIDTH = 1000;
     private static final int HEIGHT = 600;
     //    private static final int POS_X= (screenSize.width - WIDTH) / 2;
@@ -58,6 +66,9 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
     private final JButton btnUpload = new JButton(UPLOAD);
     private final JButton btnRename = new JButton(RENAME);
     private final JButton btnDelete = new JButton(DELETE);
+    private final JFileChooser fileChooser = new JFileChooser();
+
+    private SocketThread socketThread;
 
     private FileBoxClientGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
@@ -95,8 +106,10 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
         JScrollPane scrollLog = new JScrollPane(log);
         add(scrollLog, BorderLayout.CENTER);
 
+
         setVisible(true);
     }
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -107,10 +120,26 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
             else
                 disconect();
         } else if (src == btnDownload) {
-            ///client.downloadFile();
+             client.downloadFile();
 
         } else if (src == btnUpload) {
-            client.uploadFile();
+         //   fileChooser.showOpenDialog(this);
+            fileChooser.setMultiSelectionEnabled(true);
+            selectFiles = new ArrayList<String>();
+            int returnVal = fileChooser.showOpenDialog(null);
+            if (returnVal == JFileChooser.APPROVE_OPTION){
+                log.append("Files selected to upload:\n" );
+                File[] file = fileChooser.getSelectedFiles();
+                for (File d : file){
+                    selectFiles.add(d+"");
+                    log.append(d+"\n");
+                }
+
+            }
+            if(selectFiles.size()==0) return;
+            socketThread.sendFile(selectFiles);
+            log.append("Upload complete");
+
         } else if (src == btnRename) {
             client.renameFile();
         } else if (src == btnDelete) {
@@ -120,18 +149,13 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
         } else {
             throw new RuntimeException("Unknown src=" + src);
         }
-//        switch (src) {
-//            case  btnLogin:
-//              System.out.println("");
-//                break;
-//            case btnDownload:
-//        }
+
     }
 
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        //  System.out.println("Cought exception"+e);
+
         e.printStackTrace();
         StackTraceElement[] stackTraceElements = e.getStackTrace();
         String msg;
@@ -144,7 +168,7 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
         System.exit(1);
     }
 
-    private SocketThread socketThread;
+
 
     private void connect() {
         //    upperPanel.setVisible(false);
@@ -161,10 +185,11 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
     }
 
     private void disconect() {
-        socketThread.close();
+      socketThread.close();
       upperPanel.setVisible(true);
 
     }
+
 
     @Override
     public void onStartSocketThread(SocketThread socketThread) {
@@ -210,11 +235,11 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
     }
 
     @Override
-    public void onReceiveFile(SocketThread socketThread, Socket socket, File file) {
+    public void onReceiveFile(SocketThread socketThread, Socket socket, String file) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-
+                log.append("Recieved file "+file);
             }
         });
     }
@@ -230,4 +255,6 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
             }
         });
     }
+
+
 }
