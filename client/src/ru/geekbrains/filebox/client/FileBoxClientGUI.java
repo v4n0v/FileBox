@@ -137,7 +137,7 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
 
             }
             if(selectFiles.size()==0) return;
-            socketThread.sendFile(selectFiles);
+         //   socketThread.sendFile(selectFiles);
             log.append("Upload complete");
 
         } else if (src == btnRename) {

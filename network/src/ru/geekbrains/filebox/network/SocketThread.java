@@ -3,6 +3,7 @@ package ru.geekbrains.filebox.network;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SocketThread extends Thread {
 
@@ -77,7 +78,7 @@ public class SocketThread extends Thread {
         }
     }
 
-    public void sendFile(ArrayList<String> list) {
+    public void sendFile(List<File> list) {
         int countFiles = list.size();
 
      //   DataOutputStream outD;
@@ -87,7 +88,7 @@ public class SocketThread extends Thread {
             outD.writeInt(countFiles);//отсылаем количество файлов
 
             for (int i = 0; i < countFiles; i++) {
-                File f = new File(list.get(i));
+                File f = list.get(i);
 
                 outD.writeLong(f.length());//отсылаем размер файла
                 outD.writeUTF(f.getName());//отсылаем имя файла
