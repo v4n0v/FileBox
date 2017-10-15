@@ -79,6 +79,8 @@ public class ClientGUIFX extends Application implements SocketThreadListener{
         stage.setScene(new Scene(modal));
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(primaryStage);
+
+
         stage.setAlwaysOnTop(true);
         stage.show();
     }
