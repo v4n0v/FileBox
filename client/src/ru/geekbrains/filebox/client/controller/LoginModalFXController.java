@@ -1,4 +1,4 @@
-package ru.geekbrains.filebox.client;
+package ru.geekbrains.filebox.client.controller;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -18,8 +18,8 @@ public class LoginModalFXController {
             Parent root = FXMLLoader.load(getClass().getResource("fxml/login_modal.fxml"));
 
             stage.setTitle("Login");
-            stage.setMinHeight(630);
-            stage.setMinWidth(465);
+            stage.setMinHeight(115);
+            stage.setMinWidth(460);
             stage.setScene(new Scene(root));
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(((Node)actionEvent.getSource()).getScene().getWindow());

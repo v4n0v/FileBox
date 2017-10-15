@@ -1,17 +1,12 @@
-package ru.geekbrains.filebox.client;
+package ru.geekbrains.filebox.client.controller;
 
-import javafx.application.Application;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
+import ru.geekbrains.filebox.client.ClientGUIFX;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
 
@@ -21,7 +16,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
 
-public class ClientGUIFX extends Application implements SocketThreadListener{
+public class ClientGUIFXController implements SocketThreadListener{
+
     enum State {CONNECTED, NOT_CONNECTED};
     State state = State.NOT_CONNECTED;
     private SocketThread socketThread;
@@ -52,43 +48,13 @@ public class ClientGUIFX extends Application implements SocketThreadListener{
     @FXML
     TableView tblContent;
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        // получаю ссылку на primaryStage, для последующего вызова модального окна
-        this.primaryStage=primaryStage;
-
-        Parent root = FXMLLoader.load(getClass().getResource("fxml/loggedClient.fxml"));
-        primaryStage.setTitle("FileBox");
-        primaryStage.setScene(new Scene(root));
-        primaryStage.setResizable(false);
-        primaryStage.setMinHeight(630);
-        primaryStage.setMinWidth(465);
-        primaryStage.show();
-
-        // создаю модальное окно для лоигна\пароля передез запуском программы
-        showModalLoginWidow(primaryStage);
-    }
-
-    private void showModalLoginWidow(Stage primaryStage) throws Exception{
-        stage = new Stage();
-        Parent modal = FXMLLoader.load(getClass().getResource("fxml/login_modal.fxml"));
-        stage.setTitle("Login");
-        stage.setMinHeight(115);
-        stage.setMinWidth(460);
-        stage.setResizable(false);
-        stage.setScene(new Scene(modal));
-        stage.initModality(Modality.WINDOW_MODAL);
-        stage.initOwner(primaryStage);
-        stage.setAlwaysOnTop(true);
-        stage.show();
-    }
     public void loginAction(){
         if (state== State.NOT_CONNECTED) {
             connect();
             state = State.CONNECTED;
         }else {
             disconect();
-           state=State.NOT_CONNECTED;
+            state= State.NOT_CONNECTED;
         }
     }
     public void sendFile(){
@@ -126,18 +92,16 @@ public class ClientGUIFX extends Application implements SocketThreadListener{
     }
     public void logOut() {
         System.out.println("user is logged out");
-        if (state==State.NOT_CONNECTED) {
+        if (state== State.NOT_CONNECTED) {
             //    disconect();
             try {
-                showModalLoginWidow(primaryStage);
+        //        showModalLoginWidow(primaryStage);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-    public static void main(String[] args) {
-        launch(args);
-    }
+
 
     @Override
     public void onStartSocketThread(SocketThread socketThread) {
