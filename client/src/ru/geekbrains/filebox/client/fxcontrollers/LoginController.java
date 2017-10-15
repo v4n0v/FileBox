@@ -9,8 +9,15 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import ru.geekbrains.filebox.network.SocketThread;
+import ru.geekbrains.filebox.network.SocketThreadListener;
 
-public class LoginController {
+import java.io.IOException;
+import java.net.Socket;
+
+public class LoginController  {
+
+
     @FXML
     TextField fieldLogin;
 
@@ -22,7 +29,8 @@ public class LoginController {
 
     public void tryToLogin() throws Exception {
 
-        if (fieldLogin.getText().equals("1") && fieldPass.getText().equals("2")) {
+        //if (state==State.CONNECTED) {
+
             Stage mystage = (Stage)rootElement.getScene().getWindow();
             //FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"));
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/loggedClient.fxml"));
@@ -31,8 +39,23 @@ public class LoginController {
             mystage.setScene(new Scene(root, 465, 630));
             mystage.setResizable(false);
             ClientController cm = (ClientController)fxmlLoader.getController();
-            cm.str = "Java";
+            cm.connect();
             mystage.show();
-        }
+    //    }
     }
+    //private SocketThread socketThread;
+//    private void connect() {
+//        try {
+//            Socket socket = new Socket(IP_ADRESS, PORT);
+//            socketThread = new SocketThread(this, "SocketThread", socket);
+//        //    state=State.CONNECTED;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+////            log.append("Exception: " + e.getMessage() + "\n");
+////            log.setCaretPosition(log.getDocument().getLength());
+//        }
+//    //    upperPanel.setVisible(false);
+//
+//    }
+
 }
