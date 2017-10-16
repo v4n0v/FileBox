@@ -1,71 +1,58 @@
 package ru.geekbrains.filebox.client.fxcontrollers;
 
-import javafx.event.ActionEvent;
+
+import javafx.scene.control.Alert;
 import javafx.stage.FileChooser;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
+import ru.geekbrains.filebox.network.packet.AbstractPacket;
+import ru.geekbrains.filebox.network.packet.FilePacket;
+import ru.geekbrains.filebox.network.packet.MesagePacket;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
-public class ClientController implements SocketThreadListener{
+public class ClientController implements SocketThreadListener, Thread.UncaughtExceptionHandler {
     private final String IP_ADRESS = "localhost";
     //  private final String IP_ADRESS = "127.0.0.1";
     private final int PORT = 8189;
-
-    @Override
-    public void onStartSocketThread(SocketThread socketThread) {
-
-    }
-
-    @Override
-    public void onStopSocketThread(SocketThread socketThread) {
-
-    }
-
-    @Override
-    public void onReadySocketThread(SocketThread socketThread, Socket socket) {
-
-    }
-
-    @Override
-    public void onReceiveString(SocketThread socketThread, Socket socket, String msg) {
-
-    }
-
-    @Override
-    public void onReceiveFile(SocketThread socketThread, Socket socket, String file) {
-
-    }
-
-    @Override
-    public void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {
-
-    }
+    FileWriter logFile;
+    PrintWriter log;
+    private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss: ");
+    public String login;
+    public String password;
 
     enum State {CONNECTED, NOT_CONNECTED};
     public State state = State.NOT_CONNECTED;
- //   public String str;
+
     private SocketThread socketThread;
     private Socket socket;
-//
-//    public ClientController(SocketThread socketThread, Socket socket) {
-//        this.socketThread = socketThread;
-//        this.socket = socket;
-//    }
+
+    private FilePacket filePacket;
+    private MesagePacket messagePacket;
+
     public void connect() {
     try {
         Socket socket = new Socket(IP_ADRESS, PORT);
         socketThread = new SocketThread(this, "SocketThread", socket);
-        //    state=State.CONNECTED;
+            state=State.CONNECTED;
     } catch (IOException e) {
         e.printStackTrace();
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Connection error");
+        alert.setHeaderText("No connection!");
+        alert.setContentText( e.getMessage() );
+        alert.showAndWait();
 //            log.append("Exception: " + e.getMessage() + "\n");
-//            log.setCaretPosition(log.getDocument().getLength());
+        writeLog("Exception: " + e.getMessage() + "\n");
     }
-    //    upperPanel.setVisible(false);
+
 
 }
     public void renameFile(){
@@ -79,7 +66,7 @@ public class ClientController implements SocketThreadListener{
     }
     public void  uploadFile(){
        sendFile();
-        System.out.println("upload");
+       System.out.println("upload");
     }
 
     public void  openOptions(){
@@ -92,9 +79,80 @@ public class ClientController implements SocketThreadListener{
 
     public void sendFile(){
         FileChooser fileChooser = new FileChooser();
-        List<File> list = fileChooser.showOpenMultipleDialog(null);
+        //List<File> list = fileChooser.showOpenMultipleDialog(null);
+        filePacket = new FilePacket(fileChooser.showOpenMultipleDialog(null));
+        //socketThread.sendFile(list);
+        socketThread.sendPacket(filePacket);
+    }
 
-        socketThread.sendFile(list);
+    private void writeLog(String msg){
+        msg = dateFormat.format(System.currentTimeMillis()) + msg;
+        try {
+            logFile = new FileWriter("client.log", true);
+            log = new PrintWriter((java.io.Writer) logFile);
+        } catch (IOException e) {
+            log.printf(msg);
+            e.printStackTrace();
+            return;
+        }
+        try {
+            throw new Exception();
+        } catch (Exception ex) {
+            log.printf(msg+"\n");
+            log.flush();
+        }
+
+    }
+
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        e.printStackTrace();
+        StackTraceElement[] stackTraceElements = e.getStackTrace();
+        String msg;
+        if (stackTraceElements.length == 0) {
+            msg = "Empty StackTrace";
+        } else {
+            msg = e.getClass().getCanonicalName() + ": " + e.getMessage() + "\n" + stackTraceElements[0];
+        }
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(e.getClass().getCanonicalName());
+        alert.setContentText(msg);
+        alert.showAndWait();
+
+        writeLog("Exception: " + msg + "\n");
+        System.exit(1);
+    }
+    @Override
+    public void onStartSocketThread(SocketThread socketThread) {
+
+    }
+
+    @Override
+    public void onStopSocketThread(SocketThread socketThread) {
+
+    }
+
+    @Override
+    public void onReadySocketThread(SocketThread socketThread, Socket socket) {
+        writeLog("Connection to server done!");
+
+    }
+
+    @Override
+    public void onReceiveString(SocketThread socketThread, Socket socket, String msg) {
+
+    }
+
+    @Override
+    public void onReceivePacket(SocketThread socketThread, Socket socket, AbstractPacket packet) {
+
+    }
+
+
+    @Override
+    public void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {
+
     }
 
 }

@@ -3,6 +3,7 @@ package ru.geekbrains.filebox.client;
 import ru.geekbrains.filebox.client.core.FileBoxClient;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
+import ru.geekbrains.filebox.network.packet.AbstractPacket;
 
 import javax.swing.*;
 import java.awt.*;
@@ -235,14 +236,11 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
     }
 
     @Override
-    public void onReceiveFile(SocketThread socketThread, Socket socket, String file) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                log.append("Recieved file "+file);
-            }
-        });
+    public void onReceivePacket(SocketThread socketThread, Socket socket, AbstractPacket packet) {
+
     }
+
+
 
     @Override
     public void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {

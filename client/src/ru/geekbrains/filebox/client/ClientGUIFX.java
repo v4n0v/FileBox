@@ -14,6 +14,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
+import ru.geekbrains.filebox.network.packet.AbstractPacket;
 
 import javax.swing.*;
 import java.io.File;
@@ -162,9 +163,11 @@ public class ClientGUIFX extends Application implements SocketThreadListener{
     }
 
     @Override
-    public void onReceiveFile(SocketThread socketThread, Socket socket, String file) {
+    public void onReceivePacket(SocketThread socketThread, Socket socket, AbstractPacket packet) {
 
     }
+
+
 
     @Override
     public void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {

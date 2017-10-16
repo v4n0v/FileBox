@@ -4,6 +4,8 @@ import ru.geekbrains.filebox.network.ServerSocketThread;
 import ru.geekbrains.filebox.network.ServerSocketThreadListener;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
+import ru.geekbrains.filebox.network.packet.AbstractPacket;
+import ru.geekbrains.filebox.network.packet.PackageType;
 import ru.geekbrains.filebox.server.core.authorization.SQLLoginManager;
 
 import java.io.File;
@@ -14,6 +16,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Vector;
 
 public class FileBoxServer implements ServerSocketThreadListener, SocketThreadListener {
@@ -144,8 +147,31 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     }
 
     @Override
-    public synchronized void onReceiveFile(SocketThread socketThread, Socket socket, String file) {
-        putLog("Moved file '"+file+"' to "+" directory");
+    public synchronized void onReceivePacket(SocketThread socketThread, Socket socket, AbstractPacket packet) {
+        putLog("Packet "+packet.getPacketType());
+        if (packet.getPacketType()== PackageType.FILE){
+            List<File> filePack = (List<File>) packet.getOutputPacket();
+            File file;
+            FileWriter fileWriter;
+            PrintWriter printWriter;
+            String path="";
+            for (int i = 0; i < filePack.size(); i++) {
+                file=filePack.get(i);
+                try {
+                    fileWriter = new FileWriter( file, true);
+                    printWriter = new PrintWriter((java.io.Writer) fileWriter);
+                    putLog("File "+path+file.getName()+" was moved into "+path+" directory");
+                } catch (IOException e) {
+
+                    e.printStackTrace();
+                    return;
+                }
+            }
+
+            System.out.println("Красавчик");
+          //  msg = dateFormat.format(System.currentTimeMillis()) + msg;
+
+        }
     }
 
     @Override

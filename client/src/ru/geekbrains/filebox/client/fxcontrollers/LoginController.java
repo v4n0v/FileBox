@@ -15,7 +15,7 @@ import ru.geekbrains.filebox.network.SocketThreadListener;
 import java.io.IOException;
 import java.net.Socket;
 
-public class LoginController  {
+public class LoginController {
 
 
     @FXML
@@ -27,35 +27,24 @@ public class LoginController  {
     @FXML
     VBox rootElement;
 
-    public void tryToLogin() throws Exception {
+    public void loginToFileBox() throws Exception {
 
-        //if (state==State.CONNECTED) {
+        Stage mystage = (Stage) rootElement.getScene().getWindow();
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/loggedClient.fxml"));
+        Parent root = fxmlLoader.load();
 
-            Stage mystage = (Stage)rootElement.getScene().getWindow();
-            //FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"));
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/loggedClient.fxml"));
-            Parent root = fxmlLoader.load();
+        ClientController cm = (ClientController) fxmlLoader.getController();
+        cm.connect();
+        cm.login=fieldLogin.getText();
+        cm.password=fieldPass.getText();
+        if (cm.state == ClientController.State.CONNECTED) {
             mystage.setTitle("Main");
             mystage.setScene(new Scene(root, 465, 630));
             mystage.setResizable(false);
-            ClientController cm = (ClientController)fxmlLoader.getController();
-            cm.connect();
+
             mystage.show();
-    //    }
+        } else return;
     }
-    //private SocketThread socketThread;
-//    private void connect() {
-//        try {
-//            Socket socket = new Socket(IP_ADRESS, PORT);
-//            socketThread = new SocketThread(this, "SocketThread", socket);
-//        //    state=State.CONNECTED;
-//        } catch (IOException e) {
-//            e.printStackTrace();
-////            log.append("Exception: " + e.getMessage() + "\n");
-////            log.setCaretPosition(log.getDocument().getLength());
-//        }
-//    //    upperPanel.setVisible(false);
-//
-//    }
+
 
 }
