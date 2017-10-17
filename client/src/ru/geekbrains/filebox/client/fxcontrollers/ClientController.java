@@ -6,6 +6,7 @@ import javafx.stage.FileChooser;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
 import ru.geekbrains.filebox.network.packet.AbstractPacket;
+import ru.geekbrains.filebox.network.packet.FileContainer;
 import ru.geekbrains.filebox.network.packet.FilePacket;
 import ru.geekbrains.filebox.network.packet.MesagePacket;
 
@@ -14,8 +15,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClientController implements SocketThreadListener, Thread.UncaughtExceptionHandler {
@@ -79,14 +83,32 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
     public void sendFile(){
         FileChooser fileChooser = new FileChooser();
-        //List<File> list = fileChooser.showOpenMultipleDialog(null);
-        filePacket = new FilePacket(fileChooser.showOpenMultipleDialog(null));
-        //socketThread.sendFile(list);
-        socketThread.sendPacket(filePacket);
+        List<File> list = fileChooser.showOpenMultipleDialog(null);
+        FileContainer fileContainer = new FileContainer();
+
+        for (int i = 0; i < list.size(); i++) {
+            File file = list.get(i);
+
+            try {
+               /// byte[] byteFile= Files.readAllBytes(Paths.get(file.getPath()));
+                fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName());
+                filePacket = new FilePacket(fileContainer);
+                socketThread.sendPacket(filePacket);
+               //
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+//        filePacket = new FilePacket(fileContainer);
+    //   socketThread.sendFile(list);
+       // socketThread.sendPacket(filePacket);
+       // socketThread.sendPacket(filePacket);
     }
 
     private void writeLog(String msg){
-        msg = dateFormat.format(System.currentTimeMillis()) + msg;
+            msg = dateFormat.format(System.currentTimeMillis()) + msg;
         try {
             logFile = new FileWriter("client.log", true);
             log = new PrintWriter((java.io.Writer) logFile);
