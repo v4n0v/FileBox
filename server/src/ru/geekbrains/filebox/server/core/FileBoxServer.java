@@ -185,8 +185,18 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 //            System.out.println("Красавчик");
 //          //  msg = dateFormat.format(System.currentTimeMillis()) + msg;
 //
+        } else if (packet.getPacketType()== PackageType.MESSAGE){
+            putLog("MESSAGE received");
+        } else if (packet.getPacketType()==PackageType.FILE_LIST){
+            putLog("FILE_LIST received");
+        } else if (packet.getPacketType()==PackageType.ERROR){
+
+        } else{
+            putLog("Exception: Unknown package type :(");
+            throw new RuntimeException("Unknown package type");
+
         }
-    }
+}
 
     @Override
     public synchronized void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {

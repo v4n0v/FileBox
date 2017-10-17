@@ -29,7 +29,6 @@ public class SQLLoginManager implements LoginManager {
     public String getMail(String login) {
 
         try (PreparedStatement ps = connection.prepareStatement("SELECT mail FROM users WHERE login=?")) {
-
             ps.setString(1, login);
             try (ResultSet resultSet = ps.executeQuery()) {
 

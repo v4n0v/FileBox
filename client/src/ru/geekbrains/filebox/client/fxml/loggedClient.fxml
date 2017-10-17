@@ -19,7 +19,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.ClientController">
+<VBox fx:id="loggedRootElement" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.ClientController">
 
     <children>
         <GridPane id="upperPanel" prefHeight="100.0" prefWidth="465.0">

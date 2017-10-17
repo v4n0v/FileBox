@@ -10,7 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class SocketThread extends Thread implements FileBoxPacketManager {
+public class SocketThread extends Thread {
 
     private final SocketThreadListener eventListener;
     private final Socket socket;
@@ -140,18 +140,14 @@ public class SocketThread extends Thread implements FileBoxPacketManager {
     }
 
 
-    @Override
+
     public void sendPacket(AbstractPacket outPacket) {
 
         try {
             outD = new DataOutputStream(socket.getOutputStream());
             ObjectOutputStream oos = new ObjectOutputStream(outD);
-
             oos.writeObject(outPacket);
-//            oos.flush();
-//            oos.close();
             outD.flush();
-           // outD.close();
         } catch (IOException e) {
             eventListener.onExceptionSocketThread(this, socket, e);
         }
@@ -180,7 +176,7 @@ public class SocketThread extends Thread implements FileBoxPacketManager {
 //            close();
 //        }
 //    }
-    @Override
+
     public void receivePacket( ) {
         try {
 //            InputStream in = socket.getInputStream();
@@ -248,81 +244,3 @@ public class SocketThread extends Thread implements FileBoxPacketManager {
     }
 }
 
-
-
-//
-//    @Override
-//    public void run() {
-//        eventListener.onStartSocketThread(this);
-//        try {
-//            outD = new DataOutputStream(socket.getOutputStream());
-//            //   out = new DataOutputStream(socket.getOutputStream());
-//            System.out.println("Waiting for upload...");
-//            eventListener.onReadySocketThread(this, socket);
-//            while (!isInterrupted()) {
-//                // receivePacket();
-//                InputStream in = socket.getInputStream();
-//                DataInputStream din = new DataInputStream(in);
-//                System.out.println(din.getClass().getCanonicalName());
-//                int filesCount = din.readInt();//получаем количество файлов
-//                System.out.println("Uploading " + filesCount + " files\n");
-//                for (int i = 0; i < filesCount; i++) {
-//                    System.out.println("Receiving N" + (i + 1) + " file: \n");
-//                    long fileSize = din.readLong(); // получаем размер файла
-//                    String fileName = din.readUTF(); //прием имени файла
-//                    System.out.println("File name: " + fileName + "\n");
-//                    System.out.println("File size: " + fileSize + " byte\n");
-//                    byte[] buffer = new byte[64 * 1024];
-//                    FileOutputStream outFile = new FileOutputStream(fileName);
-//
-//                    int count, total = 0;
-//
-//                    while ((count = din.read(buffer)) != -1) {
-//                        total += count;
-//                        outFile.write(buffer, 0, count);
-//                        if (total == fileSize) {
-//                            break;
-//                        }
-//                    }
-//                    outFile.flush();
-//                    outFile.close();
-//                    System.out.println("Upload complete\n");
-//                    // обрабатываем полученный файл
-//
-//                    // InputStream in = socket.getInputStream();
-//                    // DataInputStream din = new DataInputStream(in);
-//                    //FileInputStream fis = new FileInputStream("temp.out");
-//
-////
-////                while ((count = oin.read(buffer)) != -1) {
-////                        total += count;
-////                        outFile.write(buffer, 0, count);
-////                        if (total == fileSize) {
-////                            break;
-////                        }
-////                    }
-////
-////                BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
-////                ObjectInputStream oin = new ObjectInputStream(bis   );
-////                packet = (AbstractPacket) oin.readObject();
-//
-//
-//                    //       eventListener.onReceivePacket(this, socket, packet);
-//                }
-//            }
-//        } catch (IOException e) {
-//            eventListener.onExceptionSocketThread(this, socket, e);
-////        }catch (ClassNotFoundException e) {
-////            eventListener.onExceptionSocketThread(this, socket, e);
-//        } finally {
-//            try {
-//                socket.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//                eventListener.onExceptionSocketThread(this, socket, e);
-//            }
-//            eventListener.onStopSocketThread(this);
-//        }
-//
-//
-//    }

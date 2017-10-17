@@ -24,6 +24,10 @@ public class LoginController {
     @FXML
     PasswordField fieldPass;
 
+    public VBox getRootElement() {
+        return rootElement;
+    }
+
     @FXML
     VBox rootElement;
 
@@ -38,7 +42,7 @@ public class LoginController {
         cm.login=fieldLogin.getText();
         cm.password=fieldPass.getText();
         if (cm.state == ClientController.State.CONNECTED) {
-            mystage.setTitle("Main");
+            mystage.setTitle("FileBoxClient");
             mystage.setScene(new Scene(root, 465, 630));
             mystage.setResizable(false);
 
