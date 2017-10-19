@@ -27,7 +27,7 @@
                   <Insets left="5.0" />
                </GridPane.margin>
             </CheckBox>
-            <TextField id="fieldLogin" fx:id="fieldLogin" promptText="login">
+            <TextField id="fieldLogin" fx:id="fieldLogin" promptText="Type your email">
                <GridPane.margin>
                   <Insets left="15.0" right="10.0" top="10.0" />
                </GridPane.margin>

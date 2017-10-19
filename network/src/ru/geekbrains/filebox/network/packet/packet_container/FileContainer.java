@@ -1,10 +1,6 @@
-package ru.geekbrains.filebox.network.packet;
+package ru.geekbrains.filebox.network.packet.packet_container;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class FileContainer implements Serializable{

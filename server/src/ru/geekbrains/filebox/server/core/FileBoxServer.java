@@ -5,8 +5,10 @@ import ru.geekbrains.filebox.network.ServerSocketThreadListener;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
 import ru.geekbrains.filebox.network.packet.AbstractPacket;
-import ru.geekbrains.filebox.network.packet.FileContainer;
+import ru.geekbrains.filebox.network.packet.LoginPacket;
+import ru.geekbrains.filebox.network.packet.packet_container.FileContainer;
 import ru.geekbrains.filebox.network.packet.PackageType;
+import ru.geekbrains.filebox.network.packet.packet_container.LoginContainer;
 import ru.geekbrains.filebox.server.core.authorization.SQLLoginManager;
 
 import java.io.*;
@@ -18,15 +20,16 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 public class FileBoxServer implements ServerSocketThreadListener, SocketThreadListener {
-
+    private final String SERVER_INBOX_PATH =    "server/inbox/";
     private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss: ");
     private final FileBoxServerListener eventListener;
     private final SQLLoginManager loginManager;
     private ServerSocketThread serverSocketThread;
     private final int port = 8189;
     private final Vector<SocketThread> clients = new Vector<>();
-    PrintWriter log;
-    FileWriter logFile;
+    private PrintWriter log;
+    private FileWriter logFile;
+    private String clientPath="";
     enum ServerState {WORKING, STOPPED}
 
     private ServerState state = ServerState.STOPPED;
@@ -41,14 +44,14 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 //            putLog("Сервер уже запущен.");
 //            return;
 //        }
-         if (state != ServerState.WORKING) {
+        if (state != ServerState.WORKING) {
             serverSocketThread = new ServerSocketThread(this, "ServerSocketThread", port, 1000);
             loginManager.init();
             putLog("Server is working");
 //            putLog(loginManager.getMail("admin"));
             state = ServerState.WORKING;
-         } else
-             putLog("Server is working.");
+        } else
+            putLog("Server is working.");
     }
 
     public void stopListening() {
@@ -80,7 +83,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
         try {
             throw new Exception();
         } catch (Exception ex) {
-            log.printf(msg+"\n");
+            log.printf(msg + "\n");
             log.flush();
         }
     }
@@ -111,8 +114,9 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     public void onAcceptedSocket(ServerSocketThread thread, ServerSocket serverSocket, Socket socket) {
         putLog("Client connected: " + socket);
         String threadName = "Socket thread: " + socket.getInetAddress() + ": " + socket.getPort();
-      //  clients.add(new SocketThread(this, threadName, socket));
-        new  SocketThread(this, threadName, socket);
+        //  clients.add(new SocketThread(this, threadName, socket));
+//        new SocketThread(this, threadName, socket);
+        new FileBoxSocketThread (this, threadName, socket);
         putLog("socket accepted...");
     }
 
@@ -124,7 +128,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
     @Override
     public synchronized void onStartSocketThread(SocketThread socketThread) {
-    putLog("started...");
+        putLog("started...");
     }
 
     @Override
@@ -135,28 +139,36 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
     @Override
     public synchronized void onReadySocketThread(SocketThread socketThread, Socket socket) {
-         putLog("Socket is ready");
-         clients.add(socketThread);
+        putLog("Socket is ready");
+        clients.add(socketThread);
     }
 
     @Override
     public synchronized void onReceiveString(SocketThread socketThread, Socket socket, String msg) {
-        putLog("Send "+msg);
+        putLog("Send " + msg);
     }
+
 
     @Override
     public synchronized void onReceivePacket(SocketThread socketThread, Socket socket, AbstractPacket packet) {
-        putLog("Packet "+packet.getPacketType());
+        putLog("Packet " + packet.getPacketType());
+        FileBoxSocketThread client = (FileBoxSocketThread) socketThread;
+        //client.
 
-        if (packet.getPacketType()== PackageType.FILE){
+        if (packet.getPacketType() == PackageType.FILE) {
+//            File folder = new File( "server/inbox/client");
+//            if (!folder.exists()) {
+//                folder.mkdir();
+//            }
             FileContainer filePackage = (FileContainer) packet.getOutputPacket();
             ArrayList<byte[]> files = filePackage.getFiles();
             ArrayList<String> names = filePackage.getNames();
             for (int i = 0; i < files.size(); i++) {
                 try {
-                    FileOutputStream fos = new FileOutputStream(new File(names.get(i)));
+                    FileOutputStream fos = new FileOutputStream(new File(SERVER_INBOX_PATH + clientPath + names.get(i)));
                     fos.write(files.get(i));
                     fos.close();
+                    putLog("File '" + names.get(i) + "' received. ");
                 } catch (IOException e) {
 
                     e.printStackTrace();
@@ -164,40 +176,72 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
                 }
             }
 
-//            List<File> filePack = (List<File>) packet.getOutputPacket();
-//            File file;
-//            FileWriter fileWriter;
-//            PrintWriter printWriter;
-//            String path="";
-//            for (int i = 0; i < filePack.size(); i++) {
-//                file=filePack.get(i);
-//                try {
-//                    fileWriter = new FileWriter( file.getName(), true);
-//                    printWriter = new PrintWriter((java.io.Writer) fileWriter);
-//                    putLog("File "+path+file.getName()+" was moved into "+path+" directory");
-//                } catch (IOException e) {
-//
-//                    e.printStackTrace();
-//                    return;
-//                }
-//            }
-//
-//            System.out.println("Красавчик");
-//          //  msg = dateFormat.format(System.currentTimeMillis()) + msg;
-//
-        } else if (packet.getPacketType()== PackageType.MESSAGE){
+        } else if (packet.getPacketType() == PackageType.MESSAGE) {
             putLog("MESSAGE received");
-        } else if (packet.getPacketType()==PackageType.FILE_LIST){
+        } else if (packet.getPacketType() == PackageType.FILE_LIST) {
             putLog("FILE_LIST received");
-        } else if (packet.getPacketType()==PackageType.ERROR){
+        } else if (packet.getPacketType() == PackageType.ERROR) {
+            putLog("ERROR received");
 
-        } else{
+        } else if (packet.getPacketType() == PackageType.LOGIN) {
+            LoginContainer lc = (LoginContainer) packet.getOutputPacket();
+
+            if (client.isAuthorized()){
+                handleAuthorizedClient(client);
+            } else {
+                handleNonAuthorizedClient(client, lc);
+            }
+        } else {
             putLog("Exception: Unknown package type :(");
             throw new RuntimeException("Unknown package type");
 
         }
-}
+    }
 
+    private void handleAuthorizedClient(FileBoxSocketThread client){
+
+    }
+    private void handleNonAuthorizedClient(FileBoxSocketThread newClient, LoginContainer lc){
+        String login = loginManager.getLogin(lc.getMail(), lc.getPassword());
+    //    String mail = loginManager.getMail(lc.getMail(), lc.getPassword());
+        if (login==null){
+            newClient.sendError("Wrong email or password");
+            putLog("Wrong mail\\pass '"+lc.getMail()+"\\"+ lc.getPassword()+"'");
+            return;
+        }
+//        if (mail==null){
+//            newClient.sendError("Wrong email or password");
+//            return;
+//        }
+        FileBoxSocketThread client = getClientByNick(login);
+        newClient.authorizeAccept(login);
+
+        if (client == null) {
+//            putLog(nickname + " connected.");
+//            sendToAllAuthorizedClients(Messages.getBroadcast("Server", newClient.getNick() + " connected."));
+//            sendToAllAuthorizedClients(Messages.getUsersList(users));
+            System.out.println("client connected");
+            putLog("Client "+login+" connected" );
+        } else {
+            putLog("Client "+login + " reconnected.");
+//            client.reconnect();
+
+        }
+        newClient.authorizeAccept(login);
+
+    }
+
+    public FileBoxSocketThread getClientByNick(String nickname){
+        final int cnt =clients.size();
+
+        for (int i = 0; i < cnt; i++) {
+            FileBoxSocketThread client = (FileBoxSocketThread) clients.get(i);
+            if (!client.isAuthorized()) continue;
+            if (client.getLogin().equals(nickname)) return client;
+
+        }
+        return null;
+    }
     @Override
     public synchronized void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {
 

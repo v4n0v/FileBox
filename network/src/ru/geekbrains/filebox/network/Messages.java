@@ -1,4 +1,4 @@
-package ru.geekbrains.filebox.library;
+package ru.geekbrains.filebox.network;
 
 public class Messages {
 

@@ -3,11 +3,13 @@ package ru.geekbrains.filebox.server.core.authorization;
 import java.sql.SQLException;
 
 public interface LoginManager {
-    //boolean isExist (String login);
+
     void init();
 
-    String getMail(String login) ;
-    int getSpace(String login);
+    String getMail(String mail) ;
+  //  String getMail(String login, String pass) ;
+    int getSpace();
+    String getLogin(String login, String pass) ;
 
     void dispose();
 }

@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
@@ -38,16 +39,34 @@ public class LoginController {
         Parent root = fxmlLoader.load();
 
         ClientController cm = (ClientController) fxmlLoader.getController();
-        cm.connect();
-        cm.login=fieldLogin.getText();
-        cm.password=fieldPass.getText();
-        if (cm.state == ClientController.State.CONNECTED) {
-            mystage.setTitle("FileBoxClient");
-            mystage.setScene(new Scene(root, 465, 630));
-            mystage.setResizable(false);
+        if (!fieldLogin.getText().isEmpty()||!fieldLogin.getText().isEmpty()) {
+            cm.login = fieldLogin.getText();
+            cm.password = fieldPass.getText();
 
-            mystage.show();
-        } else return;
+            cm.connect();
+            if (cm.isAuthorized()) {
+                if (cm.state == ClientController.State.CONNECTED) {
+                    mystage.setTitle("FileBoxClient");
+                    mystage.setScene(new Scene(root, 465, 630));
+                    mystage.setResizable(false);
+
+                    mystage.show();
+                } else return;
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Wrong email or password");
+                alert.showAndWait();
+
+            }
+        } else {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Warning");
+            alert.setHeaderText(null);
+            alert.setContentText("Fill mail and password fields");
+            alert.showAndWait();
+        }
     }
 
 

@@ -47,9 +47,29 @@ public class SQLLoginManager implements LoginManager {
     }
 
     @Override
-    public int getSpace(String login) {
+    public int getSpace() {
         return 0;
     }
+
+    @Override
+    public String getLogin(String mail, String pass) {
+        try (PreparedStatement ps = connection.prepareStatement("SELECT login FROM users WHERE login=?" +
+                "AND pass=? ;")) {
+            ps.setString(2, mail);
+            try (ResultSet resultSet = ps.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString(1);
+                } else {
+                    return null;
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Override
     public void dispose() {

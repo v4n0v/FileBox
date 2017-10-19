@@ -1,6 +1,7 @@
 package ru.geekbrains.filebox.network;
 
 import ru.geekbrains.filebox.network.packet.AbstractPacket;
+import ru.geekbrains.filebox.network.packet.ErrorPacket;
 import ru.geekbrains.filebox.network.packet.FileBoxPacketManager;
 import ru.geekbrains.filebox.network.packet.PackageType;
 
