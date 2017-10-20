@@ -9,11 +9,14 @@ import javafx.stage.Stage;
 public class FileBoxClientStart extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("fxml/login_modal.fxml"));
+       // Parent root = FXMLLoader.load(getClass().getResource("fxml/login_modal.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("fxml/loggedClient.fxml"));
         primaryStage.setTitle("Login");
-        primaryStage.setScene(new Scene(root, 465, 110));
+        primaryStage.setScene(new Scene(root, 465, 630));
+        //primaryStage.setScene(new Scene(root, 465, 110));
         primaryStage.setResizable(false);
         primaryStage.show();
+
     }
 
     public static void main(String[] args) {

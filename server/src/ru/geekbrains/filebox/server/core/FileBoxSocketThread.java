@@ -16,6 +16,7 @@ public class FileBoxSocketThread extends SocketThread {
 
     String login;
     private boolean isAuthorized;
+    private boolean isReconnected;
 
     public FileBoxSocketThread(SocketThreadListener eventListener, String name, Socket socket) {
         super(eventListener, name, socket);
@@ -25,9 +26,19 @@ public class FileBoxSocketThread extends SocketThread {
         sendPacket(new ErrorPacket(msg));
         close();
     }
-    void authorizeAccept(String login) {
+    void authorizeAccept() {
         this.isAuthorized = true;
-        sendPacket(new AuthAcceptPacket(login));
+        sendPacket(new AuthAcceptPacket(true));
+    }
+    void authorizeDecline(String login) {
+        this.isAuthorized = false;
+        sendPacket(new AuthAcceptPacket(true));
+    }
+
+    void reconnect(){
+        isReconnected=true;
+       // sendPacket(Messages.getReconnect());
+        close();
     }
 
     public boolean isAuthorized() {

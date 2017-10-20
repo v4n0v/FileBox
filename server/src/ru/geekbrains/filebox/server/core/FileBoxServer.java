@@ -202,9 +202,12 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
     }
     private void handleNonAuthorizedClient(FileBoxSocketThread newClient, LoginContainer lc){
-        String login = loginManager.getLogin(lc.getMail(), lc.getPassword());
+       // String login = loginManager.getLogin(lc.getMail(), lc.getPassword());
+        String login= lc.getMail();
+        boolean isAuth = loginManager.checkLogin(lc.getMail(), lc.getPassword());
     //    String mail = loginManager.getMail(lc.getMail(), lc.getPassword());
-        if (login==null){
+//        if (login==null){
+        if (!isAuth){
             newClient.sendError("Wrong email or password");
             putLog("Wrong mail\\pass '"+lc.getMail()+"\\"+ lc.getPassword()+"'");
             return;
@@ -213,21 +216,18 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 //            newClient.sendError("Wrong email or password");
 //            return;
 //        }
-        FileBoxSocketThread client = getClientByNick(login);
-        newClient.authorizeAccept(login);
+        FileBoxSocketThread client = getClientByNick(lc.getMail());
+        newClient.authorizeAccept();
 
         if (client == null) {
-//            putLog(nickname + " connected.");
-//            sendToAllAuthorizedClients(Messages.getBroadcast("Server", newClient.getNick() + " connected."));
-//            sendToAllAuthorizedClients(Messages.getUsersList(users));
             System.out.println("client connected");
             putLog("Client "+login+" connected" );
         } else {
             putLog("Client "+login + " reconnected.");
-//            client.reconnect();
+             client.reconnect();
 
         }
-        newClient.authorizeAccept(login);
+       // newClient.authorizeAccept();
 
     }
 

@@ -53,21 +53,53 @@ public class SQLLoginManager implements LoginManager {
 
     @Override
     public String getLogin(String mail, String pass) {
-        try (PreparedStatement ps = connection.prepareStatement("SELECT login FROM users WHERE login=?" +
-                "AND pass=? ;")) {
-            ps.setString(2, mail);
+        try (PreparedStatement ps = connection.prepareStatement("SELECT login FROM users WHERE pass=? ;")) {
+      //      ps.setString(1, mail);
+            ps.setString(1, pass);
             try (ResultSet resultSet = ps.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getString(1);
-                } else {
+                if (resultSet.next())
+//                    if (resultSet.getString(1) == mail && resultSet.getString(2) == pass){
+//                    if (resultSet.getString(1) == mail && resultSet.getString(2) == pass){
+                        return resultSet.getString(1);
+//                    }
+                    else {
                     return null;
                 }
+//                else {
+//                    return null;
+//                }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public boolean checkLogin(String login, String pass) {
+        try (PreparedStatement ps = connection.prepareStatement("SELECT login FROM users WHERE pass=? ;")) {
+            //      ps.setString(1, mail);
+            ps.setString(1, pass);
+            try (ResultSet resultSet = ps.executeQuery()) {
+                if (resultSet.next())
+//                    if (resultSet.getString(1) == mail && resultSet.getString(2) == pass){
+//                    if (resultSet.getString(1) == mail && resultSet.getString(2) == pass){
+                    return true;
+//                    }
+                else {
+                    return false;
+                }
+//                else {
+//                    return null;
+//                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 

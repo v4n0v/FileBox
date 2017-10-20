@@ -10,6 +10,7 @@ public interface LoginManager {
   //  String getMail(String login, String pass) ;
     int getSpace();
     String getLogin(String login, String pass) ;
+    boolean checkLogin(String login, String pass) ;
 
     void dispose();
 }

@@ -94,12 +94,12 @@ public class ClientGUIFX extends Application implements SocketThreadListener{
            state=State.NOT_CONNECTED;
         }
     }
-    public void sendFile(){
-        FileChooser fileChooser = new FileChooser();
-        List<File> list = fileChooser.showOpenMultipleDialog(null);
-
-        socketThread.sendFile(list);
-    }
+//    public void sendFile(){
+//        FileChooser fileChooser = new FileChooser();
+//        List<File> list = fileChooser.showOpenMultipleDialog(null);
+//
+//        socketThread.sendFile(list);
+//    }
     private void connect() {
         try {
             Socket socket = new Socket(IP_ADRESS, PORT);
