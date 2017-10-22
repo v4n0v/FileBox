@@ -45,10 +45,7 @@ public class LoginController {
 
 
           cm.connect();
-           //cm.authorize(cm.login, cm.password);
 
-
-//            if (cm.isAuthorized()) {
                 if (cm.state == ClientController.State.CONNECTED) {
                     mystage.setTitle("FileBoxClient");
                     mystage.setScene(new Scene(root, 465, 630));
@@ -56,14 +53,7 @@ public class LoginController {
 
                     mystage.show();
                 } else return;
-//            } else {
-//                Alert alert = new Alert(Alert.AlertType.ERROR);
-//                alert.setTitle("Error");
-//                alert.setHeaderText(null);
-//                alert.setContentText("Wrong email or password");
-//                alert.showAndWait();
-//
-//            }
+
         } else {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Warning");

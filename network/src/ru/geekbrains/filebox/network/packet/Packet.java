@@ -3,12 +3,12 @@ package ru.geekbrains.filebox.network.packet;
 import java.io.*;
 import java.util.ArrayList;
 
-public abstract class AbstractPacket<T> implements Serializable {
+public abstract class Packet<T> implements Serializable {
 
     private PackageType packetType;
     private T outputPacket;
 
-    AbstractPacket(PackageType packageType, T outputPacket){
+    Packet(PackageType packageType, T outputPacket){
         this.packetType =packageType;
         this.outputPacket=outputPacket;
     }

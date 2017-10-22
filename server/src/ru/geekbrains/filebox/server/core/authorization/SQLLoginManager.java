@@ -23,8 +23,6 @@ public class SQLLoginManager implements LoginManager {
     }
 
 
-
-
     @Override
     public String getMail(String login) {
 
@@ -54,15 +52,15 @@ public class SQLLoginManager implements LoginManager {
     @Override
     public String getLogin(String mail, String pass) {
         try (PreparedStatement ps = connection.prepareStatement("SELECT login FROM users WHERE pass=? ;")) {
-      //      ps.setString(1, mail);
+            //      ps.setString(1, mail);
             ps.setString(1, pass);
             try (ResultSet resultSet = ps.executeQuery()) {
                 if (resultSet.next())
 //                    if (resultSet.getString(1) == mail && resultSet.getString(2) == pass){
 //                    if (resultSet.getString(1) == mail && resultSet.getString(2) == pass){
-                        return resultSet.getString(1);
+                    return resultSet.getString(1);
 //                    }
-                    else {
+                else {
                     return null;
                 }
 //                else {
@@ -78,9 +76,10 @@ public class SQLLoginManager implements LoginManager {
 
     @Override
     public boolean checkLogin(String login, String pass) {
-        try (PreparedStatement ps = connection.prepareStatement("SELECT login FROM users WHERE pass=? ;")) {
+        try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM users WHERE login=? AND pass=? ;")) {
             //      ps.setString(1, mail);
-            ps.setString(1, pass);
+            ps.setString(1, login);
+            ps.setString(2, pass);
             try (ResultSet resultSet = ps.executeQuery()) {
                 if (resultSet.next())
 //                    if (resultSet.getString(1) == mail && resultSet.getString(2) == pass){
@@ -102,6 +101,43 @@ public class SQLLoginManager implements LoginManager {
 
     }
 
+    @Override
+    public void addNewUser(String login, String mail, String pass) {
+
+            try {
+                connection.setAutoCommit(false);
+                PreparedStatement ps = connection.prepareStatement("INSERT INTO users (login , mail, pass, space) VALUES (?, ?, ?, ?) ");
+
+                ps.setString(1, login);
+                ps.setString(2, mail);
+                ps.setString(3, pass);
+                ps.setInt(4, 10);
+                ps.executeUpdate();
+
+                connection.commit();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        
+    }
+
+    public boolean isLoginBusy(String login) {
+        try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM users WHERE login=?")) {
+            //      ps.setString(1, mail);
+            ps.setString(1, login);
+            try (ResultSet resultSet = ps.executeQuery()) {
+                if (resultSet.next())
+                    return true;
+                else
+                    return false;
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public void dispose() {

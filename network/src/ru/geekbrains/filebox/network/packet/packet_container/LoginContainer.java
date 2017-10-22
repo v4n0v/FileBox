@@ -4,16 +4,16 @@ import java.io.Serializable;
 
 public class LoginContainer implements Serializable{
 
-    private String email;
+    private String login;
     private String password;
-    public LoginContainer(String email, String password) {
+    public LoginContainer(String login, String password) {
 
-        this.email = email;
+        this.login = login;
         this.password = password;
     }
 
-    public String getMail() {
-        return email;
+    public String getLogin() {
+        return login;
     }
 
     public String getPassword() {

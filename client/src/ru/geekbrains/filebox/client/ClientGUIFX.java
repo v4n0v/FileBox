@@ -9,18 +9,15 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
-import ru.geekbrains.filebox.network.packet.AbstractPacket;
+import ru.geekbrains.filebox.network.packet.Packet;
 
 import javax.swing.*;
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.List;
 
 public class ClientGUIFX extends Application implements SocketThreadListener{
     enum State {CONNECTED, NOT_CONNECTED};
@@ -163,7 +160,7 @@ public class ClientGUIFX extends Application implements SocketThreadListener{
     }
 
     @Override
-    public void onReceivePacket(SocketThread socketThread, Socket socket, AbstractPacket packet) {
+    public void onReceivePacket(SocketThread socketThread, Socket socket, Packet packet) {
 
     }
 

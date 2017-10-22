@@ -1,15 +1,9 @@
 package ru.geekbrains.filebox.network;
 
-import ru.geekbrains.filebox.network.packet.AbstractPacket;
-import ru.geekbrains.filebox.network.packet.ErrorPacket;
-import ru.geekbrains.filebox.network.packet.FileBoxPacketManager;
-import ru.geekbrains.filebox.network.packet.PackageType;
+import ru.geekbrains.filebox.network.packet.Packet;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
 
 public class SocketThread extends Thread {
 
@@ -19,7 +13,7 @@ public class SocketThread extends Thread {
     private FileOutputStream outFile;
 
 
-    private AbstractPacket packet;
+    private Packet packet;
 
 
     public SocketThread(SocketThreadListener eventListener, String name, Socket socket) {
@@ -40,9 +34,11 @@ public class SocketThread extends Thread {
             while (!isInterrupted()) {
                 DataInputStream dis = new DataInputStream(socket.getInputStream());
                 ObjectInputStream oin = new ObjectInputStream(dis);
-                packet = (AbstractPacket) oin.readObject();
-                eventListener.onReceivePacket(this, socket, packet);
-
+//                if (oin.readObject()!=null) {
+                System.out.println(oin.readObject());
+                    packet = (Packet) oin.readObject();
+                    eventListener.onReceivePacket(this, socket, packet);
+//                }
             }
         } catch (IOException e) {
             eventListener.onExceptionSocketThread(this, socket, e);
@@ -71,7 +67,7 @@ public class SocketThread extends Thread {
 
 
 
-    public void sendPacket(AbstractPacket outPacket) {
+    public void sendPacket(Packet outPacket) {
 
         try {
             outD = new DataOutputStream(socket.getOutputStream());

@@ -1,6 +1,6 @@
 package ru.geekbrains.filebox.network.packet;
 
 public interface FileBoxPacketManager {
-    void sendPacket(AbstractPacket outPacket);
+    void sendPacket(Packet outPacket);
     void receivePacket( );
 }

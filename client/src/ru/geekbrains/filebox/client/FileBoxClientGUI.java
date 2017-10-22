@@ -3,19 +3,15 @@ package ru.geekbrains.filebox.client;
 import ru.geekbrains.filebox.client.core.FileBoxClient;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
-import ru.geekbrains.filebox.network.packet.AbstractPacket;
+import ru.geekbrains.filebox.network.packet.Packet;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
@@ -236,7 +232,7 @@ public class FileBoxClientGUI extends JFrame implements ActionListener, Thread.U
     }
 
     @Override
-    public void onReceivePacket(SocketThread socketThread, Socket socket, AbstractPacket packet) {
+    public void onReceivePacket(SocketThread socketThread, Socket socket, Packet packet) {
 
     }
 

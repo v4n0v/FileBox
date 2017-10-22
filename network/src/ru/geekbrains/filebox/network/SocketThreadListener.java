@@ -1,10 +1,8 @@
 package ru.geekbrains.filebox.network;
 
-import ru.geekbrains.filebox.network.packet.AbstractPacket;
+import ru.geekbrains.filebox.network.packet.Packet;
 
-import java.io.File;
 import java.net.Socket;
-import java.util.ArrayList;
 
 public interface SocketThreadListener {
     void onStartSocketThread(SocketThread socketThread);
@@ -13,7 +11,7 @@ public interface SocketThreadListener {
     void onReadySocketThread(SocketThread socketThread, Socket socket);
     void onReceiveString(SocketThread socketThread, Socket socket, String msg);
 
-    void onReceivePacket(SocketThread socketThread, Socket socket, AbstractPacket packet);
+    void onReceivePacket(SocketThread socketThread, Socket socket, Packet packet);
 
     void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e);
 

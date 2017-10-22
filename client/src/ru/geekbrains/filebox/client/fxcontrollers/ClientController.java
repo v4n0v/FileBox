@@ -3,13 +3,14 @@ package ru.geekbrains.filebox.client.fxcontrollers;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.JavaFXBuilderFactory;
-import javafx.scene.control.Alert;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
@@ -27,28 +28,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientController implements SocketThreadListener, Thread.UncaughtExceptionHandler {
-    private final String IP_ADRESS = "localhost";
+    enum State {CONNECTED, NOT_CONNECTED, ERROR, LOGIN, REGISTRATION}
+    public State state = State.NOT_CONNECTED;
 
-    String errorMsg;
-
-    public boolean isAuthorized() {
-        return isAuthorized;
-    }
-    AbstractPacket incomingPacket;
+    private final static String IP = "localhost";
+    private boolean isRegistrated;
+    private String errorMsg;
+    private final static int MIN_PASS_LENGTH =2;
+    private final static int MAX_PASS_LENGTH =32;
     private boolean isAuthorized;
-
-    private final int PORT = 8189;
-    private FileWriter logFile;
+    private final static int PORT = 8189;
+    private  FileWriter logFile;
     private PrintWriter log;
     private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss: ");
     public String login;
     public String password;
-    private String username;
-    private final long MAX_FILE_SIZE = 5_242_880;
 
-    enum State {CONNECTED, NOT_CONNECTED, ERROR}
-
-    public State state = State.NOT_CONNECTED;
+    private final static long MAX_FILE_SIZE = 5_242_880;
 
     private SocketThread socketThread;
     private Socket socket;
@@ -60,18 +56,108 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
     VBox loggedRootElement;
     @FXML
     GridPane upperPanelLogin;
+
     @FXML
     GridPane upperPanelLogged;
+
     @FXML
     TextField fieldLogin;
 
     @FXML
     PasswordField fieldPass;
+    @FXML
+    Button reg;
+@FXML
+    VBox rootElement;
 
-    private void handlePacket(AbstractPacket packet){
+    /// регистрацию сую сюда же
+    @FXML
+    TextField loginRegField;
+    @FXML
+    TextField mailRegField;
+    @FXML
+    PasswordField pass1RegField;
+    @FXML
+    PasswordField pass2RegField;
+    @FXML
+    Button exit;
+    @FXML
+    Button addNew;
+    private Alert alert;
+    private String loginReg;
+    private  String mailReg;
+    private String pass1Reg;
 
 
 
+
+    private void alertWindow(String title, String msg, Alert.AlertType type){
+        alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(msg);
+        alert.showAndWait();
+    }
+    private void errorMesage(String msg) {
+        alertWindow("Error", msg, Alert.AlertType.ERROR );
+    }
+
+    private void infoMesage(String msg) {
+        alertWindow("Info", msg, Alert.AlertType.INFORMATION );
+    }
+
+    public void addUser() {
+        String pass2Reg;
+        loginReg = loginRegField.getText();
+        mailReg = mailRegField.getText();
+        pass1Reg = pass1RegField.getText();
+        pass2Reg = pass2RegField.getText();
+        if (loginReg.isEmpty() && mailReg.isEmpty()
+                && pass1Reg.isEmpty() && pass2Reg.isEmpty()) {
+            errorMesage("Fill the all fields");
+        } else if (pass1Reg.length() < MIN_PASS_LENGTH || pass1Reg.length() > MAX_PASS_LENGTH) {
+            errorMesage("Password must be from" + MIN_PASS_LENGTH+" to "+MAX_PASS_LENGTH +" words.");
+        } else {
+            if (pass1Reg.equals(pass2Reg)) {
+                state = State.REGISTRATION;
+                connect();
+            } else {
+                errorMesage("Password fields are not equals");
+            }
+        }
+    }
+    public void regExit() {
+        Stage stage = (Stage) exit.getScene().getWindow();
+        stage.close();
+    }
+    public void loginExit() {
+        Stage stage = (Stage) rootElement.getScene().getWindow();
+        stage.hide();
+    }
+    public void loginShow() {
+        Stage stage = (Stage) rootElement.getScene().getWindow();
+        stage.showAndWait();
+    }
+    // конец регистрации
+
+    public void registerNew() {
+        Stage stage = (Stage) reg.getScene().getWindow();
+        stage.hide();
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/registration.fxml"));
+        Parent root1 = null;
+        try {
+            root1 = (Parent) fxmlLoader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Stage registrStage = new Stage();
+        registrStage.initModality(Modality.WINDOW_MODAL);
+        registrStage.initOwner(stage);
+        registrStage.setTitle("New user registration ");
+        registrStage.setScene(new Scene(root1));
+
+        registrStage.setResizable(false);
+        registrStage.show();
 
     }
 
@@ -80,13 +166,10 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
         System.out.println("");
         try {
-            Socket socket = new Socket(IP_ADRESS, PORT);
+            Socket socket = new Socket(IP, PORT);
             socketThread = new SocketThread(this, "SocketThread", socket);
-
-
         } catch (IOException e) {
             e.printStackTrace();
-
             errorMesage(e.getMessage());
             writeLog("Exception: " + e.getMessage() + "\n");
         }
@@ -122,8 +205,9 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
         System.out.println("Client logOut");
         disconect();
         writeLog("Client LogOut");
-        Stage mystage = (Stage) loggedRootElement.getScene().getWindow();
-        mystage.close();
+//        Stage mystage = (Stage) loggedRootElement.getScene().getWindow();
+//        mystage.close();
+        loginShow();
     }
 
     public void loginToFileBox() {
@@ -134,11 +218,12 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
             connect();
         } else {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Warning");
-            alert.setHeaderText(null);
-            alert.setContentText("Fill mail and password fields");
-            alert.showAndWait();
+//            Alert alert = new Alert(Alert.AlertType.WARNING);
+//            alert.setTitle("Warning");
+//            alert.setHeaderText(null);
+//            alert.setContentText("Fill mail and password fields");
+//            alert.showAndWait();
+            alertWindow("Warning","Fill mail and password fields", Alert.AlertType.WARNING );
         }
     }
 
@@ -203,13 +288,6 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
         System.exit(1);
     }
 
-    private void errorMesage(String msg) {
-        Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-        errorAlert.setTitle("Error");
-        errorAlert.setHeaderText(null);
-        errorAlert.setContentText(msg);
-        errorAlert.showAndWait();
-    }
 
     @Override
     public void onStartSocketThread(SocketThread socketThread) {
@@ -220,15 +298,20 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
     @Override
     public void onStopSocketThread(SocketThread socketThread) {
         isAuthorized = false;
-
         writeLog("Socket closed. End of session");
     }
 
     @Override
     public void onReadySocketThread(SocketThread socketThread, Socket socket) {
-        writeLog("Connection to server done!");
-        LoginPacket loginPacket = new LoginPacket(login, password);
-        socketThread.sendPacket(loginPacket);
+        writeLog("Connection to server complete!");
+        if (state == State.REGISTRATION) {
+            AddUserPacket addUserPacket = new AddUserPacket(loginReg, mailReg, pass1Reg);
+            socketThread.sendPacket(addUserPacket);
+        } else {
+
+            LoginPacket loginPacket = new LoginPacket(login, password);
+            socketThread.sendPacket(loginPacket);
+        }
     }
 
     @Override
@@ -237,12 +320,19 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
     }
 
     @Override
-    public void onReceivePacket(SocketThread socketThread, Socket socket, AbstractPacket packet) {
+    public void onReceivePacket(SocketThread socketThread, Socket socket, Packet packet) {
+        handlePacket(packet);
+        writeLog("Packet " +packet.getPacketType()+" was handled...");
+
+    }
 
 
-
-
-
+    @Override
+    public void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {
+        Platform.runLater(() -> errorMesage(e.getMessage()));
+        writeLog("Exception: " + e.getMessage());
+    }
+    private void handlePacket(Packet packet) {
         if (packet.getPacketType() == PackageType.FILE) {
             FileContainer filePackage = (FileContainer) packet.getOutputPacket();
             ArrayList<byte[]> files = filePackage.getFiles();
@@ -259,55 +349,34 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
                     return;
                 }
             }
-
         } else if (packet.getPacketType() == PackageType.MESSAGE) {
             writeLog("MESSAGE received");
         } else if (packet.getPacketType() == PackageType.FILE_LIST) {
             writeLog("FILE_LIST received");
-
-
         } else if (packet.getPacketType() == PackageType.ERROR) {
-            errorMsg = "ERROR received";
+            errorMsg = (String) packet.getOutputPacket();
             state = State.ERROR;
             writeLog(errorMsg);
-            Platform.runLater(new Runnable() {
-                @Override public void run() {
-                    errorMesage(errorMsg);
-                }
-            });
-            //
-
+            Platform.runLater(()->errorMesage(errorMsg));
         } else if (packet.getPacketType() == PackageType.LOGIN) {
             LoginContainer lc = (LoginContainer) packet.getOutputPacket();
         } else if (packet.getPacketType() == PackageType.AUTH_ACCEPT) {
             isAuthorized = (Boolean) packet.getOutputPacket();
-
-            if (!isAuthorized){
-                Platform.runLater(new Runnable() {
-                    @Override public void run() {
-                        errorMesage("wrong login\\pass");
-                    }
-                });
+            if (isAuthorized) {
+                state = State.CONNECTED;
+    //            Platform.runLater(()-> upperPanelLogged.setDisable(false));
+                Platform.runLater(()-> loginExit());
             }
+        } else if (packet.getPacketType() == PackageType.REG_ACCEPT) {
+            isRegistrated = (Boolean) packet.getOutputPacket();
+            Platform.runLater(() -> infoMesage("User " + loginReg + " successfully registered in FileBox"));
+            Platform.runLater(() -> regExit());
             state = State.CONNECTED;
-
-            upperPanelLogged.setVisible(true);
-            //   upperPanelLogged.setVisible(true);
-            upperPanelLogin.setVisible(false);
         } else {
             writeLog("Exception: Unknown package type :(");
             throw new RuntimeException("Unknown package type");
 
         }
-        writeLog("Upload complete...");
 
     }
-
-
-    @Override
-    public void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {
-        errorMesage(e.getMessage());
-        writeLog("Exception: " + e.getMessage());
-    }
-
 }

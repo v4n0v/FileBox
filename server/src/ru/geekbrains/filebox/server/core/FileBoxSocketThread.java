@@ -30,6 +30,7 @@ public class FileBoxSocketThread extends SocketThread {
         this.isAuthorized = true;
         sendPacket(new AuthAcceptPacket(true));
     }
+
     void authorizeDecline(String login) {
         this.isAuthorized = false;
         sendPacket(new AuthAcceptPacket(true));

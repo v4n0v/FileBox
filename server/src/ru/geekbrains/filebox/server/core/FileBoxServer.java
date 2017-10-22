@@ -4,11 +4,12 @@ import ru.geekbrains.filebox.network.ServerSocketThread;
 import ru.geekbrains.filebox.network.ServerSocketThreadListener;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
-import ru.geekbrains.filebox.network.packet.AbstractPacket;
-import ru.geekbrains.filebox.network.packet.LoginPacket;
+import ru.geekbrains.filebox.network.packet.Packet;
 import ru.geekbrains.filebox.network.packet.packet_container.FileContainer;
 import ru.geekbrains.filebox.network.packet.PackageType;
 import ru.geekbrains.filebox.network.packet.packet_container.LoginContainer;
+import ru.geekbrains.filebox.network.packet.RegAcceptPacket;
+import ru.geekbrains.filebox.network.packet.packet_container.RegContainer;
 import ru.geekbrains.filebox.server.core.authorization.SQLLoginManager;
 
 import java.io.*;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 public class FileBoxServer implements ServerSocketThreadListener, SocketThreadListener {
+
     private final String SERVER_INBOX_PATH =    "server/inbox/";
     private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss: ");
     private final FileBoxServerListener eventListener;
@@ -40,18 +42,14 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     }
 
     public void startListening(int port) {
-//        if(serverSocketThread != null && serverSocketThread.isAlive()) {
-//            putLog("Сервер уже запущен.");
-//            return;
-//        }
+
         if (state != ServerState.WORKING) {
             serverSocketThread = new ServerSocketThread(this, "ServerSocketThread", port, 1000);
             loginManager.init();
             putLog("Server is working");
-//            putLog(loginManager.getMail("admin"));
             state = ServerState.WORKING;
         } else
-            putLog("Server is working.");
+            putLog("Server is already working.");
     }
 
     public void stopListening() {
@@ -150,8 +148,8 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
 
     @Override
-    public synchronized void onReceivePacket(SocketThread socketThread, Socket socket, AbstractPacket packet) {
-        putLog("Packet " + packet.getPacketType());
+    public synchronized void onReceivePacket(SocketThread socketThread, Socket socket, Packet packet) {
+        putLog("Incoming packet type = " + packet.getPacketType());
         FileBoxSocketThread client = (FileBoxSocketThread) socketThread;
         //client.
 
@@ -191,7 +189,20 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             } else {
                 handleNonAuthorizedClient(client, lc);
             }
-        } else {
+        }else if (packet.getPacketType() == PackageType.REGISTRATION) {
+            RegContainer rc = (RegContainer) packet.getOutputPacket();
+            if (!loginManager.isLoginBusy(rc.getLogin())){
+                String l = rc.getLogin();
+                String m = rc.getMail();
+                String p = rc.getPassword();
+                loginManager.addNewUser(rc.getLogin(), rc.getMail(), rc.getPassword());
+                putLog("New user '"+rc.getLogin()+"' resistrated and added to database" );
+                RegAcceptPacket rap = new RegAcceptPacket(true);
+                socketThread.sendPacket(rap);
+            } else {
+                ((FileBoxSocketThread) socketThread).sendError("Login is busy");
+            }
+        }else {
             putLog("Exception: Unknown package type :(");
             throw new RuntimeException("Unknown package type");
 
@@ -202,21 +213,21 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
     }
     private void handleNonAuthorizedClient(FileBoxSocketThread newClient, LoginContainer lc){
-       // String login = loginManager.getLogin(lc.getMail(), lc.getPassword());
-        String login= lc.getMail();
-        boolean isAuth = loginManager.checkLogin(lc.getMail(), lc.getPassword());
-    //    String mail = loginManager.getMail(lc.getMail(), lc.getPassword());
+       // String login = loginManager.getLogin(lc.getLogin(), lc.getPassword());
+        String login= lc.getLogin();
+        boolean isAuth = loginManager.checkLogin(lc.getLogin(), lc.getPassword());
+    //    String mail = loginManager.getLogin(lc.getLogin(), lc.getPassword());
 //        if (login==null){
         if (!isAuth){
             newClient.sendError("Wrong email or password");
-            putLog("Wrong mail\\pass '"+lc.getMail()+"\\"+ lc.getPassword()+"'");
+            putLog("Wrong mail\\pass '"+lc.getLogin()+"\\"+ lc.getPassword()+"'");
             return;
         }
 //        if (mail==null){
 //            newClient.sendError("Wrong email or password");
 //            return;
 //        }
-        FileBoxSocketThread client = getClientByNick(lc.getMail());
+        FileBoxSocketThread client = getClientByNick(lc.getLogin());
         newClient.authorizeAccept();
 
         if (client == null) {

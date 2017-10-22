@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class FileBoxServerGUI extends JFrame implements ActionListener, FileBoxServerListener, Thread.UncaughtExceptionHandler{
 
@@ -17,21 +18,19 @@ public class FileBoxServerGUI extends JFrame implements ActionListener, FileBoxS
     private static final String TITLE = "FileBox Server";
     private static final String START_SERVER = "Start Server";
     private static final String STOP_SERVER = "Stop Server";
-
+    private ArrayList<String> users =new ArrayList<>();
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new FileBoxServerGUI();
-            }
-        });
+        SwingUtilities.invokeLater(()-> new FileBoxServerGUI());
+
     }
     private final FileBoxServer fileBoxServer = new FileBoxServer(this, new SQLLoginManager());
     private final JButton btnStart = new JButton(START_SERVER);
     private final JButton btnStop = new JButton(STOP_SERVER);
     private final JTextArea log = new JTextArea();
-
+    private final JPanel midPanel = new JPanel(new BorderLayout());
+    DefaultListModel listModel = new DefaultListModel();
+    private final JList<String> userList = new JList<>(listModel);
     private FileBoxServerGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -52,6 +51,7 @@ public class FileBoxServerGUI extends JFrame implements ActionListener, FileBoxS
         log.setEditable(false);
         JScrollPane scrollLog = new JScrollPane(log);
         add(scrollLog, BorderLayout.CENTER);
+        add(userList,BorderLayout.EAST);
     }
 
     @Override
