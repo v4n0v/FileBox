@@ -34,11 +34,9 @@ public class SocketThread extends Thread {
             while (!isInterrupted()) {
                 DataInputStream dis = new DataInputStream(socket.getInputStream());
                 ObjectInputStream oin = new ObjectInputStream(dis);
-//                if (oin.readObject()!=null) {
-                System.out.println(oin.readObject());
-                    packet = (Packet) oin.readObject();
-                    eventListener.onReceivePacket(this, socket, packet);
-//                }
+                packet = (Packet) oin.readObject();
+                eventListener.onReceivePacket(this, socket, packet);
+
             }
         } catch (IOException e) {
             eventListener.onExceptionSocketThread(this, socket, e);
@@ -66,7 +64,6 @@ public class SocketThread extends Thread {
     }
 
 
-
     public void sendPacket(Packet outPacket) {
 
         try {
@@ -76,6 +73,7 @@ public class SocketThread extends Thread {
             outD.flush();
         } catch (IOException e) {
             eventListener.onExceptionSocketThread(this, socket, e);
+            close();
         }
 
 

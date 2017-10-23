@@ -112,8 +112,8 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     public void onAcceptedSocket(ServerSocketThread thread, ServerSocket serverSocket, Socket socket) {
         putLog("Client connected: " + socket);
         String threadName = "Socket thread: " + socket.getInetAddress() + ": " + socket.getPort();
-        //  clients.add(new SocketThread(this, threadName, socket));
-//        new SocketThread(this, threadName, socket);
+        //clients.add(new SocketThread(this, threadName, socket));
+      //  new SocketThread(this, threadName, socket);
         new FileBoxSocketThread (this, threadName, socket);
         putLog("socket accepted...");
     }
@@ -151,19 +151,20 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     public synchronized void onReceivePacket(SocketThread socketThread, Socket socket, Packet packet) {
         putLog("Incoming packet type = " + packet.getPacketType());
         FileBoxSocketThread client = (FileBoxSocketThread) socketThread;
-        //client.
 
         if (packet.getPacketType() == PackageType.FILE) {
-//            File folder = new File( "server/inbox/client");
-//            if (!folder.exists()) {
-//                folder.mkdir();
-//            }
+
+            File folder = new File( SERVER_INBOX_PATH+client.getLogin());
+            if (!folder.exists()) {
+                folder.mkdir();
+            }
+
             FileContainer filePackage = (FileContainer) packet.getOutputPacket();
             ArrayList<byte[]> files = filePackage.getFiles();
             ArrayList<String> names = filePackage.getNames();
             for (int i = 0; i < files.size(); i++) {
                 try {
-                    FileOutputStream fos = new FileOutputStream(new File(SERVER_INBOX_PATH + clientPath + names.get(i)));
+                    FileOutputStream fos = new FileOutputStream(new File(folder.getPath()+"\\"+ names.get(i)));
                     fos.write(files.get(i));
                     fos.close();
                     putLog("File '" + names.get(i) + "' received. ");
@@ -211,24 +212,21 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
     private void handleAuthorizedClient(FileBoxSocketThread client){
 
+
     }
     private void handleNonAuthorizedClient(FileBoxSocketThread newClient, LoginContainer lc){
-       // String login = loginManager.getLogin(lc.getLogin(), lc.getPassword());
+
         String login= lc.getLogin();
         boolean isAuth = loginManager.checkLogin(lc.getLogin(), lc.getPassword());
-    //    String mail = loginManager.getLogin(lc.getLogin(), lc.getPassword());
-//        if (login==null){
+
         if (!isAuth){
             newClient.sendError("Wrong email or password");
             putLog("Wrong mail\\pass '"+lc.getLogin()+"\\"+ lc.getPassword()+"'");
             return;
         }
-//        if (mail==null){
-//            newClient.sendError("Wrong email or password");
-//            return;
-//        }
-        FileBoxSocketThread client = getClientByNick(lc.getLogin());
-        newClient.authorizeAccept();
+
+        FileBoxSocketThread client = getClientByNick(login);
+        newClient.authorizeAccept(login);
 
         if (client == null) {
             System.out.println("client connected");
@@ -238,7 +236,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
              client.reconnect();
 
         }
-       // newClient.authorizeAccept();
+
 
     }
 

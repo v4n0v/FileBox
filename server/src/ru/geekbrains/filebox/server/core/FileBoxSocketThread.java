@@ -26,8 +26,9 @@ public class FileBoxSocketThread extends SocketThread {
         sendPacket(new ErrorPacket(msg));
         close();
     }
-    void authorizeAccept() {
+    void authorizeAccept(String login) {
         this.isAuthorized = true;
+        this.login=login;
         sendPacket(new AuthAcceptPacket(true));
     }
 

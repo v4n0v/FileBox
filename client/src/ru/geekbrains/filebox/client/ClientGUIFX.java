@@ -55,7 +55,7 @@ public class ClientGUIFX extends Application implements SocketThreadListener{
         // получаю ссылку на primaryStage, для последующего вызова модального окна
         this.primaryStage=primaryStage;
 
-        Parent root = FXMLLoader.load(getClass().getResource("fxml/loggedClient.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("fxml/logged_client.fxml"));
         primaryStage.setTitle("FileBox");
         primaryStage.setScene(new Scene(root));
         primaryStage.setResizable(false);

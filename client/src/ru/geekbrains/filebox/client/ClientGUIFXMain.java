@@ -9,7 +9,7 @@ import javafx.stage.Stage;
 public class ClientGUIFXMain extends Application{
 
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("fxml/loggedClient.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("fxml/logged_client.fxml"));
         primaryStage.setTitle("FileBox");
         primaryStage.setScene(new Scene(root));
         primaryStage.setResizable(false);
