@@ -1,4 +1,4 @@
-package ru.geekbrains.filebox.client;
+package ru.geekbrains.filebox.client.trash;
 
 import ru.geekbrains.filebox.client.core.FileBoxClient;
 import ru.geekbrains.filebox.network.SocketThread;

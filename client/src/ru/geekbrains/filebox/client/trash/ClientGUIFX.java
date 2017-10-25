@@ -1,4 +1,4 @@
-package ru.geekbrains.filebox.client;
+package ru.geekbrains.filebox.client.trash;
 
 import javafx.application.Application;
 import javafx.fxml.FXML;

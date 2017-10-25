@@ -18,7 +18,7 @@ public class ServerSocketThread extends Thread {
         this.timeout = timeout;
         start();
     }
-
+    // цекл сокета сервера, слушает порт, пока в него не постучит пользователь.
     @Override
     public void run() {
         System.out.println("SST start");
@@ -26,6 +26,7 @@ public class ServerSocketThread extends Thread {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             serverSocket.setSoTimeout(timeout);
             eventListener.onServerSocketThreadReady(this, serverSocket);
+            // постучали, создал новый поток сокета для дальнейшей обработки
             while (!isInterrupted()) {
                 Socket socket;
                 try {

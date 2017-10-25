@@ -23,7 +23,7 @@ public class SocketThread extends Thread {
         start();
     }
 
-
+    // цикл сокета, пока не разорвано соединение он повторяется, ожидая пакет
     @Override
     public void run() {
         eventListener.onStartSocketThread(this);
@@ -63,7 +63,7 @@ public class SocketThread extends Thread {
         }
     }
 
-
+    // отправка пакета
     public void sendPacket(Packet outPacket) {
 
         try {

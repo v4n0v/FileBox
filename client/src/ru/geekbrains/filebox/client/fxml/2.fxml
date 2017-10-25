@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox  prefHeight="630.0" prefWidth="465.0"  xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.ClientGUIFX">
+<VBox  prefHeight="630.0" prefWidth="465.0"  xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.trash.ClientGUIFX">
    <children>
       <GridPane id="upperPanel" prefHeight="100.0" prefWidth="465.0">
          <children>

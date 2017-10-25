@@ -257,9 +257,9 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     }
     // если не авторизован
     private void handleNonAuthorizedClient(FileBoxSocketThread newClient, LoginContainer lc) {
-        // проверяем логин и пароль
+        // проверяем логин и пароль из содержимого полученного пакета
         String login = lc.getLogin();
-        boolean isAuth = loginManager.checkLogin(lc.getLogin(), lc.getPassword());
+        boolean isAuth = loginManager.isLoginAndPassCorrect(lc.getLogin(), lc.getPassword());
         // если данные не верны, отправляем пакет ошибки, что логин\пароль не верны
         if (!isAuth) {
             newClient.sendError("Wrong email or password");

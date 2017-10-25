@@ -68,7 +68,7 @@ public class FileBoxClientStart extends Application {
 
         // Set the application icon.
 //        this.primaryStage.getIcons().add(
-//                new Image("file:resources/images/address_book_32.png"));
+//                new Image("file:resources/images/ico.png"));
 
         initClientLayout();
         controller.initClientLoginLayout();
