@@ -19,7 +19,7 @@
    <children>
       <GridPane id="upperPanel" prefHeight="100.0" prefWidth="465.0">
          <children>
-            <CheckBox id="chbRemember" mnemonicParsing="false" stylesheets="@../css/button.css" text="Remember me" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <CheckBox id="chbRemember" mnemonicParsing="false" stylesheets="@../css/style.css" text="Remember me" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <opaqueInsets>
                   <Insets />
                </opaqueInsets>
@@ -39,7 +39,7 @@
             </PasswordField>
             <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
                <children>
-                  <Button fx:id="btnLogin" onAction="#loginAction" prefHeight="28.0" prefWidth="100.0" stylesheets="@../css/button.css" text="Login">
+                  <Button fx:id="btnLogin" onAction="#loginAction" prefHeight="28.0" prefWidth="100.0" stylesheets="@../css/style.css" text="Login">
                      <HBox.margin>
                         <Insets left="5.0" right="5.0" top="15.0" />
                      </HBox.margin>
@@ -47,7 +47,7 @@
                         <Font name="Verdana Bold" size="12.0" />
                      </font>
                   </Button>
-                  <Button fx:id="btnRegister" onAction="#sendFile" mnemonicParsing="false" prefHeight="28.0" prefWidth="100.0" stylesheets="@../css/button.css" text="Register">
+                  <Button fx:id="btnRegister" onAction="#sendFile" mnemonicParsing="false" prefHeight="28.0" prefWidth="100.0" stylesheets="@../css/style.css" text="Register">
                      <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="15.0" />
                      </HBox.margin>
@@ -66,7 +66,7 @@
       </GridPane>
       <FlowPane prefHeight="504.0" prefWidth="465.0">
          <children>
-            <TableView minWidth="-Infinity" prefHeight="490.0" prefWidth="435.0" stylesheets="@../css/button.css">
+            <TableView minWidth="-Infinity" prefHeight="490.0" prefWidth="435.0" stylesheets="@../css/style.css">
               <columns>
                 <TableColumn prefWidth="205.0" resizable="false" text="File" />
                 <TableColumn editable="false" minWidth="1.0" prefWidth="110.0" resizable="false" sortable="false" text="Date" />

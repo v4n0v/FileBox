@@ -2,6 +2,7 @@ package ru.geekbrains.filebox.client.fxcontrollers;
 
 
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,6 +13,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import ru.geekbrains.filebox.client.FileBoxClientStart;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
@@ -79,6 +81,8 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
     Button btnRename;
 
 
+    @FXML
+    Label lbLastUpd;
     /// регистрацию сую сюда же
     @FXML
     TextField loginRegField;
@@ -102,9 +106,9 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
     public void setMainApp(FileBoxClientStart mainApp) {
         this.mainApp = mainApp;
-  //     this.socketThread=mainApp.getSocketThread();
+        //     this.socketThread=mainApp.getSocketThread();
     }
-
+    // общий метод создания инфоокна
     private void alertWindow(String title, String msg, Alert.AlertType type) {
         alert = new Alert(type);
         alert.setTitle(title);
@@ -112,15 +116,15 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
         alert.setContentText(msg);
         alert.showAndWait();
     }
-
+    // инфоокно об ошибке
     private void errorMesage(String msg) {
         alertWindow("Error", msg, Alert.AlertType.ERROR);
     }
-
+    // инфоокно с сообщение
     private void infoMesage(String msg) {
         alertWindow("Info", msg, Alert.AlertType.INFORMATION);
     }
-
+    // добавляем пользователя
     public void addUser() {
         String pass2Reg;
         loginReg = loginRegField.getText();
@@ -141,27 +145,27 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
             }
         }
     }
-
+    // отработка нажатия на cancel
     public void regExit() {
         Stage stage = (Stage) exit.getScene().getWindow();
         stage.close();
     }
-
+    // прячем окно логина
     public void loginHide() {
         Stage stage = (Stage) rootElement.getScene().getWindow();
-        stage.hide();
+
+//        stage.hide();
+        stage.close();
     }
 
     public void loginShow() {
-//        Stage stage = (Stage) rootElement.getScene().getWindow();
-//        stage.showAndWait();
         initClientLoginLayout();
     }
-    // конец регистрации
+
 
     public void registerNew() {
         Stage stage = (Stage) reg.getScene().getWindow();
-//        stage.hide();
+
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/registration.fxml"));
         Parent root1 = null;
         try {
@@ -179,7 +183,11 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
         registrStage.show();
 
     }
+    // ссылка на элемент модального окна дляполучения ссылки на общий элемент класса mainApp
     private VBox loginRootElement;
+
+
+    /// инициализация модального окна логина, в которое передается ссылка на mainApp
     public void initClientLoginLayout() {
         try {
             // новое окно логина
@@ -190,8 +198,10 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
             loaderLog.setLocation(FileBoxClientStart.class.getResource("fxml/login_modal.fxml"));
             loginRootElement = (VBox) loaderLog.load();
             ClientController controller = loaderLog.getController();
+            // получаем ссылку у контроллера окна
             controller.setMainApp(mainApp);
             stage.setTitle("Login");
+            stage.setOnCloseRequest((event) -> event.consume());
 
             stage.setResizable(false);
             Scene sceneLog = new Scene(loginRootElement);
@@ -205,10 +215,12 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
     }
 
+    // установка соединения с сервером
     public void connect() {
         try {
             Socket socket = new Socket(IP, PORT);
             socketThread = new SocketThread(this, "SocketThread", socket);
+            // устанавливаем в mainApp ссылку на полученный поток сокета
             mainApp.setSocketThread(socketThread);
         } catch (IOException e) {
             e.printStackTrace();
@@ -218,12 +230,13 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
     }
 
+    // закрытие соединения
     private void disconect() {
-//        socketThread=mainApp.getSocketThread();
-//        socketThread.close();
+
         mainApp.getSocketThread().close();
     }
 
+    // меоды обработки нажатия на кнопку
     public void renameFile() {
         System.out.println("rename");
     }
@@ -236,49 +249,56 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
         System.out.println("download");
     }
 
+    //загрузка файла на сервер
     public void uploadFile() {
         sendFile();
         System.out.println("upload");
+        lastUpdate();
     }
 
     public void openOptions() {
         System.out.println("options");
     }
 
+    // отсоединение от сервера, открытие окна логина
     public void logOut() throws Exception {
 
         System.out.println("Client logOut");
         disconect();
         writeLog("Client LogOut");
-//        Stage mystage = (Stage) loggedRootElement.getScene().getWindow();
-//        mystage.close();
+
         loginShow();
     }
 
+
+    // оправка логниа пароля для аутентификации
     public void loginToFileBox() {
+        // если поля не пусты
         if (!fieldLogin.getText().isEmpty() || !fieldLogin.getText().isEmpty()) {
             login = fieldLogin.getText();
             password = fieldPass.getText();
-            state=State.LOGIN;
 
+            // меняем статус скиента и соединяемся
+            state = State.LOGIN;
             connect();
+
         } else {
-//            Alert alert = new Alert(Alert.AlertType.WARNING);
-//            alert.setTitle("Warning");
-//            alert.setHeaderText(null);
-//            alert.setContentText("Fill mail and password fields");
-//            alert.showAndWait();
+
             alertWindow("Warning", "Fill mail and password fields", Alert.AlertType.WARNING);
         }
-        //   connect();
+
     }
 
+    // отправка файла
     public void sendFile() {
-        socketThread=mainApp.getSocketThread();
+        // получаем ссылку на сокет
+        socketThread = mainApp.getSocketThread();
+        // выбираем файл
         FileChooser fileChooser = new FileChooser();
         List<File> list = fileChooser.showOpenMultipleDialog(null);
         FileContainer fileContainer = new FileContainer();
 
+        // подсчитываем кол-во файлов и проверяем размер каждого файла
         for (int i = 0; i < list.size(); i++) {
             File file = list.get(i);
             if (file.length() > MAX_FILE_SIZE) {
@@ -286,6 +306,7 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
                 writeLog(file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
                 continue;
             }
+            // если файл подходящего размера, упаковываем в пакер
             try {
                 fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName());
                 filePacket = new FilePacket(fileContainer);
@@ -293,11 +314,13 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
                 e.printStackTrace();
             }
             writeLog("Sending packet. Type: " + filePacket.getPacketType());
+            // логируем  и отправляем
             socketThread.sendPacket(filePacket);
         }
 
     }
 
+    // логирование событий в log файл
     private void writeLog(String msg) {
         msg = dateFormat.format(System.currentTimeMillis()) + msg;
         try {
@@ -317,6 +340,7 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
     }
 
+    // оверайдим обработчик исключений
     @Override
     public void uncaughtException(Thread t, Throwable e) {
         e.printStackTrace();
@@ -333,13 +357,16 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
         System.exit(1);
     }
 
-
+    // методы интерфейса SocketThread
     @Override
+    // что просходит в клиенте, при соединениии
+    // начали соединение
     public void onStartSocketThread(SocketThread socketThread) {
         writeLog(
                 "Socket started");
     }
 
+    // соединение закончено
     @Override
     public void onStopSocketThread(SocketThread socketThread) {
         isAuthorized = false;
@@ -347,6 +374,7 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
     }
 
+    // соединение установлено
     @Override
     public void onReadySocketThread(SocketThread socketThread, Socket socket) {
         writeLog("Connection to server complete!");
@@ -365,6 +393,7 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
     }
 
+    // получили пакет c сервера
     @Override
     public void onReceivePacket(SocketThread socketThread, Socket socket, Packet packet) {
         handlePacket(packet);
@@ -372,16 +401,24 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
     }
 
-
+    // прилетело исключение
     @Override
     public void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {
         Platform.runLater(() -> errorMesage(e.getMessage()));
         writeLog("Exception: " + e.getMessage());
     }
 
+    // обрабатываем полученный пакет
     private void handlePacket(Packet packet) {
+//        PackageType type = packet.getPacketType();
+//        switch (type) {
+//            case PackageType.LOGIN:
+//                break;
+//        }
+        // если в полученном пакете файл
         if (packet.getPacketType() == PackageType.FILE) {
             FileContainer filePackage = (FileContainer) packet.getOutputPacket();
+            //получили список имен и файлов и записали их на диск
             ArrayList<byte[]> files = filePackage.getFiles();
             ArrayList<String> names = filePackage.getNames();
             for (int i = 0; i < files.size(); i++) {
@@ -396,25 +433,38 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
                     return;
                 }
             }
+            // если получили сообщение, отрыли информационное окно
         } else if (packet.getPacketType() == PackageType.MESSAGE) {
+            String msg = (String) packet.getOutputPacket();
+            Platform.runLater(() -> infoMesage(msg));
             writeLog("MESSAGE received");
+
+            // получили список файлов в "облаке"
         } else if (packet.getPacketType() == PackageType.FILE_LIST) {
+            ArrayList<String> fileList = (ArrayList<String>) packet.getOutputPacket();
+            //      Platform.runLater(() -> lastUpdate());
             writeLog("FILE_LIST received");
+            // прилетела ошибка на сервере, открыли окно об ошибкке
         } else if (packet.getPacketType() == PackageType.ERROR) {
             errorMsg = (String) packet.getOutputPacket();
             state = State.ERROR;
             writeLog(errorMsg);
             Platform.runLater(() -> errorMesage(errorMsg));
+        // такое сообщение не должно придти
         } else if (packet.getPacketType() == PackageType.LOGIN) {
             LoginContainer lc = (LoginContainer) packet.getOutputPacket();
+         //сервер одбрил логин и парроль
         } else if (packet.getPacketType() == PackageType.AUTH_ACCEPT) {
             isAuthorized = (Boolean) packet.getOutputPacket();
             if (isAuthorized) {
                 state = State.CONNECTED;
-                //            Platform.runLater(()-> upperPanelLogged.setDisable(false));
-                  Platform.runLater(()-> loginHide());
+
+                Platform.runLater(() -> loginHide());
+                FileListPacket fileListRequest = new FileListPacket(null);
+                socketThread.sendPacket(fileListRequest);
 
             }
+            // зарегистрировали нового пользователя
         } else if (packet.getPacketType() == PackageType.REG_ACCEPT) {
             isRegistrated = (Boolean) packet.getOutputPacket();
             Platform.runLater(() -> infoMesage("User " + loginReg + " successfully registered in FileBox"));
@@ -431,5 +481,14 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
         }
 
+    }
+
+    // обновлени даты последнего обновления
+    private synchronized void lastUpdate() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM' at ' HH:mm:ss ");
+
+        String upd = lbLastUpd.getText();
+        upd += dateFormat.format(System.currentTimeMillis());
+        lbLastUpd.setText(upd);
     }
 }

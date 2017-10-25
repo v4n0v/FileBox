@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<!--
+<VBox fx:id="registration_user" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="212.0" prefWidth="286.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.RegistrationController">
+-->
+<VBox fx:id="registration_user" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="212.0" prefWidth="286.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.ClientController">
+   <children>
+      <TextField id="loginField " fx:id="loginRegField" promptText="login" styleClass="text-field-with-margin" stylesheets="@../css/registration.css">
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin> </TextField>
+      <TextField id="mailField " fx:id="mailRegField" promptText="email">
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin></TextField>
+      <PasswordField id="pass1Field " fx:id="pass1RegField" layoutX="10.0" layoutY="69.0" promptText="passsword: ">
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin></PasswordField>
+      <PasswordField id="pass2Field " fx:id="pass2RegField" layoutX="10.0" layoutY="111.0" promptText="repeat password">
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin></PasswordField>
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Button fx:id="addNew" mnemonicParsing="false" onAction="#addUser" prefHeight="47.0" prefWidth="181.0" stylesheets="@../css/style.css" text="Registration">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin></Button>
+            <Button fx:id="exit" mnemonicParsing="false" onAction="#regExit" prefHeight="50.0" prefWidth="135.0" stylesheets="@../css/style.css" text="Cancel" textAlignment="CENTER">
+               <HBox.margin>
+                  <Insets left="60.0" />
+               </HBox.margin></Button>
+         </children>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+      </HBox>
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="15.0" right="15.0" top="15.0" />
+   </padding>
+</VBox>

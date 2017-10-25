@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.image.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
@@ -14,20 +20,12 @@
 
 <!---<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="115.0" prefWidth="460.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.ClientGUIFX">-->
 
-<VBox fx:id="rootElement" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="115.0" prefWidth="490.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.ClientController">
+<VBox fx:id="rootElement" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="101.0" prefWidth="490.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.ClientController">
    <!--<VBox fx:id="rootElement" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="115.0" prefWidth="490.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.LoginController">-->
 
       <children>
-         <GridPane id="upperPanel" layoutX="10.0" layoutY="10.0" prefHeight="94.0" prefWidth="435.0">
+         <GridPane id="upperPanel" layoutX="10.0" layoutY="10.0" prefHeight="94.0" prefWidth="490.0">
             <children>
-               <CheckBox id="chbRemember" mnemonicParsing="false" stylesheets="@../css/button.css" text="Remember me" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                  <opaqueInsets>
-                     <Insets />
-                  </opaqueInsets>
-                  <GridPane.margin>
-                     <Insets left="5.0" />
-                  </GridPane.margin>
-               </CheckBox>
                <TextField id="fieldLogin" fx:id="fieldLogin" promptText="admin">
                   <GridPane.margin>
                      <Insets left="15.0" right="10.0" top="10.0" />
@@ -46,18 +44,45 @@
                </PasswordField>
                <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
                   <children>
-                     <Button id="btnLogin" mnemonicParsing="false" onAction="#loginToFileBox" prefHeight="28.0" prefWidth="100.0" stylesheets="@../css/button.css" text="Login">
+                     <Button id="btnLogin" mnemonicParsing="false" onAction="#loginToFileBox" prefHeight="28.0" prefWidth="100.0" stylesheets="@../css/style.css" text="Login">
                         <font>
                            <Font name="Verdana Bold" size="12.0" />
                         </font>
                         <HBox.margin>
-                           <Insets left="5.0" right="5.0" top="15.0" />
+                           <Insets top="15.0" />
                         </HBox.margin>
                      </Button> <!--onAction="#sendFile"-->
-                  <Button id="btnRegister" fx:id="reg" mnemonicParsing="false" onAction="#registerNew" prefHeight="28.0" prefWidth="100.0" stylesheets="@../css/button.css" text="Register">
+                  <Button id="btnRegister" fx:id="reg" mnemonicParsing="false" onAction="#registerNew" prefHeight="28.0" prefWidth="100.0" stylesheets="@../css/style.css" text="Register">
                      <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="15.0" />
+                        <Insets left="25.0" right="5.0" top="15.0" />
                      </HBox.margin>
+                  </Button>
+               </children>
+            </HBox>
+            <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <children>
+                     <CheckBox id="chbRemember" mnemonicParsing="false" stylesheets="@../css/style.css" text="Remember me">
+                        <opaqueInsets>
+                           <Insets />
+                        </opaqueInsets>
+                     <HBox.margin>
+                        <Insets top="15.0" />
+                     </HBox.margin>
+                     </CheckBox>
+                  <Button id="btnLogin" fx:id="btnExit" mnemonicParsing="false" prefHeight="28.0" prefWidth="14.0" stylesheets="@../css/style.css">
+                     <font>
+                        <Font name="Verdana Bold" size="12.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets left="70.0" top="8.0" />
+                     </HBox.margin>
+                     <graphic>
+                        <ImageView fitHeight="20.0" fitWidth="20.0">
+                           <image>
+                              <Image url="@../img/exit.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
                   </Button>
                </children>
             </HBox>
