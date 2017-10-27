@@ -1,5 +1,28 @@
 *{
--fx-font-family: Verdana, sans-serif;
--fx-font-weight:bold;
--fx-text-fill:#818181;
+ -fx-font-family: Verdana, sans-serif;
+}
+.fontverdabold{
+    -fx-font-weight:bold;
+    -fx-text-fill:#818181;
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color:#818181;
+}
+
+.table-view {
+    -fx-table-cell-border-color: transparent;
+    -fx-table-header-border-color: transparent;
+    -fx-padding: 5;
+    -fx-text-fill: red;
+}
+.table-view:focused .table-row-cell:filled:focused:selected {
+    -fx-background-color: #818181;
+}
+.table-row-cell:filled:focused:selected {
+    -fx-text-fill: red;
+}
+
+#lastUpd{
+     -fx-font-weight:bold;
+    -fx-font-size: 9;
+    -fx-text-fill:#818181;
 }

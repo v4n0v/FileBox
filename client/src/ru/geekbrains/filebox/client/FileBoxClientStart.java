@@ -26,7 +26,9 @@ public class FileBoxClientStart extends Application {
     public Stage getPrimaryStage() {
         return primaryStage;
     }
-
+    public FileBoxClientStart getMainApp(){
+        return this;
+    }
     public void setFileListData(ObservableList<FileListElement> fileListData) {
         this.fileListData = fileListData;
     }
@@ -90,13 +92,16 @@ public class FileBoxClientStart extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
-        this.primaryStage.setTitle("FileBoxClient");
+        this.primaryStage.setTitle("FileBoxClientManager");
 
         // Set the application icon.
 //        this.primaryStage.getIcons().add(
 //                new Image("file:resources/images/ico.png"));
         initClientLayout();
+    //    loadFileListDataFromFile();
         controller.initClientLoginLayout();
+        controller.updateTable();
+        controller.lastUpdate();
     }
 
     public File getFileListFilePath() {
@@ -131,12 +136,14 @@ public class FileBoxClientStart extends Application {
     }
 
 
-    public void loadFileListDataFromFile(File file) {
+//    public void loadFileListDataFromFile(File file) {
+    public void loadFileListDataFromFile( ) {
         try {
             JAXBContext context = JAXBContext
                     .newInstance(FileListWrapper.class);
             Unmarshaller um = context.createUnmarshaller();
-
+            File file = new File("fblist.xml");
+            System.out.println(file.getAbsolutePath());
             // Reading XML from the file and unmarshalling.
             FileListWrapper wrapper = (FileListWrapper) um.unmarshal(file);
 

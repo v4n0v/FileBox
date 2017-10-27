@@ -26,7 +26,7 @@
       <children>
          <GridPane id="upperPanel" layoutX="10.0" layoutY="10.0" prefHeight="94.0" prefWidth="490.0">
             <children>
-               <TextField id="fieldLogin" fx:id="fieldLogin" promptText="admin">
+               <TextField id="fieldLogin" fx:id="fieldLogin" styleClass="fontverdabold" promptText="admin">
                   <GridPane.margin>
                      <Insets left="15.0" right="10.0" top="10.0" />
                   </GridPane.margin>
@@ -34,7 +34,7 @@
                      <Font size="14.0" />
                   </font>
                </TextField>
-               <PasswordField id="fieldPass" fx:id="fieldPass" promptText="12345" GridPane.rowIndex="1">
+               <PasswordField id="fieldPass" fx:id="fieldPass" styleClass="fontverdabold" promptText="12345" GridPane.rowIndex="1">
                   <GridPane.margin>
                      <Insets left="15.0" right="10.0" />
                   </GridPane.margin>
@@ -44,7 +44,7 @@
                </PasswordField>
                <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
                   <children>
-                     <Button id="btnLogin" mnemonicParsing="false" onAction="#loginToFileBox" prefHeight="28.0" prefWidth="100.0" stylesheets="@../css/style.css" text="Login">
+                     <Button id="btnLogin" mnemonicParsing="false" styleClass="fontverdabold" onAction="#loginToFileBox" prefHeight="28.0" prefWidth="100.0" stylesheets="@../css/style.css" text="Login">
                         <font>
                            <Font name="Verdana Bold" size="12.0" />
                         </font>
@@ -52,7 +52,7 @@
                            <Insets top="15.0" />
                         </HBox.margin>
                      </Button> <!--onAction="#sendFile"-->
-                  <Button id="btnRegister" fx:id="reg" mnemonicParsing="false" onAction="#registerNew" prefHeight="28.0" prefWidth="100.0" stylesheets="@../css/style.css" text="Register">
+                  <Button id="btnRegister" fx:id="reg" styleClass="fontverdabold" mnemonicParsing="false" onAction="#registerNew" prefHeight="28.0" prefWidth="100.0" stylesheets="@../css/style.css" text="Register">
                      <HBox.margin>
                         <Insets left="25.0" right="5.0" top="15.0" />
                      </HBox.margin>
@@ -61,7 +61,7 @@
             </HBox>
             <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <children>
-                     <CheckBox id="chbRemember" mnemonicParsing="false" stylesheets="@../css/style.css" text="Remember me">
+                     <CheckBox id="chbRemember" styleClass="fontverdabold"  mnemonicParsing="false" stylesheets="@../css/style.css" text="Remember me">
                         <opaqueInsets>
                            <Insets />
                         </opaqueInsets>
@@ -69,10 +69,8 @@
                         <Insets top="15.0" />
                      </HBox.margin>
                      </CheckBox>
-                  <Button id="btnLogin" fx:id="btnExit" mnemonicParsing="false" prefHeight="28.0" prefWidth="14.0" stylesheets="@../css/style.css" visible="false">
-                     <font>
-                        <Font name="Verdana Bold" size="12.0" />
-                     </font>
+                  <Button id="btnLogin" fx:id="btnExit" styleClass="fontverdabold" mnemonicParsing="false" prefHeight="28.0" prefWidth="14.0" stylesheets="@../css/style.css" visible="false">
+
                      <HBox.margin>
                         <Insets left="70.0" top="8.0" />
                      </HBox.margin>

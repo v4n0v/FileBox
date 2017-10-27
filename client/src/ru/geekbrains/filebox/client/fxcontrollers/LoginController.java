@@ -29,23 +29,23 @@ public class LoginController {
 
     public void loginToFileBox() throws Exception {
 
-        Stage mystage = (Stage) rootElement.getScene().getWindow();
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/logged_client.fxml"));
-        Parent root = fxmlLoader.load();
-
-        ClientController cm = (ClientController) fxmlLoader.getController();
-        if (!fieldLogin.getText().isEmpty()||!fieldLogin.getText().isEmpty()) {
-            cm.login = fieldLogin.getText();
-            cm.password = fieldPass.getText();
-            cm.connect();
-            mystage.hide();
-        } else {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Warning");
-            alert.setHeaderText(null);
-            alert.setContentText("Fill mail and password fields");
-            alert.showAndWait();
-        }
+//        Stage mystage = (Stage) rootElement.getScene().getWindow();
+//        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/logged_client.fxml"));
+//        Parent root = fxmlLoader.load();
+//
+//        ClientController cm = (ClientController) fxmlLoader.getController();
+//        if (!fieldLogin.getText().isEmpty()||!fieldLogin.getText().isEmpty()) {
+//            cm.login = fieldLogin.getText();
+//            cm.password = fieldPass.getText();
+//            cm.connect();
+//            mystage.hide();
+//        } else {
+//            Alert alert = new Alert(Alert.AlertType.WARNING);
+//            alert.setTitle("Warning");
+//            alert.setHeaderText(null);
+//            alert.setContentText("Fill mail and password fields");
+//            alert.showAndWait();
+//        }
     }
 
 

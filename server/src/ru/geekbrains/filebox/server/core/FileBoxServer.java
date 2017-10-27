@@ -13,6 +13,9 @@ import ru.geekbrains.filebox.server.core.authorization.SQLLoginManager;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -175,11 +178,14 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             FileContainer filePackage = (FileContainer) packet.getOutputPacket();
             ArrayList<byte[]> files = filePackage.getFiles();
             ArrayList<String> names = filePackage.getNames();
+            Path path;
             for (int i = 0; i < files.size(); i++) {
                 try {
-                    FileOutputStream fos = new FileOutputStream(new File(folder.getPath() + "\\" + names.get(i)));
-                    fos.write(files.get(i));
-                    fos.close();
+                    path = Paths.get(folder.getPath() + "\\" + names.get(i));
+                    Files.write(path, files.get(i));
+//                    FileOutputStream fos = new FileOutputStream(new File(folder.getPath() + "\\" + names.get(i)));
+//                    fos.write(files.get(i));
+//                    fos.close();
                     putLog("File '" + names.get(i) + "' received. ");
                 } catch (IOException e) {
 
@@ -236,11 +242,13 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
         }
     }
+
     // если клиент уже автроризован
     private void handleAuthorizedClient(FileBoxSocketThread client) {
 
 
     }
+
     // если не авторизован
     private void handleNonAuthorizedClient(FileBoxSocketThread newClient, LoginContainer lc) {
         // проверяем логин и пароль из содержимого полученного пакета
@@ -270,11 +278,13 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
     }
 
-    private void sendFileList(SocketThread socketThread, FileBoxSocketThread client){
+    private void sendFileList(SocketThread socketThread, FileBoxSocketThread client) {
         putLog("FILE_LIST request received");
         File clientFolder = new File(SERVER_INBOX_PATH + client.getLogin());
         // создаем списаок
-        File[] fList; String name; long len;
+        File[] fList;
+        String name;
+        long len;
         fList = clientFolder.listFiles();
         ArrayList<String> fileList = new ArrayList<>();
         FileListContainer fc = new FileListContainer();
@@ -285,7 +295,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
                 //     fileList.add(fList[i].getName());
                 name = fList[i].getName();
                 len = fList[i].length();
-                FileListElement element =new FileListElement(fList[i].getName(), fList[i].length());
+                FileListElement element = new FileListElement(fList[i].getName(), fList[i].length());
                 fc.add(element);
             }
         }
@@ -313,25 +323,3 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     }
 
 }
-
-//
-//    ObservableList<FileListElement> fileListData = FXCollections.observableArrayList();
-//    // FileListElement fileListElement = new FileListElement();
-//    putLog("FILE_LIST request received");
-//    File clientFolder = new File(SERVER_INBOX_PATH + client.getLogin());
-//    // создаем списаок
-//    File[] fList;
-//            fList = clientFolder.listFiles();
-//                    ArrayList<String> fileList = new ArrayList<>();
-//
-//        FileListContainer fc = new FileListContainer();
-//        for (int i = 0; i < fList.length; i++) {
-//        //Нужны только папки в место isFile() пишим isDirectory()
-//        if (fList[i].isFile())
-////                    info(String.valueOf(i) + " - " + fList[i].getName());
-//        fileList.add(fList[i].getName());
-//        fc.add(new FileListElement(fList[i].getName(), fList[i].length()));
-//        }
-//        //отправляем список
-//        FileListPacket fileListRequest = new FileListPacket(fc);
-//        socketThread.sendPacket(fileListRequest);
