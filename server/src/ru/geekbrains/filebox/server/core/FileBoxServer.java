@@ -1,13 +1,13 @@
 package ru.geekbrains.filebox.server.core;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import ru.geekbrains.filebox.network.ServerSocketThread;
 import ru.geekbrains.filebox.network.ServerSocketThreadListener;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
 import ru.geekbrains.filebox.network.packet.*;
-import ru.geekbrains.filebox.network.packet.packet_container.FileContainer;
-import ru.geekbrains.filebox.network.packet.packet_container.LoginContainer;
-import ru.geekbrains.filebox.network.packet.packet_container.RegContainer;
+import ru.geekbrains.filebox.network.packet.packet_container.*;
 import ru.geekbrains.filebox.server.core.authorization.SQLLoginManager;
 
 import java.io.*;
@@ -194,6 +194,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             }
             //отправляем пользователю сообщение об успешной загрузки
             filesStr += "upload complete";
+            sendFileList(socketThread, client);
             MessagePacket msgPkt = new MessagePacket(filesStr);
             // сообщение от пользователя
         } else if (packet.getPacketType() == PackageType.MESSAGE) {
@@ -201,22 +202,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
             // пользователь запросил список файлов
         } else if (packet.getPacketType() == PackageType.FILE_LIST) {
-            putLog("FILE_LIST request received");
-            File clientFolder = new File(SERVER_INBOX_PATH + client.getLogin());
-            // создаем списаок
-            File[] fList;
-            fList = clientFolder.listFiles();
-            ArrayList<String> fileList = new ArrayList<>();
-            for (int i = 0; i < fList.length; i++) {
-                //Нужны только папки в место isFile() пишим isDirectory()
-                if (fList[i].isFile())
-//                    info(String.valueOf(i) + " - " + fList[i].getName());
-                    fileList.add(fList[i].getName());
-            }
-            //отправляем список
-            FileListPacket fileListRequest = new FileListPacket(fileList);
-            socketThread.sendPacket(fileListRequest);
-
+            sendFileList(socketThread, client);
             // сообщение об ощибке
         } else if (packet.getPacketType() == PackageType.ERROR) {
             putLog("ERROR received");
@@ -283,6 +269,31 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
 
     }
+
+    private void sendFileList(SocketThread socketThread, FileBoxSocketThread client){
+        putLog("FILE_LIST request received");
+        File clientFolder = new File(SERVER_INBOX_PATH + client.getLogin());
+        // создаем списаок
+        File[] fList; String name; long len;
+        fList = clientFolder.listFiles();
+        ArrayList<String> fileList = new ArrayList<>();
+        FileListContainer fc = new FileListContainer();
+        for (int i = 0; i < fList.length; i++) {
+            //Нужны только папки в место isFile() пишим isDirectory()
+            if (fList[i].isFile()) {
+//                    info(String.valueOf(i) + " - " + fList[i].getName());
+                //     fileList.add(fList[i].getName());
+                name = fList[i].getName();
+                len = fList[i].length();
+                FileListElement element =new FileListElement(fList[i].getName(), fList[i].length());
+                fc.add(element);
+            }
+        }
+        //отправляем список
+        FileListPacket fileListRequest = new FileListPacket(fc);
+        socketThread.sendPacket(fileListRequest);
+    }
+
     // ищем поток клиента по нику
     public FileBoxSocketThread getClientByNick(String nickname) {
         final int cnt = clients.size();
@@ -302,3 +313,25 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     }
 
 }
+
+//
+//    ObservableList<FileListElement> fileListData = FXCollections.observableArrayList();
+//    // FileListElement fileListElement = new FileListElement();
+//    putLog("FILE_LIST request received");
+//    File clientFolder = new File(SERVER_INBOX_PATH + client.getLogin());
+//    // создаем списаок
+//    File[] fList;
+//            fList = clientFolder.listFiles();
+//                    ArrayList<String> fileList = new ArrayList<>();
+//
+//        FileListContainer fc = new FileListContainer();
+//        for (int i = 0; i < fList.length; i++) {
+//        //Нужны только папки в место isFile() пишим isDirectory()
+//        if (fList[i].isFile())
+////                    info(String.valueOf(i) + " - " + fList[i].getName());
+//        fileList.add(fList[i].getName());
+//        fc.add(new FileListElement(fList[i].getName(), fList[i].length()));
+//        }
+//        //отправляем список
+//        FileListPacket fileListRequest = new FileListPacket(fc);
+//        socketThread.sendPacket(fileListRequest);

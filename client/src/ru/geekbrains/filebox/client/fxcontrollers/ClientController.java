@@ -2,38 +2,48 @@ package ru.geekbrains.filebox.client.fxcontrollers;
 
 
 import javafx.application.Platform;
-import javafx.event.EventHandler;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import ru.geekbrains.filebox.client.FileBoxClientStart;
+import ru.geekbrains.filebox.client.core.FileListXMLElement;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
 import ru.geekbrains.filebox.network.packet.*;
 import ru.geekbrains.filebox.network.packet.packet_container.FileContainer;
+import ru.geekbrains.filebox.network.packet.packet_container.FileListContainer;
+import ru.geekbrains.filebox.network.packet.packet_container.FileListElement;
 import ru.geekbrains.filebox.network.packet.packet_container.LoginContainer;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 public class ClientController implements SocketThreadListener, Thread.UncaughtExceptionHandler {
+
+
     enum State {CONNECTED, NOT_CONNECTED, ERROR, LOGIN, REGISTRATION, REGISTERED}
 
-    public State state = State.NOT_CONNECTED;
+    private State state = State.NOT_CONNECTED;
 
     private final static String IP = "localhost";
     private boolean isRegistrated;
@@ -42,7 +52,6 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
     private final static int MAX_PASS_LENGTH = 32;
     private boolean isAuthorized;
     private final static int PORT = 8189;
-    private FileWriter logFile;
     private PrintWriter log;
     private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss: ");
     public String login;
@@ -50,15 +59,11 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
     private final static long MAX_FILE_SIZE = 5_242_880;
 
-    public void setSocketThread(SocketThread socketThread) {
-        this.socketThread = socketThread;
-    }
 
-    private SocketThread socketThread;
-    private Socket socket;
+
 
     private FilePacket filePacket;
-    private MessagePacket messagePacket;
+
 
     @FXML
     VBox loggedRootElement;
@@ -184,8 +189,39 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
     }
     // ссылка на элемент модального окна дляполучения ссылки на общий элемент класса mainApp
+    @FXML
     private VBox loginRootElement;
 
+
+   @FXML
+   private TableView<FileListElement> tblContent;
+    @FXML
+    private TableColumn<FileListElement, String> fileNameColumn;
+    @FXML
+    private TableColumn<FileListElement, Long> sizeColumn;
+
+
+
+    private void updateTable() {
+        // Initialize the person table with the two columns.
+//        fileNameColumn.setCellValueFactory(
+//                cellData -> cellData.getValue().getFileName());
+//        sizeColumn.setCellValueFactory(
+//                 cellData -> (Long)cellData.getValue().getFileSize());
+//
+//        /// Clear person details.
+//        showFilelistDetails(null);
+//
+//         ///Listen for selection changes and show the person details when changed.
+//        tblContent.getSelectionModel().selectedItemProperty().addListener(
+//                (observable, oldValue, newValue) -> showFilelistDetails(newValue));
+        tblContent.setEditable(false);
+        fileNameColumn.setCellValueFactory(new PropertyValueFactory<FileListElement, String>("fileName"));
+        sizeColumn.setCellValueFactory(new PropertyValueFactory<FileListElement, Long>("fileSize"));
+        tblContent.setItems(mainApp.fileListData);
+
+        System.out.println();
+    }
 
     /// инициализация модального окна логина, в которое передается ссылка на mainApp
     public void initClientLoginLayout() {
@@ -201,7 +237,7 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
             // получаем ссылку у контроллера окна
             controller.setMainApp(mainApp);
             stage.setTitle("Login");
-            stage.setOnCloseRequest((event) -> event.consume());
+            stage.setOnCloseRequest((event) -> mainApp.getPrimaryStage().close());
 
             stage.setResizable(false);
             Scene sceneLog = new Scene(loginRootElement);
@@ -219,9 +255,9 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
     public void connect() {
         try {
             Socket socket = new Socket(IP, PORT);
-            socketThread = new SocketThread(this, "SocketThread", socket);
+            mainApp.socketThread = new SocketThread(this, "SocketThread", socket);
             // устанавливаем в mainApp ссылку на полученный поток сокета
-            mainApp.setSocketThread(socketThread);
+           // mainApp.setSocketThread(socketThread);
         } catch (IOException e) {
             e.printStackTrace();
             errorMesage(e.getMessage());
@@ -233,12 +269,14 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
     // закрытие соединения
     private void disconect() {
 
-        mainApp.getSocketThread().close();
+        mainApp.socketThread.close();
     }
 
     // меоды обработки нажатия на кнопку
     public void renameFile() {
+
         System.out.println("rename");
+        updateTable();
     }
 
     public void deleteFile() {
@@ -292,7 +330,7 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
     // отправка файла
     public void sendFile() {
         // получаем ссылку на сокет
-        socketThread = mainApp.getSocketThread();
+        //socketThread = mainApp.getSocketThread();
         // выбираем файл
         FileChooser fileChooser = new FileChooser();
         List<File> list = fileChooser.showOpenMultipleDialog(null);
@@ -306,7 +344,7 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
                 writeLog(file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
                 continue;
             }
-            // если файл подходящего размера, упаковываем в пакер
+            // если файл подходящего размера, упаковываем в пакет
             try {
                 fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName());
                 filePacket = new FilePacket(fileContainer);
@@ -315,7 +353,7 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
             }
             writeLog("Sending packet. Type: " + filePacket.getPacketType());
             // логируем  и отправляем
-            socketThread.sendPacket(filePacket);
+            mainApp.socketThread.sendPacket(filePacket);
         }
 
     }
@@ -324,7 +362,7 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
     private void writeLog(String msg) {
         msg = dateFormat.format(System.currentTimeMillis()) + msg;
         try {
-            logFile = new FileWriter("client.log", true);
+            FileWriter logFile = new FileWriter("client.log", true);
             log = new PrintWriter((java.io.Writer) logFile);
         } catch (IOException e) {
             log.printf(msg);
@@ -380,11 +418,11 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
         writeLog("Connection to server complete!");
         if (state == State.REGISTRATION) {
             AddUserPacket addUserPacket = new AddUserPacket(loginReg, mailReg, pass1Reg);
-            socketThread.sendPacket(addUserPacket);
+            mainApp.socketThread.sendPacket(addUserPacket);
         } else {
 
             LoginPacket loginPacket = new LoginPacket(login, password);
-            socketThread.sendPacket(loginPacket);
+            mainApp.socketThread.sendPacket(loginPacket);
         }
     }
 
@@ -441,8 +479,20 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
             // получили список файлов в "облаке"
         } else if (packet.getPacketType() == PackageType.FILE_LIST) {
-            ArrayList<String> fileList = (ArrayList<String>) packet.getOutputPacket();
-            //      Platform.runLater(() -> lastUpdate());
+         //   ArrayList<FileListElement> fileList = (ArrayList<FileListElement>) packet.getOutputPacket();
+            FileListContainer fc = (FileListContainer) packet.getOutputPacket();
+
+            ArrayList<FileListElement>flist=(ArrayList<FileListElement>) fc.getList();
+            ObservableList<FileListXMLElement>fXMLlist = FXCollections.observableArrayList();
+
+            for (int i = 0; i < flist.size(); i++) {
+                fXMLlist.add(new FileListXMLElement(flist.get(i).getFileName(), flist.get(i).getFileSize()));
+            }
+            mainApp.fillFileList(flist);
+            mainApp.setFileListDataProp(fXMLlist);
+           handleSaveAs();
+           Platform.runLater(() -> { updateTable(); });
+
             writeLog("FILE_LIST received");
             // прилетела ошибка на сервере, открыли окно об ошибкке
         } else if (packet.getPacketType() == PackageType.ERROR) {
@@ -461,7 +511,7 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
 
                 Platform.runLater(() -> loginHide());
                 FileListPacket fileListRequest = new FileListPacket(null);
-                socketThread.sendPacket(fileListRequest);
+                mainApp.socketThread.sendPacket(fileListRequest);
 
             }
             // зарегистрировали нового пользователя
@@ -490,5 +540,19 @@ public class ClientController implements SocketThreadListener, Thread.UncaughtEx
         String upd = lbLastUpd.getText();
         upd += dateFormat.format(System.currentTimeMillis());
         lbLastUpd.setText(upd);
+    }
+
+
+    public void handleSaveAs() {
+
+        File file = new File("fblist");
+
+        if (file != null) {
+            // Make sure it has the correct extension
+            if (!file.getPath().endsWith(".xml")) {
+                file = new File(file.getPath() + ".xml");
+            }
+            mainApp.saveFileListDataToFile(file);
+        }
     }
 }
