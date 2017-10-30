@@ -9,6 +9,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import ru.geekbrains.filebox.client.core.FileListWrapper;
 import ru.geekbrains.filebox.client.core.FileListXMLElement;
+import ru.geekbrains.filebox.client.core.FileListXMLWrapper;
 import ru.geekbrains.filebox.client.fxcontrollers.ClientController;
 import ru.geekbrains.filebox.library.AlertWindow;
 import ru.geekbrains.filebox.network.SocketThread;
@@ -98,7 +99,7 @@ public class FileBoxClientStart extends Application {
 //        this.primaryStage.getIcons().add(
 //                new Image("file:resources/images/ico.png"));
         initClientLayout();
-    //    loadFileListDataFromFile();
+      //  loadFileListDataFromFile();
         controller.initClientLoginLayout();
         controller.updateTable();
         controller.lastUpdate();
@@ -117,10 +118,9 @@ public class FileBoxClientStart extends Application {
     /**
      * Задаёт путь текущему загруженному файлу. Этот путь сохраняется
      * в реестре, специфичном для конкретной операционной системы.
-     *
-     * @param file - файл или null, чтобы удалить путь
      */
-    public void setFileListFilePath(File file) {
+    public void setFileListFilePath(File file ) {
+       // File file = new File("fblist.xml");
         Preferences prefs = Preferences.userNodeForPackage(FileBoxClientStart.class);
         if (file != null) {
             prefs.put("filePath", file.getPath());
@@ -145,13 +145,13 @@ public class FileBoxClientStart extends Application {
             File file = new File("fblist.xml");
             System.out.println(file.getAbsolutePath());
             // Reading XML from the file and unmarshalling.
-            FileListWrapper wrapper = (FileListWrapper) um.unmarshal(file);
+            FileListXMLWrapper wrapper = (FileListXMLWrapper) um.unmarshal(file);
 
             fileListData.clear();
-            fileListData.addAll(wrapper.getFiles());
+          //  fileListData.addAll(wrapper.getFiles());
 
             // Save the file path to the registry.
-            setFileListFilePath(file);
+            setFileListFilePath(file );
 
         } catch (Exception e) { // catches ANY exception
            e.printStackTrace();

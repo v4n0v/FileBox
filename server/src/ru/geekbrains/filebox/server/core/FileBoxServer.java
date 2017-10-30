@@ -174,12 +174,29 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             if (!folder.exists()) {
                 folder.mkdir();
             }
+
+
             // получаем содержимое пакета и записываем в соответствующую логину папку
             FileContainer filePackage = (FileContainer) packet.getOutputPacket();
             ArrayList<byte[]> files = filePackage.getFiles();
             ArrayList<String> names = filePackage.getNames();
             Path path;
+
+            // проверяем есть ли файл на сервере
+            // создаем список
+            File[] fList;
+            fList = folder.listFiles();
+
             for (int i = 0; i < files.size(); i++) {
+//                for (int j = 0; j < fList.length; j++) {
+//                    String s= fList[j].getName();
+//                    String s1 = names.get(i);
+//                    if (fList[j].getName().equals(names.get(i))){
+//                        MessagePacket msgPkt = new MessagePacket("File '"+names.get(i)+"'was already uploaded. Delete it, or upload another file");
+//                        socketThread.sendPacket(msgPkt);
+//                        return;
+//                    }
+//                }
                 try {
                     path = Paths.get(folder.getPath() + "\\" + names.get(i));
                     Files.write(path, files.get(i));

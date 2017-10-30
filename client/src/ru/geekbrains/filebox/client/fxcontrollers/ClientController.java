@@ -6,6 +6,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -291,5 +293,34 @@ public class ClientController {
         lbLastUpd.setText(upd);
     }
 
+    @FXML
+    public void handleDragOver(DragEvent event){
+        if (event.getDragboard().hasFiles()) {
+            event.acceptTransferModes(TransferMode.ANY);
+        }
+    }
 
+    @FXML
+    public void handleDrop(DragEvent event){
+        List <File> list = event.getDragboard().getFiles();
+        FileContainer fileContainer = new FileContainer();
+        for (int i = 0; i < list.size(); i++) {
+            File file = list.get(i);
+            if (file.length() > MAX_FILE_SIZE) {
+                AlertWindow.errorMesage("File size is more than 50MB");
+                Logger.writeLog(file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
+                continue;
+            }
+            // если файл подходящего размера, упаковываем в пакет
+            try {
+                fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName());
+                filePacket = new FilePacket(fileContainer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Logger.writeLog("Sending packet. Type: " + filePacket.getPacketType());
+            // логируем  и отправляем
+            mainApp.socketThread.sendPacket(filePacket);
+        }
+    }
 }

@@ -273,4 +273,5 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
             mainApp.saveFileListDataToFile(file);
         }
     }
+
 }
