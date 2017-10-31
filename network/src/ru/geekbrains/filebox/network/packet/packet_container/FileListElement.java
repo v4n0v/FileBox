@@ -5,9 +5,10 @@ import java.io.Serializable;
 public class FileListElement implements Serializable{
 
     private String fileName;
-    private long fileSize;
+//    private long fileSize;
+    private String fileSize;
 
-    public FileListElement(String fileName, long fileSize) {
+    public FileListElement(String fileName, String fileSize) {
         this.fileName = fileName;
         this.fileSize = fileSize;
     }
@@ -17,10 +18,10 @@ public class FileListElement implements Serializable{
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
-    public long getFileSize() {
+    public String getFileSize() {
         return fileSize;
     }
-    public void setFileSize(long fileSize) {
+    public void setFileSize(String fileSize) {
         this.fileSize = fileSize;
     }
 

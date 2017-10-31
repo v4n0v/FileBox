@@ -253,6 +253,16 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             } else {
                 ((FileBoxSocketThread) socketThread).sendError("Login is busy");
             }
+        } else if (packet.getPacketType() == PackageType.RENAME) {
+            putLog("rename");
+            String renameRequest = (String) packet.getOutputPacket();
+            String[] rename = renameRequest.split("<>");
+            File file = new File(SERVER_INBOX_PATH+client.getLogin()+"\\"+rename[0]);
+            File newFile = new File(SERVER_INBOX_PATH+client.getLogin()+"\\"+rename[1]);
+            if (file.renameTo(newFile)){
+                putLog("rename '"+rename[0]+"' to '"+rename[1]+"' complete");
+            }
+            sendFileList(socketThread, client);
         } else {
             putLog("Exception: Unknown package type :(");
             throw new RuntimeException("Unknown package type");
@@ -301,7 +311,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
         // создаем списаок
         File[] fList;
         String name;
-        long len;
+        String len;
         fList = clientFolder.listFiles();
         ArrayList<String> fileList = new ArrayList<>();
         FileListContainer fc = new FileListContainer();
@@ -311,8 +321,8 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 //                    info(String.valueOf(i) + " - " + fList[i].getName());
                 //     fileList.add(fList[i].getName());
                 name = fList[i].getName();
-                len = fList[i].length();
-                FileListElement element = new FileListElement(fList[i].getName(), fList[i].length());
+                len = fList[i].length()/1024+"kb";
+                FileListElement element = new FileListElement(fList[i].getName(), len);
                 fc.add(element);
             }
         }

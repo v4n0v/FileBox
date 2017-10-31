@@ -3,14 +3,18 @@ package ru.geekbrains.filebox.client;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ru.geekbrains.filebox.client.core.FileListWrapper;
 import ru.geekbrains.filebox.client.core.FileListXMLElement;
 import ru.geekbrains.filebox.client.core.FileListXMLWrapper;
 import ru.geekbrains.filebox.client.fxcontrollers.ClientController;
+import ru.geekbrains.filebox.client.fxcontrollers.RenameController;
 import ru.geekbrains.filebox.library.AlertWindow;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.packet.packet_container.FileListElement;
@@ -18,6 +22,7 @@ import ru.geekbrains.filebox.network.packet.packet_container.FileListElement;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,7 +44,8 @@ public class FileBoxClientStart extends Application {
     public ObservableList<FileListXMLElement> getFileListDataProp() {
         return fileListDataProp;
     }
-
+    public ObservableList<String> rowFiles;
+    public ObservableList<Long> rowSize;
     public void setFileListDataProp(ObservableList<FileListXMLElement> fileListDataProp) {
         this.fileListDataProp = fileListDataProp;
     }
@@ -77,13 +83,18 @@ public class FileBoxClientStart extends Application {
             // Show the scene containing the root layout.
             Scene scene = new Scene(loggedRootElement);
             primaryStage.setScene(scene);
+            primaryStage.setResizable(false);
             // Give the controller access to the main app.
             controller = loader.getController();
             controller.setMainApp(this);
+         //   controller.updateTable();
             primaryStage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+//        // подгружаем последний список файлов из XML
+
 
     }
     public static void main(String[] args) {
@@ -94,14 +105,20 @@ public class FileBoxClientStart extends Application {
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("FileBoxClientManager");
-
-        // Set the application icon.
-//        this.primaryStage.getIcons().add(
-//                new Image("file:resources/images/ico.png"));
+        //инициализируем окно клиента
         initClientLayout();
-      //  loadFileListDataFromFile();
+        //инициализируем модальное окно логина
         controller.initClientLoginLayout();
-        controller.updateTable();
+
+        // связываем таблицу и ObservableList  данными
+        controller.initTable();
+
+        // получаем последний сохранненный  список файлов
+        File file = getFileListFilePath();
+        if (file != null) {
+            loadFileListDataFromFile(file);
+        }
+        // обновляем время последней синхронизации
         controller.lastUpdate();
     }
 
@@ -126,6 +143,7 @@ public class FileBoxClientStart extends Application {
             prefs.put("filePath", file.getPath());
 
             // Обновление заглавия сцены.
+//            primaryStage.setTitle("FileBox - " + file.getName());
             primaryStage.setTitle("FileBox - " + file.getName());
         } else {
             prefs.remove("filePath");
@@ -137,18 +155,18 @@ public class FileBoxClientStart extends Application {
 
 
 //    public void loadFileListDataFromFile(File file) {
-    public void loadFileListDataFromFile( ) {
+    public void loadFileListDataFromFile(File file ) {
         try {
             JAXBContext context = JAXBContext
-                    .newInstance(FileListWrapper.class);
+                    .newInstance(FileListXMLWrapper.class);
             Unmarshaller um = context.createUnmarshaller();
-            File file = new File("fblist.xml");
+
             System.out.println(file.getAbsolutePath());
             // Reading XML from the file and unmarshalling.
             FileListXMLWrapper wrapper = (FileListXMLWrapper) um.unmarshal(file);
 
-            fileListData.clear();
-          //  fileListData.addAll(wrapper.getFiles());
+            fileListDataProp.clear();
+            fileListDataProp.addAll(wrapper.getFiles());
 
             // Save the file path to the registry.
             setFileListFilePath(file );
@@ -171,11 +189,40 @@ public class FileBoxClientStart extends Application {
 
             // Маршаллируем и сохраняем XML в файл.
             m.marshal(wrapper, file);
-
+            System.out.println( "file '"+file+"' marshalised");
             // Сохраняем путь к файлу в реестре.
        //     setFileListFilePath(file);
         } catch (Exception e) { // catches ANY exception
             AlertWindow.errorMesage("Could not save data to file:\n" + file.getPath()+"\n"+e.getMessage());
+        }
+    }
+
+    // инициализация дилогового окна переименования файла
+    public void showRenameLayout(String fileName) {
+
+        try {
+            // новое окно переименования
+            Stage renameStage = new Stage();
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(FileBoxClientStart.class.getResource("fxml/rename_modal.fxml"));
+
+            // создаем сцену, задаем параметры
+            HBox page = (HBox) loader.load();
+            Scene scene = new Scene(page);
+            renameStage.setScene(scene);
+            renameStage.setTitle("Rename "+fileName);
+            renameStage.initModality(Modality.WINDOW_MODAL);
+            renameStage.initOwner(primaryStage);
+
+            // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
+            RenameController renameController = loader.getController();
+            renameController.setMainApp(this);
+            renameController.setCurrentName(fileName);
+            renameController.setDialogStage(renameStage);
+            renameController.setClientController(controller);
+            renameStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

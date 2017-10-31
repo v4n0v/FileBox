@@ -1,13 +1,12 @@
 package ru.geekbrains.filebox.client.fxcontrollers;
 
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -15,12 +14,12 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ru.geekbrains.filebox.client.FileBoxClientStart;
 import ru.geekbrains.filebox.client.core.FileBoxClientManager;
+import ru.geekbrains.filebox.client.core.FileListXMLElement;
 import ru.geekbrains.filebox.client.core.State;
 import ru.geekbrains.filebox.library.AlertWindow;
 import ru.geekbrains.filebox.library.Logger;
 import ru.geekbrains.filebox.network.packet.*;
 import ru.geekbrains.filebox.network.packet.packet_container.FileContainer;
-import ru.geekbrains.filebox.network.packet.packet_container.FileListElement;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -80,6 +79,7 @@ public class ClientController {
     private String pass1Reg;
     Stage loginStage;
 
+    /// инициализация модального окна логина, в которое передается ссылка на mainApp
     public void initClientLoginLayout() {
         try {
             // новое окно логина
@@ -107,9 +107,11 @@ public class ClientController {
 
     // оправка логниа пароля для аутентификации
     public void loginToFileBox() {
+
         // предаем сылки на главный гласс и контроллер
         clientManager = new FileBoxClientManager(mainApp);
         clientManager.setClientController(this);
+
         // если поля не пусты
         if (!fieldLogin.getText().isEmpty() || !fieldLogin.getText().isEmpty()) {
             clientManager.setLogin(fieldLogin.getText());
@@ -161,8 +163,7 @@ public class ClientController {
             AlertWindow.errorMesage("Password must be from" + MIN_PASS_LENGTH + " to " + MAX_PASS_LENGTH + " words.");
         } else {
             if (pass1Reg.equals(pass2Reg)) {
-                clientManager.setRegistritionInfo(loginReg, mailReg, pass1Reg);
-
+                clientManager.setRegistrationInfo(loginReg, mailReg, pass1Reg);
                 clientManager.state = State.REGISTRATION;
                 clientManager.connect();
             } else {
@@ -193,35 +194,52 @@ public class ClientController {
     // ссылка на элемент модального окна дляполучения ссылки на общий элемент класса mainApp
     @FXML
     private VBox loginRootElement;
-    @FXML
-    private TableView<FileListElement> tblContent;
-    @FXML
-    private TableColumn<FileListElement, String> fileNameColumn;
-    @FXML
-    private TableColumn<FileListElement, Long> sizeColumn;
 
+    @FXML
+    private TableView<FileListXMLElement> tblContent;
+    @FXML
+    private TableColumn<FileListXMLElement, String> fileNameColumn;
+    @FXML
+    private TableColumn<FileListXMLElement, String> sizeColumn;
 
-    public synchronized  void updateTable() {
-        tblContent.setEditable(false);
-        fileNameColumn.setCellValueFactory(new PropertyValueFactory<FileListElement, String>("fileName"));
-        sizeColumn.setCellValueFactory(new PropertyValueFactory<FileListElement, Long>("fileSize"));
-        tblContent.setItems(mainApp.fileListData);
-
-        System.out.println();
+    public void updTable() {
+        tblContent.setItems(mainApp.fileListDataProp);
     }
 
-    /// инициализация модального окна логина, в которое передается ссылка на mainApp
+    public void initTable() {
+        tblContent.setEditable(false);
+        fileNameColumn.setCellValueFactory(cellData -> cellData.getValue().getFileName());
+        sizeColumn.setCellValueFactory(cellData -> cellData.getValue().getFileSize());
+        tblContent.setItems(mainApp.fileListDataProp);
+        System.out.println();
+
+    }
 
 
-    // меоды обработки нажатия на кнопку
+    // методы обработки нажатия на кнопку
+    // переименование файла
     public void renameFile() {
+       updTable();
+        // получаем список выбранного элеменота таблицы
+           FileListXMLElement fileListElement = tblContent.getSelectionModel().getSelectedItem();
+        if (fileListElement!=null) {
+            String currentFilename = fileListElement.getFileName().getValue();
 
-        System.out.println("rename");
-        updateTable();
+            // открывем дилоговое окно
+            if (currentFilename != null)
+                mainApp.showRenameLayout(currentFilename);
+        }
+//          ObservableList<FileListXMLElement> list = mainApp.getFileListDataProp();
+//             list.add(new FileListXMLElement("sasa", "1111111"));
+
     }
 
     public void deleteFile() {
+
         System.out.println("delete");
+
+        ObservableList<FileListXMLElement> list = mainApp.getFileListDataProp();
+        list.add(new FileListXMLElement("sasaф", "1111111"));
     }
 
     public void downloadFile() {
@@ -253,32 +271,14 @@ public class ClientController {
 
     // отправка файла
     public synchronized void sendFile() {
-        // получаем ссылку на сокет
-        //socketThread = mainApp.getSocketThread();
+
         // выбираем файл
         FileChooser fileChooser = new FileChooser();
         List<File> list = fileChooser.showOpenMultipleDialog(null);
         FileContainer fileContainer = new FileContainer();
 
-        // подсчитываем кол-во файлов и проверяем размер каждого файла
-        for (int i = 0; i < list.size(); i++) {
-            File file = list.get(i);
-            if (file.length() > MAX_FILE_SIZE) {
-                AlertWindow.errorMesage("File size is more than 50MB");
-                Logger.writeLog(file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
-                continue;
-            }
-            // если файл подходящего размера, упаковываем в пакет
-            try {
-                fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName());
-                filePacket = new FilePacket(fileContainer);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Logger.writeLog("Sending packet. Type: " + filePacket.getPacketType());
-            // логируем  и отправляем
-            mainApp.socketThread.sendPacket(filePacket);
-        }
+        // упаковываем в контейнер  и отправляем
+        packContainerAndSendFile(list, fileContainer);
 
     }
 
@@ -293,34 +293,46 @@ public class ClientController {
         lbLastUpd.setText(upd);
     }
 
+
+    // обработка Drag'N'Drop
+    // увидели, что перетягивается файл
     @FXML
-    public void handleDragOver(DragEvent event){
+    public void handleDragOver(DragEvent event) {
         if (event.getDragboard().hasFiles()) {
             event.acceptTransferModes(TransferMode.ANY);
         }
     }
 
+    // обработати перетянутый на таблицу файл
     @FXML
-    public void handleDrop(DragEvent event){
-        List <File> list = event.getDragboard().getFiles();
+    public void handleDrop(DragEvent event) {
+        List<File> list = event.getDragboard().getFiles();
         FileContainer fileContainer = new FileContainer();
-        for (int i = 0; i < list.size(); i++) {
-            File file = list.get(i);
-            if (file.length() > MAX_FILE_SIZE) {
-                AlertWindow.errorMesage("File size is more than 50MB");
-                Logger.writeLog(file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
-                continue;
+        packContainerAndSendFile(list, fileContainer);
+    }
+
+    void packContainerAndSendFile(List<File> list, FileContainer fileContainer) {
+        // подсчитываем кол-во файлов и проверяем размер каждого файла
+        if (list.size() > 0) {
+            for (int i = 0; i < list.size(); i++) {
+                File file = list.get(i);
+                if (file.length() > MAX_FILE_SIZE) {
+                    AlertWindow.errorMesage("File size is more than 50MB");
+                    Logger.writeLog(file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
+                    continue;
+                }
+                // если файл подходящего размера, упаковываем в пакет
+                try {
+                    fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName());
+                    filePacket = new FilePacket(fileContainer);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Logger.writeLog("Sending packet. Type: " + filePacket.getPacketType());
+                // логируем  и отправляем
+                mainApp.socketThread.sendPacket(filePacket);
             }
-            // если файл подходящего размера, упаковываем в пакет
-            try {
-                fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName());
-                filePacket = new FilePacket(fileContainer);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Logger.writeLog("Sending packet. Type: " + filePacket.getPacketType());
-            // логируем  и отправляем
-            mainApp.socketThread.sendPacket(filePacket);
         }
     }
+
 }

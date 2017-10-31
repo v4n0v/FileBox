@@ -9,11 +9,14 @@ import javafx.beans.property.StringProperty;
 public class FileListXMLElement {
 
     private StringProperty fileName;
-    private LongProperty fileSize;
-
-    public FileListXMLElement(String fileName, long fileSize) {
+    private StringProperty fileSize;
+//    private LongProperty fileSize;
+    public FileListXMLElement() {
+    this(null, null);
+}
+    public FileListXMLElement(String fileName, String fileSize) {
         this.fileName = new SimpleStringProperty(fileName);
-        this.fileSize = new SimpleLongProperty(fileSize);
+        this.fileSize = new SimpleStringProperty(fileSize);
     }
 
     public StringProperty getFileName() {
@@ -23,11 +26,11 @@ public class FileListXMLElement {
         this.fileName = new SimpleStringProperty(name);
     }
 
-    public LongProperty getFileSize() {
+    public StringProperty getFileSize() {
         return fileSize;
     }
-    public void setFileSize(long fileSize) {
-        this.fileSize = new SimpleLongProperty(fileSize);
+    public void setFileSize(String fileSize) {
+        this.fileSize = new SimpleStringProperty(fileSize);
     }
 
 }

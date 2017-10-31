@@ -15,14 +15,8 @@ import ru.geekbrains.filebox.network.packet.packet_container.FileListContainer;
 import ru.geekbrains.filebox.network.packet.packet_container.FileListElement;
 import ru.geekbrains.filebox.network.packet.packet_container.LoginContainer;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 public class FileBoxClientManager implements SocketThreadListener, Thread.UncaughtExceptionHandler{
@@ -61,7 +55,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         this.pass1Reg = pass1Reg;
     }
 
-    public void setRegistritionInfo(String loginReg, String mailReg, String pass1Reg) {
+    public void setRegistrationInfo(String loginReg, String mailReg, String pass1Reg) {
         this.pass1Reg = pass1Reg;
         this.mailReg = mailReg;
         this.loginReg = loginReg;
@@ -157,7 +151,6 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     public void onReceivePacket(SocketThread socketThread, Socket socket, Packet packet) {
         handlePacket(packet);
         Logger.writeLog("Packet " + packet.getPacketType() + " was handled...");
-
     }
 
     // прилетело исключение
@@ -169,11 +162,6 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 
     // обрабатываем полученный пакет
     private void handlePacket(Packet packet) {
-//        PackageType type = packet.getPacketType();
-//        switch (type) {
-//            case PackageType.LOGIN:
-//                break;
-//        }
 
         // если в полученном пакете файл
         if (packet.getPacketType() == PackageType.FILE) {
@@ -210,6 +198,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
             ObservableList<FileListXMLElement> fXMLlist = FXCollections.observableArrayList();
 
             for (int i = 0; i < flist.size(); i++) {
+
                 fXMLlist.add(new FileListXMLElement(flist.get(i).getFileName(), flist.get(i).getFileSize()));
             }
             mainApp.fillFileList(flist);
@@ -217,9 +206,9 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
             handleSaveAs();
 
 //            Platform.runLater(()->{
-//                clientController.lastUpdate();
-//                clientController.updateTable();
-//            });
+////////                clientController.lastUpdate();
+//               clientController.updTable();
+//           });
 
             Logger.writeLog("FILE_LIST received");
             // прилетела ошибка на сервере, открыли окно об ошибкке
