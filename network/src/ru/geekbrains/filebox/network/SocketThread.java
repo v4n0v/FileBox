@@ -1,5 +1,6 @@
 package ru.geekbrains.filebox.network;
 
+import com.sun.xml.internal.ws.api.policy.PolicyResolver;
 import ru.geekbrains.filebox.network.packet.Packet;
 
 import java.io.*;
@@ -11,8 +12,6 @@ public class SocketThread extends Thread {
     private final Socket socket;
     private DataOutputStream outD;
     private FileOutputStream outFile;
-
-
     private Packet packet;
 
 

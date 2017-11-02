@@ -203,7 +203,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 //                    FileOutputStream fos = new FileOutputStream(new File(folder.getPath() + "\\" + names.get(i)));
 //                    fos.write(files.get(i));
 //                    fos.close();
-                    putLog("File '" + names.get(i) + "' received. ");
+                    putLog(client.getLogin()+" "+"File '" + names.get(i) + "' received. ");
                 } catch (IOException e) {
 
                     e.printStackTrace();
@@ -221,14 +221,14 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             MessagePacket msgPkt = new MessagePacket(filesStr);
             // сообщение от пользователя
         } else if (packet.getPacketType() == PackageType.MESSAGE) {
-            putLog("MESSAGE received");
+            putLog(client.getLogin()+" MESSAGE received");
 
             // пользователь запросил список файлов
         } else if (packet.getPacketType() == PackageType.FILE_LIST) {
             sendFileList(socketThread, client);
             // сообщение об ощибке
         } else if (packet.getPacketType() == PackageType.ERROR) {
-            putLog("ERROR received");
+            putLog(client.getLogin()+" "+"ERROR received");
             // пришел пакет с логином и паролем
         } else if (packet.getPacketType() == PackageType.LOGIN) {
             LoginContainer lc = (LoginContainer) packet.getOutputPacket();
@@ -260,11 +260,20 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             File file = new File(SERVER_INBOX_PATH+client.getLogin()+"\\"+rename[0]);
             File newFile = new File(SERVER_INBOX_PATH+client.getLogin()+"\\"+rename[1]);
             if (file.renameTo(newFile)){
-                putLog("rename '"+rename[0]+"' to '"+rename[1]+"' complete");
+                putLog(client.getLogin()+" "+"rename '"+rename[0]+"' to '"+rename[1]+"' complete");
             }
             sendFileList(socketThread, client);
+        } else if (packet.getPacketType() == PackageType.DELETE) {
+            putLog("deleting file");
+            String deleteRequest = (String) packet.getOutputPacket();
+            File file = new File(SERVER_INBOX_PATH+client.getLogin()+"\\"+deleteRequest);
+            if (file.delete()){
+                putLog( client.getLogin()+" "+"delete file '"+deleteRequest +"' complete");
+            }
+            sendFileList(socketThread, client);
+
         } else {
-            putLog("Exception: Unknown package type :(");
+            putLog(client.getLogin()+" "+"Exception: Unknown package type :(");
             throw new RuntimeException("Unknown package type");
 
         }

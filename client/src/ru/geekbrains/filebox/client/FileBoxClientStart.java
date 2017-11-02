@@ -5,11 +5,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import ru.geekbrains.filebox.client.core.FileListWrapper;
 import ru.geekbrains.filebox.client.core.FileListXMLElement;
 import ru.geekbrains.filebox.client.core.FileListXMLWrapper;
@@ -22,10 +25,11 @@ import ru.geekbrains.filebox.network.packet.packet_container.FileListElement;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.awt.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.prefs.Preferences;
 
 public class FileBoxClientStart extends Application {
@@ -224,5 +228,20 @@ public class FileBoxClientStart extends Application {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void showDioalogLayout(String title, String message ){
+        Stage dialog = new Stage();
+        dialog.initStyle(StageStyle.UTILITY);
+        VBox box = new VBox();
+        box.setAlignment(Pos.CENTER);
+        HBox buttons = new HBox();
+        buttons.setAlignment(Pos.CENTER);
+        dialog.setTitle(title);
+        buttons.getChildren().addAll(new Button("Ok"), new Button("Cancel"));
+        box.getChildren().addAll(new Label(message), new TextField(), buttons);
+        Scene scene = new Scene(box);
+        dialog.setScene(scene);
+        dialog.show();
     }
 }

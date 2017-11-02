@@ -55,9 +55,9 @@ public class RenameController {
             AlertWindow.warningMesage("Enter new name");
 
         }else {
-            FileOperationPacket renamePacket = new FileOperationPacket(PackageType.RENAME,currentName, newName);
-            mainApp.socketThread.sendPacket(renamePacket);
-        }
+            FileOperationPacket renamePacket = new FileOperationPacket(PackageType.RENAME,currentName+"<>"+newName);
+        mainApp.socketThread.sendPacket(renamePacket);
+    }
         Stage stage = (Stage) renameRootElement.getScene().getWindow();
 
         stage.close();

@@ -11,7 +11,7 @@
 -->
 <VBox fx:id="registration_user" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="212.0" prefWidth="286.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.ClientController">
    <children>
-      <TextField id="loginField " fx:id="loginRegField" promptText="login" styleClass="text-field-with-margin" stylesheets="@../css/registration.css">
+      <TextField id="loginField " fx:id="loginRegField" promptText="login" styleClass="text-field-with-margin" stylesheets="@../css/style.css">
          <VBox.margin>
             <Insets bottom="10.0" />
          </VBox.margin> </TextField>
@@ -19,11 +19,11 @@
          <VBox.margin>
             <Insets bottom="10.0" />
          </VBox.margin></TextField>
-      <PasswordField id="pass1Field " fx:id="pass1RegField" layoutX="10.0" layoutY="69.0" promptText="passsword: " stylesheets="@../css/registration.css">
+      <PasswordField id="pass1Field " fx:id="pass1RegField" layoutX="10.0" layoutY="69.0" promptText="passsword: " stylesheets="@../css/style.css">
          <VBox.margin>
             <Insets bottom="10.0" />
          </VBox.margin></PasswordField>
-      <PasswordField id="pass2Field " fx:id="pass2RegField" layoutX="10.0" layoutY="111.0" promptText="repeat password" stylesheets="@../css/registration.css">
+      <PasswordField id="pass2Field " fx:id="pass2RegField" layoutX="10.0" layoutY="111.0" promptText="repeat password" stylesheets="@../css/style.css">
          <VBox.margin>
             <Insets bottom="10.0" />
          </VBox.margin></PasswordField>

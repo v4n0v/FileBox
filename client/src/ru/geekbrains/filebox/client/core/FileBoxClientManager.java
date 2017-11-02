@@ -198,7 +198,6 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
             ObservableList<FileListXMLElement> fXMLlist = FXCollections.observableArrayList();
 
             for (int i = 0; i < flist.size(); i++) {
-
                 fXMLlist.add(new FileListXMLElement(flist.get(i).getFileName(), flist.get(i).getFileSize()));
             }
             mainApp.fillFileList(flist);
@@ -206,9 +205,9 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
             handleSaveAs();
 
 //            Platform.runLater(()->{
-////////                clientController.lastUpdate();
-//               clientController.updTable();
-//           });
+//////////                clientController.lastUpdate();
+//              clientController.initTable();
+//            });
 
             Logger.writeLog("FILE_LIST received");
             // прилетела ошибка на сервере, открыли окно об ошибкке

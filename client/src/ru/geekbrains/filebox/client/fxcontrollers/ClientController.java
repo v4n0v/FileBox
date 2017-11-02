@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Optional;
 
 public class ClientController {
 
@@ -237,9 +238,28 @@ public class ClientController {
     public void deleteFile() {
 
         System.out.println("delete");
+        FileListXMLElement fileListElement = tblContent.getSelectionModel().getSelectedItem();
+        if (fileListElement!=null) {
+            String currentFilename = fileListElement.getFileName().getValue();
 
-        ObservableList<FileListXMLElement> list = mainApp.getFileListDataProp();
-        list.add(new FileListXMLElement("sasaф", "1111111"));
+            // открывем дилоговое окно
+            if (currentFilename != null){
+                 boolean answer = AlertWindow.dialogWindow("Delete file?", currentFilename);
+
+                 if (answer){
+                     FileOperationPacket deletePacket = new FileOperationPacket(PackageType.DELETE, currentFilename);
+                     mainApp.socketThread.sendPacket(deletePacket);
+                     System.out.println("OK");
+                 } else {
+                     System.out.println("not OK");
+
+                 }
+            }
+
+             //  mainApp.showDioalogLayout("Delete file ", "Are you sure?");
+        }
+//        ObservableList<FileListXMLElement> list = mainApp.getFileListDataProp();
+//        list.add(new FileListXMLElement("sasaф", "1111111"));
     }
 
     public void downloadFile() {
@@ -333,6 +353,22 @@ public class ClientController {
                 mainApp.socketThread.sendPacket(filePacket);
             }
         }
+    }
+
+    public boolean showConfirmation(String file) {
+        boolean answer=false;
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Delete File");
+        alert.setHeaderText("Are you sure?");
+        alert.setContentText(file);
+
+        // option != null.
+        Optional<ButtonType> option = alert.showAndWait();
+
+        if (option.get() == ButtonType.OK) {
+            answer=true;
+        }
+        return answer;
     }
 
 }
