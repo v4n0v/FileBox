@@ -276,10 +276,10 @@ public class ClientController {
                 boolean answer = AlertWindow.dialogWindow("Download file?", currentFilename);
 
                 if (answer){
-                    FileOperationPacket downLoad = new FileOperationPacket(PackageType.DOWNLOAD, currentFilename);
+                    FileOperationPacket downLoad = new FileOperationPacket(PackageType.FILE_REQUEST, currentFilename);
                     mainApp.socketThread.sendPacket(downLoad);
                     mainApp.removeFromTable(currentFilename);
-                    Logger.writeLog(currentFilename+" deleted");
+              //      Logger.writeLog(currentFilename+" deleted");
                     Logger.writeLog("download operation '" +currentFilename+ "'complete");
                 } else {
 

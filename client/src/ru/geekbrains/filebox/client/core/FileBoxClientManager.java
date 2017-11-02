@@ -17,6 +17,9 @@ import ru.geekbrains.filebox.network.packet.packet_container.LoginContainer;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class FileBoxClientManager implements SocketThreadListener, Thread.UncaughtExceptionHandler {
@@ -168,21 +171,45 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     }
 
     // обрабатываем полученный пакет
+
+    private String CLIENT_INBOX_PATH = "C:/FileBoxFolder/";
     private void handlePacket(Packet packet) {
 
         // если в полученном пакете файл
         if (packet.getPacketType() == PackageType.FILE) {
+            File folder = new File(CLIENT_INBOX_PATH);
+            if (!folder.exists()) {
+                folder.mkdir();
+            }
+
+
+            // получаем содержимое пакета и записываем в соответствующую логину папку
             FileContainer filePackage = (FileContainer) packet.getOutputPacket();
-            //получили список имен и файлов и записали их на диск
             ArrayList<byte[]> files = filePackage.getFiles();
             ArrayList<String> names = filePackage.getNames();
+            Path path;
+
+            // проверяем есть ли файл на сервере
+            // создаем список
+            File[] fList;
+            fList = folder.listFiles();
+
             for (int i = 0; i < files.size(); i++) {
-
-
+//                for (int j = 0; j < fList.length; j++) {
+//                    String s= fList[j].getName();
+//                    String s1 = names.get(i);
+//                    if (fList[j].getName().equals(names.get(i))){
+//                        MessagePacket msgPkt = new MessagePacket("File '"+names.get(i)+"'was already uploaded. Delete it, or upload another file");
+//                        socketThread.sendPacket(msgPkt);
+//                        return;
+//                    }
+//                }
                 try {
-                    FileOutputStream fos = new FileOutputStream(new File(names.get(i)));
-                    fos.write(files.get(i));
-                    fos.close();
+                    path = Paths.get(folder.getPath() + "\\" + names.get(i));
+                    Files.write(path, files.get(i));
+//                    FileOutputStream fos = new FileOutputStream(new File(folder.getPath() + "\\" + names.get(i)));
+//                    fos.write(files.get(i));
+//                    fos.close();
                     Logger.writeLog("File '" + names.get(i) + "' received. ");
                 } catch (IOException e) {
 
@@ -260,15 +287,16 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     public void updateList(ObservableList<FileListXMLElement> newFileList,
                            ObservableList<FileListXMLElement> currentFileList) {
 
-        FileListXMLElement elementNew;
-        FileListXMLElement elementCurrent;
-        // устанавливаем счетчик в нулевое значение
-        int count = 0;
+
+        // обнуляем и заполняем список файлов
         currentFileList.clear();
         if (currentFileList.size()==0)
             currentFileList.addAll(newFileList);
 
-
+//        FileListXMLElement elementNew;
+//        FileListXMLElement elementCurrent;
+        // устанавливаем счетчик в нулевое значение
+//        int count = 0;
 //        // если текущий список пуст, добавляем все элементы
 //        if (currentFileList.size() == 0) {
 ////            for (int i = 0; i < newFileList.size(); i++) {
