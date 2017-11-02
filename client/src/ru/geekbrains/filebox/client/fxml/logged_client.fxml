@@ -110,10 +110,10 @@
       </Pane>
       <VBox>
          <children>
-                <TableView fx:id="tblContent" editable="true" minWidth="-Infinity"  onDragDropped="#handleDrop" onDragOver="#handleDragOver" prefHeight="490.0" prefWidth="435.0" stylesheets="@../css/style.css">
+                <TableView fx:id="tblContent" editable="true" minWidth="-Infinity" onDragDropped="#handleDrop" onDragOver="#handleDragOver" prefHeight="490.0" prefWidth="435.0" stylesheets="@../css/style.css">
                     <columns>
-                        <TableColumn fx:id="fileNameColumn" prefWidth="337.0" resizable="false" text="File" />
-                        <TableColumn fx:id="sizeColumn" editable="false" minWidth="1.0" prefWidth="97.0" resizable="false" sortable="false" text="Size" />
+                        <TableColumn fx:id="fileNameColumn" editable="false" prefWidth="337.0" resizable="false" text="File"  />
+                        <TableColumn fx:id="sizeColumn" editable="false" minWidth="1.0" prefWidth="97.0" resizable="false"   text="Size (kb)" />
                     </columns>
                 </TableView>
             <Label id="lastUpd" fx:id="lbLastUpd" styleClass="lastUpd" stylesheets="@../css/style.css" text="Last update: ">

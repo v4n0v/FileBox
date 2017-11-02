@@ -19,15 +19,16 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class FileBoxClientManager implements SocketThreadListener, Thread.UncaughtExceptionHandler{
+public class FileBoxClientManager implements SocketThreadListener, Thread.UncaughtExceptionHandler {
 
-    public   State state = State.NOT_CONNECTED;
+    public State state = State.NOT_CONNECTED;
     private final static String IP = "localhost";
     private String errorMsg;
     private boolean isAuthorized;
     private final static int PORT = 8189;
 
     SocketThread socketThread;
+
     public void setLogin(String login) {
         this.login = login;
     }
@@ -38,11 +39,13 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 
     private String login;
     private String password;
+
     public void setClientController(ClientController clientController) {
         this.clientController = clientController;
     }
 
     private ClientController clientController;
+
     public void setLoginReg(String loginReg) {
         this.loginReg = loginReg;
     }
@@ -60,25 +63,28 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         this.mailReg = mailReg;
         this.loginReg = loginReg;
     }
+
     private String loginReg;
-    private String  mailReg;
+    private String mailReg;
     private String pass1Reg;
     private final static long MAX_FILE_SIZE = 5_242_880;
 
     FileBoxClientStart mainApp;
+
     public void setMainApp(FileBoxClientStart mainApp) {
         this.mainApp = mainApp;
         //     this.socketThread=mainApp.getSocketThread();
     }
+
     public FileBoxClientManager(FileBoxClientStart mainApp) {
         this.mainApp = mainApp;
     }
 
 
-    public void connect(){
+    public void connect() {
         try {
             Socket socket = new Socket(IP, PORT);
-             socketThread = new SocketThread(this, "SocketThread", socket);
+            socketThread = new SocketThread(this, "SocketThread", socket);
             // устанавливаем в mainApp ссылку на полученный поток сокета
             mainApp.setSocketThread(socketThread);
         } catch (IOException e) {
@@ -89,15 +95,15 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         }
 
     }
-    public void disconnect(){
+
+    public void disconnect() {
         mainApp.socketThread.close();
     }
 
 
-
     // оверайдим обработчик исключений
     @Override
-    public void uncaughtException(Thread t, Throwable e){
+    public void uncaughtException(Thread t, Throwable e) {
         e.printStackTrace();
         StackTraceElement[] stackTraceElements = e.getStackTrace();
         String msg;
@@ -106,7 +112,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         } else {
             msg = e.getClass().getCanonicalName() + ": " + e.getMessage() + "\n" + stackTraceElements[0];
         }
-       // AlertWindow.errorMesage(msg);
+        // AlertWindow.errorMesage(msg);
 
         Logger.writeLog("Exception: " + msg + "\n");
         System.exit(1);
@@ -120,6 +126,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         Logger.writeLog(
                 "Socket started");
     }
+
     // соединение закончено
     @Override
     public void onStopSocketThread(SocketThread socketThread) {
@@ -130,7 +137,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     // соединение установлено
     @Override
     public void onReadySocketThread(SocketThread socketThread, Socket socket) {
-        Logger. writeLog("Connection to server complete!");
+        Logger.writeLog("Connection to server complete!");
         if (state == State.REGISTRATION) {
             AddUserPacket addUserPacket = new AddUserPacket(loginReg, mailReg, pass1Reg);
             mainApp.socketThread.sendPacket(addUserPacket);
@@ -201,7 +208,8 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
                 fXMLlist.add(new FileListXMLElement(flist.get(i).getFileName(), flist.get(i).getFileSize()));
             }
             mainApp.fillFileList(flist);
-            mainApp.setFileListDataProp(fXMLlist);
+            updateList(fXMLlist, mainApp.fileListDataProp);
+            //    mainApp.setFileListDataProp(fXMLlist);
             handleSaveAs();
 
 //            Platform.runLater(()->{
@@ -213,7 +221,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
             // прилетела ошибка на сервере, открыли окно об ошибкке
         } else if (packet.getPacketType() == PackageType.ERROR) {
             errorMsg = (String) packet.getOutputPacket();
-            state =  State.ERROR;
+            state = State.ERROR;
             Logger.writeLog(errorMsg);
             Platform.runLater(() -> AlertWindow.errorMesage(errorMsg));
             // такое сообщение не должно придти
@@ -223,7 +231,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         } else if (packet.getPacketType() == PackageType.AUTH_ACCEPT) {
             isAuthorized = (Boolean) packet.getOutputPacket();
             if (isAuthorized) {
-                state =  State.CONNECTED;
+                state = State.CONNECTED;
                 //clientController.loginHide();
                 Platform.runLater(() -> clientController.loginHide());
                 FileListPacket fileListRequest = new FileListPacket(null);
@@ -232,10 +240,10 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
             }
             // зарегистрировали нового пользователя
         } else if (packet.getPacketType() == PackageType.REG_ACCEPT) {
-           // isRegistrated = (Boolean) packet.getOutputPacket();
+            // isRegistrated = (Boolean) packet.getOutputPacket();
 //            Platform.runLater(() -> infoMesage("User " + loginReg + " successfully registered in FileBox"));
 //            Platform.runLater(() -> regExit());
-            state =  State.REGISTERED;
+            state = State.REGISTERED;
             disconnect();
             state = State.NOT_CONNECTED;
 //            Stage stage = (Stage) reg.getScene().getWindow();
@@ -247,6 +255,74 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 
         }
 
+    }
+
+    public void updateList(ObservableList<FileListXMLElement> newFileList,
+                           ObservableList<FileListXMLElement> currentFileList) {
+
+        FileListXMLElement elementNew;
+        FileListXMLElement elementCurrent;
+        // устанавливаем счетчик в нулевое значение
+        int count = 0;
+        currentFileList.clear();
+        if (currentFileList.size()==0)
+            currentFileList.addAll(newFileList);
+
+
+//        // если текущий список пуст, добавляем все элементы
+//        if (currentFileList.size() == 0) {
+////            for (int i = 0; i < newFileList.size(); i++) {
+////                elementNew = newFileList.get(i);
+////                currentFileList.add(elementNew);
+////            }
+//            currentFileList.addAll(newFileList);
+//        } else {
+//            // проверяем наличие новых файлов, добавляем если таковые имеются
+//            // берем элемент из новго листа и сравниваем со старыми
+//            for (int i = 0; i < newFileList.size(); i++) {
+//                // берем жлемент новго списка
+//                elementNew = newFileList.get(i);
+//                // сранвиваем поочередно с элементами старого
+//                for (int j = 0; j < currentFileList.size(); j++) {
+//                    elementCurrent = currentFileList.get(j);
+//                    // если элементы не равно инкемент счетчика
+//                    if (!elementNew.getFileName().getValue().equals(elementCurrent.getFileName().getValue())) {
+//                        count++;
+//                    } else {
+//                        break;
+//                    }
+//                    // если счетчик равен кол-ву элементов, это значит, что такого элемента нет, добавляем его в список
+//                    if (count == currentFileList.size()) {
+//                        currentFileList.add(elementNew);
+//                        // обнуляем список
+//                        count = 0;
+//                    }
+//                }
+//            }
+//
+//            // проверяем, наличие удаленных на сервере файлов
+//            // берем элемент из текущего листа и сравниваем с новым листом
+//            count = 0;
+//            for (int i = 0; i < currentFileList.size(); i++) {
+//                elementCurrent = currentFileList.get(i);
+//                for (int j = 0; j < newFileList.size(); j++) {
+//                    elementNew = newFileList.get(j);
+//
+//                    // плюсуем счетчик, если такого элемента нет
+//                    if (!elementNew.getFileName().getValue().equals(elementCurrent.getFileName().getValue())) {
+//                        count++;
+//                        // если такой файл есть, проверяем следующий
+//                    } else {
+//                        break;
+//                    }
+//                    if (count == newFileList.size()) {
+//                        currentFileList.remove(i);
+//                        count=0;
+//                    }
+//                }
+//
+//            }
+//        }
     }
 
     public void handleSaveAs() {

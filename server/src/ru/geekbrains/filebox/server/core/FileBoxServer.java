@@ -320,18 +320,18 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
         // создаем списаок
         File[] fList;
         String name;
-        String len;
+      //  String len;
         fList = clientFolder.listFiles();
-        ArrayList<String> fileList = new ArrayList<>();
+        ///ArrayList<String> fileList = new ArrayList<>();
         FileListContainer fc = new FileListContainer();
         for (int i = 0; i < fList.length; i++) {
             //Нужны только папки в место isFile() пишим isDirectory()
             if (fList[i].isFile()) {
 //                    info(String.valueOf(i) + " - " + fList[i].getName());
                 //     fileList.add(fList[i].getName());
-                name = fList[i].getName();
-                len = fList[i].length()/1024+"kb";
-                FileListElement element = new FileListElement(fList[i].getName(), len);
+//                /name = fList[i].getName();
+//                long len = fList[i].length()/1024;
+                FileListElement element = new FileListElement(fList[i].getName(), fList[i].length()/1024);
                 fc.add(element);
             }
         }

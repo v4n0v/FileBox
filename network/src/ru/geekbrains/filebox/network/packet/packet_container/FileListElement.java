@@ -6,9 +6,9 @@ public class FileListElement implements Serializable{
 
     private String fileName;
 //    private long fileSize;
-    private String fileSize;
+    private Long fileSize;
 
-    public FileListElement(String fileName, String fileSize) {
+    public FileListElement(String fileName, long fileSize) {
         this.fileName = fileName;
         this.fileSize = fileSize;
     }
@@ -18,10 +18,10 @@ public class FileListElement implements Serializable{
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
-    public String getFileSize() {
+    public Long getFileSize() {
         return fileSize;
     }
-    public void setFileSize(String fileSize) {
+    public void setFileSize(Long fileSize) {
         this.fileSize = fileSize;
     }
 

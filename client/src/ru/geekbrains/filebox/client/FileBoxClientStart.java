@@ -117,11 +117,11 @@ public class FileBoxClientStart extends Application {
         // связываем таблицу и ObservableList  данными
         controller.initTable();
 
-        // получаем последний сохранненный  список файлов
-        File file = getFileListFilePath();
-        if (file != null) {
-            loadFileListDataFromFile(file);
-        }
+//        // получаем последний сохранненный  список файлов
+//        File file = getFileListFilePath();
+//        if (file != null) {
+//            loadFileListDataFromFile(file);
+//        }
         // обновляем время последней синхронизации
         controller.lastUpdate();
     }
@@ -200,7 +200,18 @@ public class FileBoxClientStart extends Application {
             AlertWindow.errorMesage("Could not save data to file:\n" + file.getPath()+"\n"+e.getMessage());
         }
     }
+    public void removeFromTable(String name){
+        FileListXMLElement element;
+        for (int i = 0; i < fileListDataProp.size(); i++) {
+            element = fileListDataProp.get(i);
+            if (name.equals(element.getFileName().getValue())){
+                fileListDataProp.remove(i);
+                return;
+            }
+        }
 
+
+    }
     // инициализация дилогового окна переименования файла
     public void showRenameLayout(String fileName) {
 

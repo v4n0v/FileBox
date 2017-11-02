@@ -201,7 +201,7 @@ public class ClientController {
     @FXML
     private TableColumn<FileListXMLElement, String> fileNameColumn;
     @FXML
-    private TableColumn<FileListXMLElement, String> sizeColumn;
+    private TableColumn<FileListXMLElement, Long> sizeColumn;
 
     public void updTable() {
         tblContent.setItems(mainApp.fileListDataProp);
@@ -210,7 +210,7 @@ public class ClientController {
     public void initTable() {
         tblContent.setEditable(false);
         fileNameColumn.setCellValueFactory(cellData -> cellData.getValue().getFileName());
-        sizeColumn.setCellValueFactory(cellData -> cellData.getValue().getFileSize());
+        sizeColumn.setCellValueFactory(cellData -> cellData.getValue().getFileSize() );
         tblContent.setItems(mainApp.fileListDataProp);
         System.out.println();
 
@@ -249,10 +249,12 @@ public class ClientController {
                  if (answer){
                      FileOperationPacket deletePacket = new FileOperationPacket(PackageType.DELETE, currentFilename);
                      mainApp.socketThread.sendPacket(deletePacket);
+                     mainApp.removeFromTable(currentFilename);
+                     Logger.writeLog(currentFilename+" deleted");
                      System.out.println("OK");
                  } else {
-                     System.out.println("not OK");
 
+                     Logger.writeLog("deleting operation canceled");
                  }
             }
 
@@ -263,7 +265,31 @@ public class ClientController {
     }
 
     public void downloadFile() {
+
         System.out.println("download");
+        FileListXMLElement fileListElement = tblContent.getSelectionModel().getSelectedItem();
+        if (fileListElement!=null) {
+            String currentFilename = fileListElement.getFileName().getValue();
+
+            // открывем дилоговое окно
+            if (currentFilename != null){
+                boolean answer = AlertWindow.dialogWindow("Download file?", currentFilename);
+
+                if (answer){
+                    FileOperationPacket downLoad = new FileOperationPacket(PackageType.DOWNLOAD, currentFilename);
+                    mainApp.socketThread.sendPacket(downLoad);
+                    mainApp.removeFromTable(currentFilename);
+                    Logger.writeLog(currentFilename+" deleted");
+                    Logger.writeLog("download operation '" +currentFilename+ "'complete");
+                } else {
+
+                    Logger.writeLog("download '" +currentFilename+ "' operation canceled");
+
+                }
+            }
+
+
+        }
     }
 
     //загрузка файла на сервер
