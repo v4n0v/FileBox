@@ -1,8 +1,10 @@
 package ru.geekbrains.filebox.client.core;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.stage.Stage;
 import ru.geekbrains.filebox.client.FileBoxClientStart;
 import ru.geekbrains.filebox.client.fxcontrollers.ClientController;
 import ru.geekbrains.filebox.library.AlertWindow;
@@ -10,17 +12,16 @@ import ru.geekbrains.filebox.library.Logger;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
 import ru.geekbrains.filebox.network.packet.*;
-import ru.geekbrains.filebox.network.packet.packet_container.FileContainer;
-import ru.geekbrains.filebox.network.packet.packet_container.FileListContainer;
-import ru.geekbrains.filebox.network.packet.packet_container.FileListElement;
-import ru.geekbrains.filebox.network.packet.packet_container.LoginContainer;
+import ru.geekbrains.filebox.network.packet.packet_container.*;
 
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 public class FileBoxClientManager implements SocketThreadListener, Thread.UncaughtExceptionHandler {
 
@@ -32,6 +33,11 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 
     SocketThread socketThread;
 
+    public void setListOutFiles(List<File> listOutFiles) {
+        this.listOutFiles = listOutFiles;
+    }
+
+   private List<File> listOutFiles;
     public void setLogin(String login) {
         this.login = login;
     }
@@ -177,105 +183,27 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 
         // если в полученном пакете файл
         if (packet.getPacketType() == PackageType.FILE) {
-            File folder = new File(CLIENT_INBOX_PATH);
-            if (!folder.exists()) {
-                folder.mkdir();
-            }
-
-
-            // получаем содержимое пакета и записываем в соответствующую логину папку
-            FileContainer filePackage = (FileContainer) packet.getOutputPacket();
-            ArrayList<byte[]> files = filePackage.getFiles();
-            ArrayList<String> names = filePackage.getNames();
-            Path path;
-
-            // проверяем есть ли файл на сервере
-            // создаем список
-            File[] fList;
-            fList = folder.listFiles();
-
-            for (int i = 0; i < files.size(); i++) {
-//                for (int j = 0; j < fList.length; j++) {
-//                    String s= fList[j].getName();
-//                    String s1 = names.get(i);
-//                    if (fList[j].getName().equals(names.get(i))){
-//                        MessagePacket msgPkt = new MessagePacket("File '"+names.get(i)+"'was already uploaded. Delete it, or upload another file");
-//                        socketThread.sendPacket(msgPkt);
-//                        return;
-//                    }
-//                }
-                try {
-                    path = Paths.get(folder.getPath() + "\\" + names.get(i));
-                    Files.write(path, files.get(i));
-//                    FileOutputStream fos = new FileOutputStream(new File(folder.getPath() + "\\" + names.get(i)));
-//                    fos.write(files.get(i));
-//                    fos.close();
-                    Logger.writeLog("File '" + names.get(i) + "' received. ");
-                } catch (IOException e) {
-
-                    e.printStackTrace();
-                    return;
-                }
-            }
+            handleFilePacket(packet);
+   //         }
             // если получили сообщение, отрыли информационное окно
         } else if (packet.getPacketType() == PackageType.MESSAGE) {
-            String msg = (String) packet.getOutputPacket();
-            Platform.runLater(() -> AlertWindow.infoMesage(msg));
-            Logger.writeLog("MESSAGE received");
-
-            // получили список файлов в "облаке"
+            handleMessagePacket(packet);
         } else if (packet.getPacketType() == PackageType.FILE_LIST) {
-            //   ArrayList<FileListElement> fileList = (ArrayList<FileListElement>) packet.getOutputPacket();
-            FileListContainer fc = (FileListContainer) packet.getOutputPacket();
-
-            ArrayList<FileListElement> flist = (ArrayList<FileListElement>) fc.getList();
-            ObservableList<FileListXMLElement> fXMLlist = FXCollections.observableArrayList();
-
-            for (int i = 0; i < flist.size(); i++) {
-                fXMLlist.add(new FileListXMLElement(flist.get(i).getFileName(), flist.get(i).getFileSize()));
-            }
-            mainApp.fillFileList(flist);
-            updateList(fXMLlist, mainApp.fileListDataProp);
-            //    mainApp.setFileListDataProp(fXMLlist);
-            handleSaveAs();
-
-//            Platform.runLater(()->{
-//////////                clientController.lastUpdate();
-//              clientController.initTable();
-//            });
-
-            Logger.writeLog("FILE_LIST received");
+            handeFileListPacket(packet);
             // прилетела ошибка на сервере, открыли окно об ошибкке
         } else if (packet.getPacketType() == PackageType.ERROR) {
-            errorMsg = (String) packet.getOutputPacket();
-            state = State.ERROR;
-            Logger.writeLog(errorMsg);
-            Platform.runLater(() -> AlertWindow.errorMesage(errorMsg));
+          handleErrorPacket(packet);
             // такое сообщение не должно придти
         } else if (packet.getPacketType() == PackageType.LOGIN) {
             LoginContainer lc = (LoginContainer) packet.getOutputPacket();
             //сервер одбрил логин и парроль
         } else if (packet.getPacketType() == PackageType.AUTH_ACCEPT) {
-            isAuthorized = (Boolean) packet.getOutputPacket();
-            if (isAuthorized) {
-                state = State.CONNECTED;
-                //clientController.loginHide();
-                Platform.runLater(() -> clientController.loginHide());
-                FileListPacket fileListRequest = new FileListPacket(null);
-                mainApp.socketThread.sendPacket(fileListRequest);
-
-            }
+         handleAuthPacket(packet);
             // зарегистрировали нового пользователя
         } else if (packet.getPacketType() == PackageType.REG_ACCEPT) {
-            // isRegistrated = (Boolean) packet.getOutputPacket();
-//            Platform.runLater(() -> infoMesage("User " + loginReg + " successfully registered in FileBox"));
-//            Platform.runLater(() -> regExit());
-            state = State.REGISTERED;
-            disconnect();
-            state = State.NOT_CONNECTED;
-//            Stage stage = (Stage) reg.getScene().getWindow();
-//            stage.showAndWait();
-
+           handleRegAcceptPacket();
+        } else if (packet.getPacketType() == PackageType.FILE_WAITING) {
+            sendFileBytes(listOutFiles);
         } else {
             Logger.writeLog("Exception: Unknown package type :(");
             throw new RuntimeException("Unknown package type");
@@ -284,75 +212,26 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 
     }
 
+
+
+
     public void updateList(ObservableList<FileListXMLElement> newFileList,
                            ObservableList<FileListXMLElement> currentFileList) {
-
 
         // обнуляем и заполняем список файлов
         currentFileList.clear();
         if (currentFileList.size()==0)
             currentFileList.addAll(newFileList);
 
-//        FileListXMLElement elementNew;
-//        FileListXMLElement elementCurrent;
-        // устанавливаем счетчик в нулевое значение
-//        int count = 0;
-//        // если текущий список пуст, добавляем все элементы
-//        if (currentFileList.size() == 0) {
-////            for (int i = 0; i < newFileList.size(); i++) {
-////                elementNew = newFileList.get(i);
-////                currentFileList.add(elementNew);
-////            }
-//            currentFileList.addAll(newFileList);
-//        } else {
-//            // проверяем наличие новых файлов, добавляем если таковые имеются
-//            // берем элемент из новго листа и сравниваем со старыми
-//            for (int i = 0; i < newFileList.size(); i++) {
-//                // берем жлемент новго списка
-//                elementNew = newFileList.get(i);
-//                // сранвиваем поочередно с элементами старого
-//                for (int j = 0; j < currentFileList.size(); j++) {
-//                    elementCurrent = currentFileList.get(j);
-//                    // если элементы не равно инкемент счетчика
-//                    if (!elementNew.getFileName().getValue().equals(elementCurrent.getFileName().getValue())) {
-//                        count++;
-//                    } else {
-//                        break;
-//                    }
-//                    // если счетчик равен кол-ву элементов, это значит, что такого элемента нет, добавляем его в список
-//                    if (count == currentFileList.size()) {
-//                        currentFileList.add(elementNew);
-//                        // обнуляем список
-//                        count = 0;
-//                    }
-//                }
-//            }
-//
-//            // проверяем, наличие удаленных на сервере файлов
-//            // берем элемент из текущего листа и сравниваем с новым листом
-//            count = 0;
-//            for (int i = 0; i < currentFileList.size(); i++) {
-//                elementCurrent = currentFileList.get(i);
-//                for (int j = 0; j < newFileList.size(); j++) {
-//                    elementNew = newFileList.get(j);
-//
-//                    // плюсуем счетчик, если такого элемента нет
-//                    if (!elementNew.getFileName().getValue().equals(elementCurrent.getFileName().getValue())) {
-//                        count++;
-//                        // если такой файл есть, проверяем следующий
-//                    } else {
-//                        break;
-//                    }
-//                    if (count == newFileList.size()) {
-//                        currentFileList.remove(i);
-//                        count=0;
-//                    }
-//                }
-//
-//            }
-//        }
     }
+    public synchronized void lastUpdate() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM' at ' HH:mm:ss ");
 
+        // upd = lbLastUpd.getText();
+        String upd = dateFormat.format(System.currentTimeMillis());
+        System.out.println(  clientController.lbLastUpd);
+        clientController.lbLastUpd.setText("Last upd "+upd);
+    }
     public void handleSaveAs() {
 
         File file = new File("fblist");
@@ -365,5 +244,142 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
             mainApp.saveFileListDataToFile(file);
         }
     }
+    // TODO зафигачить побайтовую передачу
+    public void sendFileBytes(List<File> list){
+        int countFiles = list.size();
+        Socket socket = mainApp.getSocketThread().getSocket();
 
+        DataOutputStream outD;
+        try{
+            outD = new DataOutputStream(socket.getOutputStream());
+
+           // outD.writeInt(countFiles);//отсылаем количество файлов
+
+            for(int i = 0; i<list.size(); i++){
+                File f = list.get(i);
+               // сохраняю файл в массив байт
+                byte[] bytes = Files.readAllBytes(Paths.get(f.getPath()));
+
+                // создаю поток байт
+                ByteArrayOutputStream baos  = new ByteArrayOutputStream();
+                // пишу в него сохраненнный массив
+                baos.write(bytes);
+
+                outD.flush();
+                baos.close();
+            }
+            socket.close();
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private void handleFilePacket(Packet packet) {
+        File folder = new File(CLIENT_INBOX_PATH);
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+
+
+        // получаем содержимое пакета и записываем в соответствующую логину папку
+//            FileContainer filePackage = (FileContainer) packet.getOutputPacket();
+//            ArrayList<byte[]> files = filePackage.getFile();
+//            ArrayList<String> names = filePackage.getName();
+        Path path;
+
+        FileContainerSingle fileContainer = (FileContainerSingle) packet.getOutputPacket();
+        byte[] file = fileContainer.getFile();
+        String name = fileContainer.getName();
+
+        // проверяем есть ли файл на сервере
+        // создаем список
+        File[] fList;
+        fList = folder.listFiles();
+
+//            for (int i = 0; i < files.size(); i++) {
+//                for (int j = 0; j < fList.length; j++) {
+//                    String s= fList[j].getName();
+//                    String s1 = names.get(i);
+//                    if (fList[j].getName().equals(names.get(i))){
+//                        MessagePacket msgPkt = new MessagePacket("File '"+names.get(i)+"'was already uploaded. Delete it, or upload another file");
+//                        socketThread.sendPacket(msgPkt);
+//                        return;
+//                    }
+//                }
+        try {
+            path = Paths.get(folder.getPath() + "\\" + name);
+            Files.write(path, file);
+//                    FileOutputStream fos = new FileOutputStream(new File(folder.getPath() + "\\" + names.get(i)));
+//                    fos.write(files.get(i));
+//                    fos.close();
+            Logger.writeLog("File '" + name + "' received. ");
+        } catch (IOException e) {
+
+            e.printStackTrace();
+            return;
+        }
+
+    }
+    private void handleMessagePacket(Packet packet) {
+        String msg = (String) packet.getOutputPacket();
+        Platform.runLater(() -> AlertWindow.infoMesage(msg));
+        Logger.writeLog("MESSAGE received");
+
+        // получили список файлов в "облаке"
+    }
+
+    private void handeFileListPacket(Packet packet) {
+        //   ArrayList<FileListElement> fileList = (ArrayList<FileListElement>) packet.getOutputPacket();
+        FileListContainer fc = (FileListContainer) packet.getOutputPacket();
+
+        ArrayList<FileListElement> flist = (ArrayList<FileListElement>) fc.getList();
+        ObservableList<FileListXMLElement> fXMLlist = FXCollections.observableArrayList();
+
+        for (int i = 0; i < flist.size(); i++) {
+            fXMLlist.add(new FileListXMLElement(flist.get(i).getFileName(), flist.get(i).getFileSize()));
+        }
+        mainApp.fillFileList(flist);
+        updateList(fXMLlist, mainApp.fileListDataProp);
+        //    mainApp.setFileListDataProp(fXMLlist);
+        //handleSaveAs();
+
+        Platform.runLater(()->{
+            lastUpdate();
+        });
+
+        Logger.writeLog("FILE_LIST received");
+    }
+    private void handleRegAcceptPacket() {
+        // isRegistrated = (Boolean) packet.getOutputPacket();
+//            Platform.runLater(() -> infoMesage("User " + loginReg + " successfully registered in FileBox"));
+//            Platform.runLater(() -> regExit());
+        state = State.REGISTERED;
+        disconnect();
+        state = State.NOT_CONNECTED;
+//            Stage stage = (Stage) reg.getScene().getWindow();
+//            stage.showAndWait();
+
+    }
+
+    private void handleAuthPacket(Packet packet) {
+        isAuthorized = (Boolean) packet.getOutputPacket();
+        if (isAuthorized) {
+            state = State.CONNECTED;
+            //clientController.loginHide();
+            Platform.runLater(() -> clientController.loginHide());
+
+            FileListPacket fileListRequest = new FileListPacket(null);
+            mainApp.socketThread.sendPacket(fileListRequest);
+
+        }
+    }
+
+    private void handleErrorPacket(Packet packet) {
+        errorMsg = (String) packet.getOutputPacket();
+        state = State.ERROR;
+        Logger.writeLog(errorMsg);
+        Platform.runLater(() -> AlertWindow.errorMesage(errorMsg));
+    }
 }

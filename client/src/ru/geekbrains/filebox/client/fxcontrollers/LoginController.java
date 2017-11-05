@@ -6,12 +6,16 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import ru.geekbrains.filebox.client.core.FileBoxClientManager;
+import ru.geekbrains.filebox.client.core.State;
+import ru.geekbrains.filebox.library.AlertWindow;
 
-public class LoginController {
+public class LoginController extends  BaseController{
 
 
     @FXML
@@ -20,33 +24,51 @@ public class LoginController {
     @FXML
     PasswordField fieldPass;
 
-    public VBox getRootElement() {
-        return rootElement;
-    }
-
     @FXML
     VBox rootElement;
+    FileBoxClientManager clientManager;
+    public void loginToFileBox() {
 
-    public void loginToFileBox() throws Exception {
+        // предаем сылки на главный гласс и контроллер
+        clientManager = new FileBoxClientManager(mainApp);
+        clientManager.setClientController(clientController);
 
-//        Stage mystage = (Stage) rootElement.getScene().getWindow();
-//        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/logged_client.fxml"));
-//        Parent root = fxmlLoader.load();
-//
-//        ClientController cm = (ClientController) fxmlLoader.getController();
-//        if (!fieldLogin.getText().isEmpty()||!fieldLogin.getText().isEmpty()) {
-//            cm.login = fieldLogin.getText();
-//            cm.password = fieldPass.getText();
-//            cm.connect();
-//            mystage.hide();
-//        } else {
-//            Alert alert = new Alert(Alert.AlertType.WARNING);
-//            alert.setTitle("Warning");
-//            alert.setHeaderText(null);
-//            alert.setContentText("Fill mail and password fields");
-//            alert.showAndWait();
-//        }
+        // если поля не пусты
+        if (!fieldLogin.getText().isEmpty() || !fieldLogin.getText().isEmpty()) {
+            clientManager.setLogin(fieldLogin.getText());
+            clientManager.setPassword(fieldPass.getText());
+
+            // меняем статус скиента и соединяемся
+            clientManager.state = State.LOGIN;
+            clientManager.connect();
+
+        } else {
+            AlertWindow.warningMesage("Fill mail and password fields");
+        }
+
     }
 
+    public void registerNew() {
+//        Stage stage = (Stage) reg.getScene().getWindow();
+//
+//        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/registration_modal.fxml"));
+//        Parent root1 = null;
+//        try {
+//            root1 = (Parent) fxmlLoader.load();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        Stage registrStage = new Stage();
+//        registrStage.initModality(Modality.WINDOW_MODAL);
+//        registrStage.initOwner(stage);///
+//        registrStage.setTitle("New user registration ");
+//        registrStage.setScene(new Scene(root1));
+//
+//        registrStage.setResizable(false);
+//        registrStage.show();
+        clientManager = new FileBoxClientManager(mainApp);
+        clientManager.setClientController(clientController);
 
+        mainApp.showRegisterNewLayout();
+    }
 }

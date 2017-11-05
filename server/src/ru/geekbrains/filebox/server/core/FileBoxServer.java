@@ -180,47 +180,48 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
 
             // получаем содержимое пакета и записываем в соответствующую логину папку
-            FileContainer filePackage = (FileContainer) packet.getOutputPacket();
-            ArrayList<byte[]> files = filePackage.getFiles();
-            ArrayList<String> names = filePackage.getNames();
+//            FileContainer filePackage = (FileContainer) packet.getOutputPacket();
+//            ArrayList<byte[]> files = filePackage.getFiles();
+//            ArrayList<String> names = filePackage.getNames();
             Path path;
-
+            FileContainerSingle fileContainer = (FileContainerSingle) packet.getOutputPacket();
+            byte[] file = fileContainer.getFile();
+            String name = fileContainer.getName();
             // проверяем есть ли файл на сервере
             // создаем список
             File[] fList;
             fList = folder.listFiles();
 
-            for (int i = 0; i < files.size(); i++) {
-//                for (int j = 0; j < fList.length; j++) {
-//                    String s= fList[j].getName();
-//                    String s1 = names.get(i);
-//                    if (fList[j].getName().equals(names.get(i))){
-//                        MessagePacket msgPkt = new MessagePacket("File '"+names.get(i)+"'was already uploaded. Delete it, or upload another file");
-//                        socketThread.sendPacket(msgPkt);
-//                        return;
-//                    }
-//                }
-                try {
-                    path = Paths.get(folder.getPath() + "\\" + names.get(i));
-                    Files.write(path, files.get(i));
-//                    FileOutputStream fos = new FileOutputStream(new File(folder.getPath() + "\\" + names.get(i)));
-//                    fos.write(files.get(i));
-//                    fos.close();
-                    putLog(client.getLogin() + " " + "File '" + names.get(i) + "' received. ");
-                } catch (IOException e) {
+            for (int i = 0; i < fList.length; i++) {
 
-                    e.printStackTrace();
+                if (fList[i].getName().equals(name)) {
+                    MessagePacket msgPkt = new MessagePacket("File '" + name + "'was already uploaded. Delete it, or upload another file");
+                    socketThread.sendPacket(msgPkt);
                     return;
                 }
             }
+            try {
+
+                path = Paths.get(folder.getPath() + "\\" + name);
+                Files.write(path, file);
+//                    FileOutputStream fos = new FileOutputStream(new File(folder.getPath() + "\\" + names.get(i)));
+//                    fos.write(files.get(i));
+//                    fos.close();
+                putLog(client.getLogin() + " " + "File '" + name + "' received. ");
+            } catch (IOException e) {
+
+                e.printStackTrace();
+                return;
+            }
+//            }
 
             String filesStr = "";
-            for (String fileName : names) {
-                filesStr += "File: " + fileName + "\n";
-            }
+//            for (String fileName : name) {
+//                filesStr += "File: " + fileName + "\n";
+//            }
             //отправляем пользователю сообщение об успешной загрузки
             filesStr += "upload complete";
-            sendFileList(socketThread, client);
+          //  sendFileList(socketThread, client);
             MessagePacket msgPkt = new MessagePacket(filesStr);
             // сообщение от пользователя
         } else if (packet.getPacketType() == PackageType.FILE_REQUEST) {
@@ -232,7 +233,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
             // пользователь запросил список файлов
         } else if (packet.getPacketType() == PackageType.FILE_LIST) {
-            sendFileList(socketThread, client);
+       //     sendFileList(socketThread, client);
             // сообщение об ощибке
         } else if (packet.getPacketType() == PackageType.ERROR) {
             putLog(client.getLogin() + " " + "ERROR received");
@@ -269,7 +270,38 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             if (file.renameTo(newFile)) {
                 putLog(client.getLogin() + " " + "rename '" + rename[0] + "' to '" + rename[1] + "' complete");
             }
-            sendFileList(socketThread, client);
+         //   sendFileList(socketThread, client);
+
+            //TODO допилить прием файла
+        } else if (packet.getPacketType() == PackageType.FILE_WAITING) {
+            // узнаем сколько прилетит фалов
+            int filesCount = (Integer) packet.getOutputPacket();
+            socketThread.sendPacket(new FileWaitingPacket(1));
+            Path path;
+            File folder = new File(SERVER_INBOX_PATH + client.getLogin());
+            if (!folder.exists()) {
+                folder.mkdir();
+            }
+            for (int i = 0; i < filesCount ; i++) {
+                try {
+                    int x=0;
+                    DataInputStream dis = new DataInputStream(socket.getInputStream());
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+                    while ((dis.read())!=-1){
+                        baos.write(x);
+                    }
+                    byte[] file=baos.toByteArray();
+                    path = Paths.get(folder.getPath() + "\\" + "filename");
+                    Files.write(path, file);
+                    baos.close(); dis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
         } else if (packet.getPacketType() == PackageType.DELETE) {
             putLog("deleting file");
             String deleteRequest = (String) packet.getOutputPacket();
@@ -277,13 +309,14 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             if (file.delete()) {
                 putLog(client.getLogin() + " " + "delete file '" + deleteRequest + "' complete");
             }
-            sendFileList(socketThread, client);
+        //    sendFileList(socketThread, client);
 
         } else {
             putLog(client.getLogin() + " " + "Exception: Unknown package type :(");
             throw new RuntimeException("Unknown package type");
 
         }
+        sendFileList(socketThread, client);
     }
 
     // если клиент уже автроризован
@@ -364,6 +397,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     public synchronized void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {
 
     }
+
     public synchronized void sendFile() {
 
         // выбираем файл
@@ -372,14 +406,16 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
         FileContainer fileContainer = new FileContainer();
 
         // упаковываем в контейнер  и отправляем
-     //   packFiles(list, fileContainer);
+        //   packFiles(list, fileContainer);
 
     }
+
     void packFiles(String fileName, FileBoxSocketThread client) {
         FilePacket filePacket = null;
-        FileContainer fileContainer = new FileContainer();
-        File file = new File(SERVER_INBOX_PATH +client.getLogin()+"\\"+fileName);
-       // ArrayList<File> list = new ArrayList<>();
+        // FileContainer fileContainer = new FileContainer();
+        FileContainerSingle fileContainer = new FileContainerSingle();
+        File file = new File(SERVER_INBOX_PATH + client.getLogin() + "\\" + fileName);
+        // ArrayList<File> list = new ArrayList<>();
 
         // подсчитываем кол-во файлов и проверяем размер каждого файла
 //        if (list.size() > 0) {
@@ -392,7 +428,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 //                }
         // если файл подходящего размера, упаковываем в пакет
         try {
-            fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName());
+            fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName(), file.length(), 1);
             filePacket = new FilePacket(fileContainer);
         } catch (IOException e) {
             e.printStackTrace();

@@ -48,16 +48,16 @@ public class RenameController {
         //     this.socketThread=mainApp.getSocketThread();
     }
 
-    public void renameFile(){
+    public void renameFile() {
         newName = fieldNewName.getText();
 
-        if (newName.isEmpty()){
+        if (newName.isEmpty()) {
             AlertWindow.warningMesage("Enter new name");
 
-        }else {
-            FileOperationPacket renamePacket = new FileOperationPacket(PackageType.RENAME,currentName+"<>"+newName);
-        mainApp.socketThread.sendPacket(renamePacket);
-    }
+        } else {
+            FileOperationPacket renamePacket = new FileOperationPacket(PackageType.RENAME, currentName + "<>" + newName);
+            mainApp.socketThread.sendPacket(renamePacket);
+        }
         Stage stage = (Stage) renameRootElement.getScene().getWindow();
 
         stage.close();

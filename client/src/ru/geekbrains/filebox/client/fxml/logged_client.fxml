@@ -14,7 +14,8 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.ClientController">
+<VBox xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ru.geekbrains.filebox.client.fxcontrollers.ClientController">
 
     <children>
       <Pane prefHeight="100.0" prefWidth="465.0">

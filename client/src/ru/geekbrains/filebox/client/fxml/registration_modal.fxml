@@ -9,7 +9,9 @@
 <!--
 <VBox fx:id="registration_user" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="212.0" prefWidth="286.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.RegistrationController">
 -->
-<VBox fx:id="registration_user" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="212.0" prefWidth="286.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.ClientController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="212.0"
+      prefWidth="286.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ru.geekbrains.filebox.client.fxcontrollers.RegistrationController">
    <children>
       <TextField id="loginField " fx:id="loginRegField" promptText="login" styleClass="text-field-with-margin" stylesheets="@../css/style.css">
          <VBox.margin>
@@ -33,7 +35,7 @@
                <HBox.margin>
                   <Insets />
                </HBox.margin></Button>
-            <Button fx:id="exit" styleClass="fontverdabold" mnemonicParsing="false" onAction="#regExit" prefHeight="50.0" prefWidth="135.0" stylesheets="@../css/style.css" text="Cancel" textAlignment="CENTER">
+            <Button fx:id="exit" styleClass="fontverdabold" mnemonicParsing="false" onAction="#close" prefHeight="50.0" prefWidth="135.0" stylesheets="@../css/style.css" text="Cancel" textAlignment="CENTER">
                <HBox.margin>
                   <Insets left="60.0" />
                </HBox.margin></Button>

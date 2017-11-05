@@ -1,5 +1,6 @@
 package ru.geekbrains.filebox.client.fxcontrollers;
 
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -20,13 +21,18 @@ import ru.geekbrains.filebox.library.AlertWindow;
 import ru.geekbrains.filebox.library.Logger;
 import ru.geekbrains.filebox.network.packet.*;
 import ru.geekbrains.filebox.network.packet.packet_container.FileContainer;
+import ru.geekbrains.filebox.network.packet.packet_container.FileContainerSingle;
 
 import java.io.*;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static java.lang.Thread.sleep;
 
 public class ClientController {
 
@@ -39,6 +45,16 @@ public class ClientController {
     public void setMainApp(FileBoxClientStart mainApp) {
         this.mainApp = mainApp;
         //     this.socketThread=mainApp.getSocketThread();
+    }
+
+    public void setClientController(ClientController clientController) {
+        this.clientController = clientController;
+    }
+
+    ClientController clientController;
+
+    public FileBoxClientManager getClientManager() {
+        return clientManager;
     }
 
     private FileBoxClientManager clientManager;
@@ -59,7 +75,7 @@ public class ClientController {
     @FXML
     Button btnRename;
     @FXML
-    Label lbLastUpd;
+    public Label lbLastUpd;
     /// регистрацию сую сюда же
     @FXML
     TextField loginRegField;
@@ -80,6 +96,10 @@ public class ClientController {
     private String pass1Reg;
     Stage loginStage;
 
+    public void setLoginStage(Stage loginStage) {
+        this.loginStage = loginStage;
+    }
+
     /// инициализация модального окна логина, в которое передается ссылка на mainApp
     public void initClientLoginLayout() {
         try {
@@ -88,9 +108,10 @@ public class ClientController {
             FXMLLoader loaderLog = new FXMLLoader();
             loaderLog.setLocation(FileBoxClientStart.class.getResource("fxml/login_modal.fxml"));
             loginRootElement = (VBox) loaderLog.load();
-            ClientController controller = loaderLog.getController();
+        //    ClientController controller = loaderLog.getController();
             // получаем ссылку у контроллера окна
-            controller.setMainApp(mainApp);
+           // controller.
+                    setMainApp(mainApp);
             loginStage.setTitle("Login");
             loginStage.setOnCloseRequest((event) -> mainApp.getPrimaryStage().close());
 
@@ -99,6 +120,8 @@ public class ClientController {
             loginStage.setScene(sceneLog);
             loginStage.initModality(Modality.WINDOW_MODAL);
             loginStage.initOwner(btnRename.getScene().getWindow());
+
+
             loginStage.show();
         } catch (IOException e) {
             e.printStackTrace();
@@ -129,24 +152,27 @@ public class ClientController {
     }
 
     public void registerNew() {
-        Stage stage = (Stage) reg.getScene().getWindow();
+//        Stage stage = (Stage) reg.getScene().getWindow();
+//
+//        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/registration_modal.fxml"));
+//        Parent root1 = null;
+//        try {
+//            root1 = (Parent) fxmlLoader.load();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        Stage registrStage = new Stage();
+//        registrStage.initModality(Modality.WINDOW_MODAL);
+//        registrStage.initOwner(stage);///
+//        registrStage.setTitle("New user registration ");
+//        registrStage.setScene(new Scene(root1));
+//
+//        registrStage.setResizable(false);
+//        registrStage.show();
+        clientManager = new FileBoxClientManager(mainApp);
+        clientManager.setClientController(this);
 
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/registration.fxml"));
-        Parent root1 = null;
-        try {
-            root1 = (Parent) fxmlLoader.load();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Stage registrStage = new Stage();
-        registrStage.initModality(Modality.WINDOW_MODAL);
-        registrStage.initOwner(stage);
-        registrStage.setTitle("New user registration ");
-        registrStage.setScene(new Scene(root1));
-
-        registrStage.setResizable(false);
-        registrStage.show();
-
+        mainApp.showRegisterNewLayout();
     }
 
     // добавляем пользователя
@@ -182,8 +208,9 @@ public class ClientController {
     // прячем окно логина
 
     public void loginHide() {
-        Stage stage = (Stage) rootElement.getScene().getWindow();
-        stage.close();
+//        Stage stage = (Stage) rootElement.getScene().getWindow();
+//        stage.close();
+        loginStage.close();
     }
 
     public void loginShow() {
@@ -210,7 +237,7 @@ public class ClientController {
     public void initTable() {
         tblContent.setEditable(false);
         fileNameColumn.setCellValueFactory(cellData -> cellData.getValue().getFileName());
-        sizeColumn.setCellValueFactory(cellData -> cellData.getValue().getFileSize() );
+        sizeColumn.setCellValueFactory(cellData -> cellData.getValue().getFileSize());
         tblContent.setItems(mainApp.fileListDataProp);
         System.out.println();
 
@@ -220,10 +247,10 @@ public class ClientController {
     // методы обработки нажатия на кнопку
     // переименование файла
     public void renameFile() {
-       updTable();
+        updTable();
         // получаем список выбранного элеменота таблицы
-           FileListXMLElement fileListElement = tblContent.getSelectionModel().getSelectedItem();
-        if (fileListElement!=null) {
+        FileListXMLElement fileListElement = tblContent.getSelectionModel().getSelectedItem();
+        if (fileListElement != null) {
             String currentFilename = fileListElement.getFileName().getValue();
 
             // открывем дилоговое окно
@@ -239,26 +266,26 @@ public class ClientController {
 
         System.out.println("delete");
         FileListXMLElement fileListElement = tblContent.getSelectionModel().getSelectedItem();
-        if (fileListElement!=null) {
+        if (fileListElement != null) {
             String currentFilename = fileListElement.getFileName().getValue();
 
             // открывем дилоговое окно
-            if (currentFilename != null){
-                 boolean answer = AlertWindow.dialogWindow("Delete file?", currentFilename);
+            if (currentFilename != null) {
+                boolean answer = AlertWindow.dialogWindow("Delete file?", currentFilename);
 
-                 if (answer){
-                     FileOperationPacket deletePacket = new FileOperationPacket(PackageType.DELETE, currentFilename);
-                     mainApp.socketThread.sendPacket(deletePacket);
-                     mainApp.removeFromTable(currentFilename);
-                     Logger.writeLog(currentFilename+" deleted");
-                     System.out.println("OK");
-                 } else {
+                if (answer) {
+                    FileOperationPacket deletePacket = new FileOperationPacket(PackageType.DELETE, currentFilename);
+                    mainApp.socketThread.sendPacket(deletePacket);
+                    mainApp.removeFromTable(currentFilename);
+                    Logger.writeLog(currentFilename + " deleted");
+                    System.out.println("OK");
+                } else {
 
-                     Logger.writeLog("deleting operation canceled");
-                 }
+                    Logger.writeLog("deleting operation canceled");
+                }
             }
 
-             //  mainApp.showDioalogLayout("Delete file ", "Are you sure?");
+            //  mainApp.showDioalogLayout("Delete file ", "Are you sure?");
         }
 //        ObservableList<FileListXMLElement> list = mainApp.getFileListDataProp();
 //        list.add(new FileListXMLElement("sasaф", "1111111"));
@@ -268,27 +295,22 @@ public class ClientController {
 
         System.out.println("download");
         FileListXMLElement fileListElement = tblContent.getSelectionModel().getSelectedItem();
-        if (fileListElement!=null) {
+        if (fileListElement != null) {
             String currentFilename = fileListElement.getFileName().getValue();
-
             // открывем дилоговое окно
-            if (currentFilename != null){
+            if (currentFilename != null) {
                 boolean answer = AlertWindow.dialogWindow("Download file?", currentFilename);
 
-                if (answer){
+                if (answer) {
                     FileOperationPacket downLoad = new FileOperationPacket(PackageType.FILE_REQUEST, currentFilename);
                     mainApp.socketThread.sendPacket(downLoad);
-                    mainApp.removeFromTable(currentFilename);
-              //      Logger.writeLog(currentFilename+" deleted");
-                    Logger.writeLog("download operation '" +currentFilename+ "'complete");
+
+                    Logger.writeLog("download operation '" + currentFilename + "'complete");
                 } else {
 
-                    Logger.writeLog("download '" +currentFilename+ "' operation canceled");
-
+                    Logger.writeLog("download '" + currentFilename + "' operation canceled");
                 }
             }
-
-
         }
     }
 
@@ -296,36 +318,40 @@ public class ClientController {
     public void uploadFile() {
         sendFile();
         System.out.println("upload");
-        lastUpdate();
+      //  lastUpdate();
     }
 
     public void openOptions() {
         System.out.println("options");
+        mainApp.showOptionsLayout();
     }
 
     // отсоединение от сервера, открытие окна логина
     public void logOut() throws Exception {
 
         System.out.println("Client logOut");
-//        clientManager.disconnect();
         mainApp.socketThread.close();
         Logger.writeLog("Client LogOut");
-
         loginShow();
     }
 
 
+    //TODO допилить передачу файла
     // отправка файла
     public synchronized void sendFile() {
 
         // выбираем файл
         FileChooser fileChooser = new FileChooser();
         List<File> list = fileChooser.showOpenMultipleDialog(null);
-        FileContainer fileContainer = new FileContainer();
+        FileContainerSingle fileContainer = new FileContainerSingle();
 
         // упаковываем в контейнер  и отправляем
         packContainerAndSendFile(list, fileContainer);
 
+//        FileWaitingPacket fwp = new FileWaitingPacket(list.size());
+//        mainApp.socketThread.sendPacket(fwp);
+////      /// clientManager.setListOutFiles(list);
+//       clientManager.sendFileBytes(list);
     }
 
     private String upd;
@@ -334,9 +360,10 @@ public class ClientController {
     public synchronized void lastUpdate() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM' at ' HH:mm:ss ");
 
-        upd = lbLastUpd.getText();
-        upd += dateFormat.format(System.currentTimeMillis());
-        lbLastUpd.setText(upd);
+       // upd = lbLastUpd.getText();
+        upd = dateFormat.format(System.currentTimeMillis());
+        System.out.println(lbLastUpd);
+        lbLastUpd.setText("Last upd:"+upd);
     }
 
 
@@ -354,10 +381,17 @@ public class ClientController {
     public void handleDrop(DragEvent event) {
         List<File> list = event.getDragboard().getFiles();
         FileContainer fileContainer = new FileContainer();
-        packContainerAndSendFile(list, fileContainer);
+        FileContainerSingle fcs = new FileContainerSingle();
+        packContainerAndSendFile(list, fcs);
     }
 
-    void packContainerAndSendFile(List<File> list, FileContainer fileContainer) {
+    void packContainerAndSendFile(List<File> list, FileContainerSingle fileContainer) {
+        mainApp.showProgressLayout("Files upload" );
+        ProgressModalController progressModalController = mainApp.getProgressController();
+
+        double cntStep = 1d/list.size();
+
+        double prgress = 0;
         // подсчитываем кол-во файлов и проверяем размер каждого файла
         if (list.size() > 0) {
             for (int i = 0; i < list.size(); i++) {
@@ -365,11 +399,12 @@ public class ClientController {
                 if (file.length() > MAX_FILE_SIZE) {
                     AlertWindow.errorMesage("File size is more than 50MB");
                     Logger.writeLog(file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
-                    continue;
+                    return;
                 }
                 // если файл подходящего размера, упаковываем в пакет
                 try {
-                    fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName());
+
+                    fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName(), file.length(), list.size());
                     filePacket = new FilePacket(fileContainer);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -377,12 +412,17 @@ public class ClientController {
                 Logger.writeLog("Sending packet. Type: " + filePacket.getPacketType());
                 // логируем  и отправляем
                 mainApp.socketThread.sendPacket(filePacket);
+                prgress+=cntStep;
+                System.out.println("ProgressBar: "+prgress);
+                progressModalController.setProgress(prgress);
+
             }
         }
+       //   progressModalController.getStage().close();
     }
 
     public boolean showConfirmation(String file) {
-        boolean answer=false;
+        boolean answer = false;
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Delete File");
         alert.setHeaderText("Are you sure?");
@@ -392,9 +432,11 @@ public class ClientController {
         Optional<ButtonType> option = alert.showAndWait();
 
         if (option.get() == ButtonType.OK) {
-            answer=true;
+            answer = true;
         }
         return answer;
     }
+
+
 
 }
