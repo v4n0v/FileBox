@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import ru.geekbrains.filebox.client.core.ClientPreferences;
 import ru.geekbrains.filebox.client.core.FileListWrapper;
 import ru.geekbrains.filebox.client.core.FileListXMLElement;
 import ru.geekbrains.filebox.client.core.FileListXMLWrapper;
@@ -108,6 +109,12 @@ public class FileBoxClientStart extends Application {
         launch(args);
     }
 
+    public ClientPreferences getConfig() {
+        return config;
+    }
+
+    private ClientPreferences config;
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
@@ -117,7 +124,11 @@ public class FileBoxClientStart extends Application {
         //инициализируем модальное окно логина
         showClientLoginLayout();
       //  clientController.initClientLoginLayout();
-
+        File cfgFile = new File("config.xml");
+        if (cfgFile.exists()) {
+            config = new ClientPreferences();
+            config.loadConfig();
+        }
         // связываем таблицу и ObservableList  данными
         clientController.initTable();
 
@@ -351,7 +362,7 @@ public class FileBoxClientStart extends Application {
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
             OptionsController optionsController = loader.getController();
             optionsController.setMainApp(this);
-
+            optionsController.init();
             optionsController.setStage(optionsStage);
             optionsController.setClientController(clientController);
             optionsStage.show();
@@ -398,7 +409,35 @@ public class FileBoxClientStart extends Application {
             e.printStackTrace();
         }
     }
+    public void showSyncLayout( ) {
 
+        try {
+            // новое окно переименования
+            Stage syncStage = new Stage();
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(FileBoxClientStart.class.getResource("fxml/sync_layout.fxml"));
+
+            // создаем сцену, задаем параметры
+           HBox page = (HBox) loader.load();
+            Scene scene = new Scene(page);
+            syncStage.setScene(scene);
+            syncStage.setTitle("Synchronize your FileBox");
+            syncStage.initModality(Modality.WINDOW_MODAL);
+            syncStage.initOwner(primaryStage);
+
+
+            // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
+            SyncController syncController = loader.getController();
+            syncController.setMainApp(this);
+            // progressController.setCurrentName(fileName);
+            syncController.setStage(syncStage);
+            //   progressController.setFile(file);
+            syncController.setClientController(clientController);
+            syncStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     public void showDioalogLayout(String title, String message) {
         Stage dialog = new Stage();
         dialog.initStyle(StageStyle.UTILITY);

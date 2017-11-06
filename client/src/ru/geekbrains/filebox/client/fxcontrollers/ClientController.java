@@ -262,6 +262,10 @@ public class ClientController {
 
     }
 
+    public void syncFileBox(){
+        mainApp.showSyncLayout();
+    }
+
     public void deleteFile() {
 
         System.out.println("delete");

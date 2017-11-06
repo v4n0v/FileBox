@@ -10,7 +10,7 @@
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="130.0" prefWidth="270.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="ru.geekbrains.filebox.client.fxcontrollers.ProgressModalController">
    <children>
-      <Label fx:id="lblFileName" mnemonicParsing="false" styleClass="fontverdabold" stylesheets="@../css/style.css" text="File:">
+      <Label fx:id="lblFileName" mnemonicParsing="false" styleClass="fontverdabold" stylesheets="@../css/gray.css" text="File:">
          <VBox.margin>
             <Insets left="10.0" top="10.0" />
          </VBox.margin></Label>
@@ -24,7 +24,7 @@
       </ProgressBar>
      <!-- <HBox alignment="TOP_RIGHT">
          <children>
-            <Button alignment="CENTER" onAction="#close" mnemonicParsing="false" prefHeight="30.0" prefWidth="67.0" styleClass="fontverdabold" stylesheets="@../css/style.css" text="Close">
+            <Button alignment="CENTER" onAction="#close" mnemonicParsing="false" prefHeight="30.0" prefWidth="67.0" styleClass="fontverdabold" stylesheets="@../css/gray.css" text="Close">
                <HBox.margin>
                   <Insets right="10.0" />
                </HBox.margin></Button>
