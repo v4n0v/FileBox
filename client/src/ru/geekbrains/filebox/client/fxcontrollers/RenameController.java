@@ -2,6 +2,7 @@ package ru.geekbrains.filebox.client.fxcontrollers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -15,9 +16,11 @@ import ru.geekbrains.filebox.network.packet.FileOperationPacket;
 import ru.geekbrains.filebox.network.packet.PackageType;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
 
-public class RenameController {
+public class RenameController extends BaseController{
 
     public void setCurrentName(String currentName) {
         this.currentName = currentName;
@@ -30,9 +33,6 @@ public class RenameController {
         this.clientController = clientController;
     }
 
-    private ClientController clientController;
-    private FileBoxClientStart mainApp;
-    private Stage dialogStage;
 
     @FXML
     Button btnRename;
@@ -40,13 +40,8 @@ public class RenameController {
     TextField fieldNewName;
     @FXML
     HBox renameRootElement;
-    Stage renameStage;
 
 
-    public void setMainApp(FileBoxClientStart mainApp) {
-        this.mainApp = mainApp;
-        //     this.socketThread=mainApp.getSocketThread();
-    }
 
     public void renameFile() {
         newName = fieldNewName.getText();
@@ -63,7 +58,9 @@ public class RenameController {
         stage.close();
     }
 
-    public void setDialogStage(Stage dialogStage) {
-        this.dialogStage = dialogStage;
+
+    @Override
+    public void init() {
+        fieldNewName.setText(currentName);
     }
 }

@@ -7,29 +7,32 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
 import ru.geekbrains.filebox.client.core.ClientPreferences;
 import ru.geekbrains.filebox.client.core.FileListXMLWrapper;
 import ru.geekbrains.filebox.client.core.preferences.Style;
 import ru.geekbrains.filebox.library.AlertWindow;
 import ru.geekbrains.filebox.library.Logger;
-import ru.geekbrains.filebox.network.packet.packet_container.FileContainerSingle;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class OptionsController extends BaseController{
+public class OptionsController extends BaseController {
     public void setPrefereces(ClientPreferences prefereces) {
         this.prefereces = prefereces;
     }
 
+    private String STYLES_PATH = "client\\src\\ru\\geekbrains\\filebox\\client\\css\\styles\\";
+    private String CURRENT_STYLE_PATH = "client\\src\\ru\\geekbrains\\filebox\\client\\css\\";
+
     ClientPreferences prefereces;
-    ObservableList<Style> styles =  FXCollections.observableArrayList();;
+    ObservableList<Style> styles = FXCollections.observableArrayList();
+    ;
     @FXML
     TextField inboxPath;
     @FXML
@@ -43,11 +46,17 @@ public class OptionsController extends BaseController{
 
     String path;
 
+    public void setPrimaryStage(Stage stage) {
+        this.primaryStage = stage;
+    }
+
+    private Stage primaryStage;
+
     @Override
     public void init() {
 
-        inboxPath.setText( mainApp.getConfig().getPath());
-        File folder = new File("client\\src\\ru\\geekbrains\\filebox\\client\\css");
+        inboxPath.setText(mainApp.getConfig().getPath());
+        File folder = new File(STYLES_PATH);
         if (!folder.exists()) {
             folder.mkdir();
         }
@@ -63,11 +72,13 @@ public class OptionsController extends BaseController{
 
 
     }
-    public void selectDir(){
+
+    public void selectDir() {
         final DirectoryChooser directoryChooser = new DirectoryChooser();
         File dir = directoryChooser.showDialog(null);
         if (dir != null) {
-           path=dir.getAbsolutePath();
+            path = dir.getAbsolutePath();
+            mainApp.getConfig().setPath(path);
             inboxPath.setText(path);
         } else {
             AlertWindow.warningMesage("Directory not chosen");
@@ -97,24 +108,49 @@ public class OptionsController extends BaseController{
     }
 
     @FXML
-    private void okAndSave(){
+    private void okAndSave() {
         ClientPreferences config = new ClientPreferences();
-        if (inboxPath!=null) {
+        Style selectedStyle = (Style) styleChoice.getSelectionModel().getSelectedItem();
+        System.out.println(selectedStyle.getStyle());
+
+
+        String absPath = mainApp.getCurrentStyleCSS();
+        // если выбран новый стиль, то заменяем им файл текущего стиля
+        if (selectedStyle != null) {
+            File newStyleFile = new File(STYLES_PATH + selectedStyle.getStyle() + ".css");
+            absPath = "file:///" + newStyleFile.getAbsolutePath().replace("\\", "/");
+            mainApp.setCurrentStyleCSS(absPath);
+//            Platform.runLater(() -> {
+                primaryStage.getScene().getStylesheets().clear();
+                primaryStage.getScene().getStylesheets().add(absPath);
+//            });
+//            File currentStyle = new File (CURRENT_STYLE_PATH+"style.css");
+//            currentStyle.delete();
+//            newStyleFile.renameTo(new File(CURRENT_STYLE_PATH+"style.css"));
+//            try {
+//                Files.copy(newStyleFile.toPath(), currentStyle.toPath());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+        }
+
+        // если
+        if (inboxPath != null) {
             try {
-            JAXBContext context = JAXBContext.newInstance(ClientPreferences.class);
+                JAXBContext context = JAXBContext.newInstance(ClientPreferences.class);
 
-            Marshaller m = context.createMarshaller();
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+                Marshaller m = context.createMarshaller();
+                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-            System.out.println("Saving config");
-            config.setPath(inboxPath.getText());
-            File cfg = new File("config.xml");
-            List<Style> l = new ArrayList<>();
+                System.out.println("Saving config");
+                config.setPath(inboxPath.getText());
+                File cfg = new File("config.xml");
+                List<Style> l = new ArrayList<>();
 //            Style styleGray = new Style("Gray");
-            l.addAll(styles);
-            config.setStyleList(l);
-
-            m.marshal(config, cfg);
+                l.addAll(styles);
+                config.setStyleList(l);
+                config.setCurrentStyle(absPath);
+                m.marshal(config, cfg);
             } catch (Exception e) { // catches ANY exception
                 e.printStackTrace();
                 AlertWindow.errorMesage(e.getMessage());

@@ -34,17 +34,19 @@ public class LoginController extends  BaseController{
         clientManager.setClientController(clientController);
 
         // если поля не пусты
-        if (!fieldLogin.getText().isEmpty() || !fieldLogin.getText().isEmpty()) {
-            clientManager.setLogin(fieldLogin.getText());
-            clientManager.setPassword(fieldPass.getText());
+   //     if (!fieldLogin.getText().isEmpty() || !fieldLogin.getText().isEmpty()) {
+//            clientManager.setLogin(fieldLogin.getText());
+//            clientManager.setPassword(fieldPass.getText());
+            clientManager.setLogin("admin");
+            clientManager.setPassword("12345");
 
             // меняем статус скиента и соединяемся
             clientManager.state = State.LOGIN;
             clientManager.connect();
 
-        } else {
-            AlertWindow.warningMesage("Fill mail and password fields");
-        }
+//        } else {
+//            AlertWindow.warningMesage("Fill mail and password fields");
+//        }
 
     }
 

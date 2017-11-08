@@ -214,8 +214,8 @@ public class ClientController {
     }
 
     public void loginShow() {
-
-        initClientLoginLayout();
+        mainApp.showClientLoginLayout();
+        //initClientLoginLayout();
 
     }
 
@@ -358,17 +358,17 @@ public class ClientController {
 //       clientManager.sendFileBytes(list);
     }
 
-    private String upd;
+//    private String upd;
 
-    // обновлени даты последнего обновления
-    public synchronized void lastUpdate() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM' at ' HH:mm:ss ");
-
-       // upd = lbLastUpd.getText();
-        upd = dateFormat.format(System.currentTimeMillis());
-        System.out.println(lbLastUpd);
-        lbLastUpd.setText("Last upd:"+upd);
-    }
+//    // обновлени даты последнего обновления
+//    public synchronized void lastUpdate() {
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM' at ' HH:mm:ss ");
+//
+//       // upd = lbLastUpd.getText();
+//        upd = dateFormat.format(System.currentTimeMillis());
+//        System.out.println(lbLastUpd);
+//        lbLastUpd.setText("Last upd:"+upd);
+//    }
 
 
     // обработка Drag'N'Drop
@@ -389,7 +389,7 @@ public class ClientController {
         packContainerAndSendFile(list, fcs);
     }
 
-    void packContainerAndSendFile(List<File> list, FileContainerSingle fileContainer) {
+    public void packContainerAndSendFile(List<File> list, FileContainerSingle fileContainer) {
         mainApp.showProgressLayout("Files upload" );
         ProgressModalController progressModalController = mainApp.getProgressController();
 

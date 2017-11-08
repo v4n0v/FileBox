@@ -23,12 +23,12 @@
                   <children>
                       <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
                           <children>
-                              <Button id="btnDownload" fx:id="btnDownload" onAction="#downloadFile" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/gray.css" text="Download">
+                              <Button id="btnDownload" fx:id="btnDownload" onAction="#downloadFile" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Download">
                                   <HBox.margin>
                                       <Insets left="5.0" right="5.0" top="15.0" />
                                   </HBox.margin>
                               </Button>
-                              <Button id="btnUpload" fx:id="btnUpload" mnemonicParsing="false" onAction="#uploadFile" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/gray.css" text="Upload">
+                              <Button id="btnUpload" fx:id="btnUpload" mnemonicParsing="false" onAction="#uploadFile" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Upload">
                                   <HBox.margin>
                                       <Insets bottom="5.0" left="5.0" right="5.0" top="15.0" />
                                   </HBox.margin>
@@ -37,13 +37,13 @@
                       </HBox>
                   <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                      <children>
-                        <Button id="btnRename" fx:id="btnRename" onAction="#renameFile" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/gray.css" text="Rename">
+                        <Button id="btnRename" fx:id="btnRename" onAction="#renameFile" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Rename">
 
                            <HBox.margin>
                               <Insets left="5.0" right="5.0" top="5.0" />
                            </HBox.margin>
                         </Button>
-                        <Button id="btnDelete" fx:id="btnDelete" layoutX="15.0" layoutY="25.0" onAction="#deleteFile" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/gray.css" text="Delete">
+                        <Button id="btnDelete" fx:id="btnDelete" layoutX="15.0" layoutY="25.0" onAction="#deleteFile" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Delete">
 
                            <HBox.margin>
                               <Insets left="5.0" right="5.0" top="5.0" />
@@ -53,7 +53,7 @@
                   </HBox>
                   <HBox prefHeight="100.0" prefWidth="200.0">
                      <children>
-                        <Button id="btnOptions" fx:id="btnOptions" onAction="#openOptions" prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/gray.css">
+                        <Button id="btnOptions" fx:id="btnOptions" onAction="#openOptions" prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/currentStyleCSS.css">
 
                            <graphic>
                               <ImageView fitHeight="25.0" fitWidth="25.0">
@@ -66,7 +66,7 @@
                               <Insets left="15.0" right="10.0" top="15.0" />
                            </HBox.margin>
                         </Button>
-                        <Button id="btnLogout" fx:id="btnLogout" layoutX="25.0" layoutY="25.0" onAction="#logOut" prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/gray.css">
+                        <Button id="btnLogout" fx:id="btnLogout" layoutX="25.0" layoutY="25.0" onAction="#logOut" prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/currentStyleCSS.css">
 
                            <graphic>
                               <ImageView fitHeight="25.0" fitWidth="25.0">
@@ -79,7 +79,7 @@
                               <Insets right="10.0" top="15.0" />
                            </HBox.margin>
                         </Button>
-                        <Button id="btnLogout" fx:id="btnSync" layoutX="74.0" layoutY="25.0" onAction="#syncFileBox" prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/gray.css">
+                        <Button id="btnLogout" fx:id="btnSync" layoutX="74.0" layoutY="25.0" onAction="#syncFileBox" prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/style.css">
                            <graphic>
                               <ImageView fitHeight="25.0" fitWidth="25.0">
                                  <image>
@@ -95,12 +95,12 @@
                   </HBox>
                   <VBox prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="1">
                      <children>
-                        <Label id="lbLoggedAs" styleClass="fontverdabold" stylesheets="@../css/gray.css" text="Logged in as ">
+                        <Label id="lbLoggedAs" styleClass="fontverdabold" stylesheets="@../css/style.css" text="Logged in as ">
                            <VBox.margin>
                               <Insets bottom="5.0" left="15.0" top="5.0" />
                            </VBox.margin>
                         </Label>
-                        <Label id="lbFreeSpace" layoutX="25.0" layoutY="20.0" styleClass="fontverdabold" stylesheets="@../css/gray.css" text="Free space">
+                        <Label id="lbFreeSpace" layoutX="25.0" layoutY="20.0" styleClass="fontverdabold" stylesheets="@../css/style.css" text="Free space">
                            <VBox.margin>
                               <Insets left="15.0" />
                            </VBox.margin>
@@ -121,13 +121,13 @@
       </Pane>
       <VBox>
          <children>
-                <TableView fx:id="tblContent" editable="true" minWidth="-Infinity" onDragDropped="#handleDrop" onDragOver="#handleDragOver" prefHeight="490.0" prefWidth="435.0" stylesheets="@../css/gray.css">
+                <TableView fx:id="tblContent" editable="true" minWidth="-Infinity" onDragDropped="#handleDrop" onDragOver="#handleDragOver" prefHeight="490.0" prefWidth="435.0" stylesheets="@../css/style.css">
                     <columns>
                         <TableColumn fx:id="fileNameColumn" editable="false" prefWidth="337.0" resizable="false" text="File" />
                         <TableColumn fx:id="sizeColumn" editable="false" minWidth="1.0" prefWidth="97.0" resizable="false" text="Size (kb)" />
                     </columns>
                 </TableView>
-            <Label id="lastUpd" fx:id="lbLastUpd" styleClass="lastUpd" stylesheets="@../css/gray.css" text="Last update: ">
+            <Label id="lastUpd" fx:id="lbLastUpd" styleClass="lastUpd" stylesheets="@../css/style.css" text="Last update: ">
                <VBox.margin>
                   <Insets top="5.0" />
                </VBox.margin>

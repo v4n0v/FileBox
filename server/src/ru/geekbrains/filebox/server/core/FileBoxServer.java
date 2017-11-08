@@ -233,7 +233,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
             // пользователь запросил список файлов
         } else if (packet.getPacketType() == PackageType.FILE_LIST) {
-       //     sendFileList(socketThread, client);
+           // sendFileList(socketThread, client);
             // сообщение об ощибке
         } else if (packet.getPacketType() == PackageType.ERROR) {
             putLog(client.getLogin() + " " + "ERROR received");

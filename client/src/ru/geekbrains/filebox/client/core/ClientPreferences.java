@@ -21,7 +21,7 @@ public class ClientPreferences {
     private List<Style> styleList;
 
     private String path;
-    //private String style;
+    private String style;
 
 
 //    public ClientPreferences getConfig() {
@@ -46,13 +46,15 @@ public class ClientPreferences {
     public List<Style> getStyleList() {
         return styleList;
     }
-//    @XmlElement(name="style")
-//    public String getStyle() {
-//        return style;
-//    }
-//    public void setStyle(String style) {
-//        this.style= style;
-//    }
+
+    // текущий стиль, который система олжна выбрать для загрузки вначале
+   @XmlElement(name="current_style")
+    public String getCurrentStyle() {
+        return style;
+    }
+    public void setCurrentStyle(String style) {
+        this.style= style;
+    }
 
     public void loadConfig() {
         System.out.println("loadConfig");
@@ -69,6 +71,7 @@ public class ClientPreferences {
             ClientPreferences config = (ClientPreferences) um.unmarshal(file);
             this.styleList=config.getStyleList();
             this.path=config.getPath();
+            this.style= config.getCurrentStyle();
 
         } catch (Exception e) { // catches ANY exception
             e.printStackTrace();

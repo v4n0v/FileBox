@@ -8,6 +8,7 @@ public class Style {
     public Style(String style){
         this.style=style;
     }
+
     @XmlElement(name="style")
     public String getStyle() {
         return style;

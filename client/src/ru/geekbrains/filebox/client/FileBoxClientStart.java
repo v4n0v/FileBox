@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -49,15 +50,17 @@ public class FileBoxClientStart extends Application {
         return fileListDataProp;
     }
 
-    public ObservableList<String> rowFiles;
-    public ObservableList<Long> rowSize;
-
     public void setFileListDataProp(ObservableList<FileListXMLElement> fileListDataProp) {
         this.fileListDataProp = fileListDataProp;
     }
 
     public ObservableList<FileListXMLElement> fileListDataProp = FXCollections.observableArrayList();
 
+    public ObservableList<FileListXMLElement> getClientFileList() {
+        return clientFileList;
+    }
+
+    ObservableList<FileListXMLElement> clientFileList = FXCollections.observableArrayList();
     public void fillFileList(ArrayList<FileListElement> list) {
         fileListData.clear();
         for (int i = 0; i < list.size(); i++) {
@@ -67,7 +70,7 @@ public class FileBoxClientStart extends Application {
 
     private Stage primaryStage;
     private VBox loggedRootElement;
-
+    private String logoPath;
     private ClientController clientController;
 
     public SocketThread getSocketThread() {
@@ -90,6 +93,9 @@ public class FileBoxClientStart extends Application {
             Scene scene = new Scene(loggedRootElement);
             primaryStage.setScene(scene);
             primaryStage.setResizable(false);
+
+              primaryStage.getIcons().add(new Image(logoPath));
+            setStyleToStage(currentStyleCSS,scene);
             // Give the clientController access to the main app.
             clientController = loader.getController();
             clientController.setMainApp(this);
@@ -119,16 +125,21 @@ public class FileBoxClientStart extends Application {
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("FileBoxClientManager");
+        File logo=new File ("logo.png");
+        logoPath = "file:///" + logo.getAbsolutePath().replace("\\", "/");
         //инициализируем окно клиента
-        showClientLayout();
-        //инициализируем модальное окно логина
-        showClientLoginLayout();
-      //  clientController.initClientLoginLayout();
         File cfgFile = new File("config.xml");
         if (cfgFile.exists()) {
             config = new ClientPreferences();
             config.loadConfig();
         }
+        currentStyleCSS=config.getCurrentStyle();
+
+        showClientLayout();
+        //инициализируем модальное окно логина
+        showClientLoginLayout();
+        //  clientController.initClientLoginLayout();
+
         // связываем таблицу и ObservableList  данными
         clientController.initTable();
 
@@ -137,9 +148,9 @@ public class FileBoxClientStart extends Application {
 //        if (file != null) {
 //            loadFileListDataFromFile(file);
 //        }
-    //    System.out.println(clientController.lbLastUpd);
+        //    System.out.println(clientController.lbLastUpd);
         // обновляем время последней синхронизации
-       // clientController.lastUpdate();
+        // clientController.lastUpdate();
     }
 
     public File getFileListFilePath() {
@@ -195,10 +206,11 @@ public class FileBoxClientStart extends Application {
             AlertWindow.errorMesage(e.getMessage());
         }
     }
+
     public void showClientLoginLayout() {
         try {
             // новое окно логина
-           Stage loginStage = new Stage();
+            Stage loginStage = new Stage();
             FXMLLoader loaderLog = new FXMLLoader();
             loaderLog.setLocation(FileBoxClientStart.class.getResource("fxml/login_modal.fxml"));
             VBox loginRootElement = (VBox) loaderLog.load();
@@ -207,9 +219,10 @@ public class FileBoxClientStart extends Application {
             // получаем ссылку у контроллера окна
             // controller.
 
+            loginStage.getIcons().add(new Image(logoPath));
             loginStage.setTitle("Login");
             loginStage.setOnCloseRequest((event) -> primaryStage.close());
-
+            setStyleToStage(currentStyleCSS,sceneLog );
             loginStage.setResizable(false);
             loginStage.setScene(sceneLog);
             loginStage.initModality(Modality.WINDOW_MODAL);
@@ -247,6 +260,7 @@ public class FileBoxClientStart extends Application {
         }
 
     }
+
     public void saveFileListDataToFile(File file) {
         try {
             JAXBContext context = JAXBContext
@@ -280,13 +294,17 @@ public class FileBoxClientStart extends Application {
 
 
     }
-    private void initController(BaseController controller,  Stage stage){
+
+    private void initController(BaseController controller, Stage stage) {
         // controller = loader.getController();
         controller.setMainApp(this);
         controller.setStage(stage);
         controller.setClientController(clientController);
     }
+
     // инициализация дилогового окна переименования файла
+
+
     public void showRenameLayout(String fileName) {
 
         try {
@@ -294,7 +312,7 @@ public class FileBoxClientStart extends Application {
             Stage renameStage = new Stage();
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(FileBoxClientStart.class.getResource("fxml/rename_modal.fxml"));
-
+            renameStage.getIcons().add(new Image(logoPath));
             // создаем сцену, задаем параметры
             HBox page = (HBox) loader.load();
             Scene scene = new Scene(page);
@@ -302,12 +320,13 @@ public class FileBoxClientStart extends Application {
             renameStage.setTitle("Rename " + fileName);
             renameStage.initModality(Modality.WINDOW_MODAL);
             renameStage.initOwner(primaryStage);
-
+            setStyleToStage(currentStyleCSS,scene );
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
             RenameController renameController = loader.getController();
             renameController.setMainApp(this);
             renameController.setCurrentName(fileName);
-            renameController.setDialogStage(renameStage);
+            renameController.setStage(renameStage);
+            renameController.init();
             renameController.setClientController(clientController);
             renameStage.show();
         } catch (IOException e) {
@@ -320,14 +339,14 @@ public class FileBoxClientStart extends Application {
             Stage registerStage = new Stage();
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(FileBoxClientStart.class.getResource("fxml/registration_modal.fxml"));
-
+            registerStage.getIcons().add(new Image(logoPath));
             VBox canvas = (VBox) loader.load();
             Scene scene = new Scene(canvas);
             registerStage.setScene(scene);
             registerStage.setTitle("Register new user");
             registerStage.initModality(Modality.WINDOW_MODAL);
             registerStage.initOwner(primaryStage);
-
+            setStyleToStage(currentStyleCSS,scene );
             RegistrationController regController = loader.getController();
 //            regController.setMainApp(this);
 //            regController.setStage(registrStage);
@@ -350,7 +369,7 @@ public class FileBoxClientStart extends Application {
             Stage optionsStage = new Stage();
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(FileBoxClientStart.class.getResource("fxml/options_modal.fxml"));
-
+            optionsStage.getIcons().add(new Image(logoPath));
             // создаем сцену, задаем параметры
             VBox page = (VBox) loader.load();
             Scene scene = new Scene(page);
@@ -358,11 +377,12 @@ public class FileBoxClientStart extends Application {
             optionsStage.setTitle("Options");
             optionsStage.initModality(Modality.WINDOW_MODAL);
             optionsStage.initOwner(primaryStage);
-
+            setStyleToStage(currentStyleCSS,scene );
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
             OptionsController optionsController = loader.getController();
             optionsController.setMainApp(this);
             optionsController.init();
+            optionsController.setPrimaryStage(primaryStage);
             optionsController.setStage(optionsStage);
             optionsController.setClientController(clientController);
             optionsStage.show();
@@ -376,7 +396,8 @@ public class FileBoxClientStart extends Application {
     }
 
     private ProgressModalController progressController;
-//    public void showProgressLayout(String title, String fileName, File file) {
+
+    //    public void showProgressLayout(String title, String fileName, File file) {
     public void showProgressLayout(String title) {
 
         try {
@@ -384,7 +405,7 @@ public class FileBoxClientStart extends Application {
             Stage progressStage = new Stage();
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(FileBoxClientStart.class.getResource("fxml/progress_modal.fxml"));
-
+            progressStage.getIcons().add(new Image(logoPath));
             // создаем сцену, задаем параметры
             VBox page = (VBox) loader.load();
             Scene scene = new Scene(page);
@@ -392,8 +413,8 @@ public class FileBoxClientStart extends Application {
             progressStage.setTitle(title);
             progressStage.initModality(Modality.WINDOW_MODAL);
             progressStage.initOwner(primaryStage);
-
-            ProgressBar pb = (ProgressBar)  page.getChildren().get(1);
+            setStyleToStage(currentStyleCSS,scene );
+            ProgressBar pb = (ProgressBar) page.getChildren().get(1);
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
 //            ProgressModalController progressController = loader.getController();
             progressController = new ProgressModalController();
@@ -402,33 +423,36 @@ public class FileBoxClientStart extends Application {
             // progressController.setCurrentName(fileName);
             progressController.setStage(progressStage);
             progressController.setModalController(progressController);
-         //   progressController.setFile(file);
+            //   progressController.setFile(file);
             progressController.setClientController(clientController);
             progressStage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public void showSyncLayout( ) {
+
+
+    public void showSyncLayout() {
 
         try {
             // новое окно переименования
             Stage syncStage = new Stage();
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(FileBoxClientStart.class.getResource("fxml/sync_layout.fxml"));
-
+            syncStage.getIcons().add(new Image(logoPath));
             // создаем сцену, задаем параметры
-           HBox page = (HBox) loader.load();
+            HBox page = (HBox) loader.load();
             Scene scene = new Scene(page);
             syncStage.setScene(scene);
             syncStage.setTitle("Synchronize your FileBox");
             syncStage.initModality(Modality.WINDOW_MODAL);
             syncStage.initOwner(primaryStage);
-
+            setStyleToStage(currentStyleCSS,scene );
 
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
             SyncController syncController = loader.getController();
             syncController.setMainApp(this);
+            syncController.init();
             // progressController.setCurrentName(fileName);
             syncController.setStage(syncStage);
             //   progressController.setFile(file);
@@ -438,6 +462,7 @@ public class FileBoxClientStart extends Application {
             e.printStackTrace();
         }
     }
+
     public void showDioalogLayout(String title, String message) {
         Stage dialog = new Stage();
         dialog.initStyle(StageStyle.UTILITY);
@@ -451,5 +476,20 @@ public class FileBoxClientStart extends Application {
         Scene scene = new Scene(box);
         dialog.setScene(scene);
         dialog.show();
+    }
+
+    private void setStyleToStage(String style, Scene scene){
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add(style);
+
+    }
+
+    public String getCurrentStyleCSS() {
+        return currentStyleCSS;
+    }
+
+    String currentStyleCSS;
+    public void setCurrentStyleCSS(String currentStyleCSS) {
+        this.currentStyleCSS = currentStyleCSS;
     }
 }

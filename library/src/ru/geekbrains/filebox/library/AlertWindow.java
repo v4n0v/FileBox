@@ -35,6 +35,8 @@ public class AlertWindow {
         alert.setTitle(title);
         alert.setHeaderText("Are you sure?");
         alert.setContentText(file);
+
+
         Optional<ButtonType> option = alert.showAndWait();
 
         if (option.get() == ButtonType.OK) {

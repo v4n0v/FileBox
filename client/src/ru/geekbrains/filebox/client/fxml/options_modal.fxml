@@ -20,11 +20,11 @@
    <children>
       <HBox prefHeight="36.0" prefWidth="580.0">
          <children>
-            <Label styleClass="fontverdabold" stylesheets="@../css/gray.css" text="Inbox folder:">
+            <Label styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Inbox folder:">
                <HBox.margin>
                   <Insets right="10.0" top="8.0" />
                </HBox.margin></Label>
-            <TextField fx:id="inboxPath" prefHeight="30.0" prefWidth="278.0" promptText="C:\FileBoxFolder" styleClass="fontverdabold" stylesheets="@../css/gray.css">
+            <TextField fx:id="inboxPath" prefHeight="30.0" prefWidth="278.0" promptText="C:\FileBoxFolder" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css">
                <HBox.margin>
                   <Insets right="10.0" />
                </HBox.margin></TextField>
@@ -42,12 +42,12 @@
       </HBox>
       <HBox prefHeight="38.0" prefWidth="424.0">
          <children>
-             <Label styleClass="fontverdabold" stylesheets="@../css/gray.css" text="Skin">
+             <Label styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Skin">
                  <HBox.margin>
                      <Insets right="10.0" top="5.0" />
                  </HBox.margin></Label>
 
-            <ChoiceBox fx:id="styleChoice" nodeOrientation="LEFT_TO_RIGHT" prefHeight="25.0" prefWidth="324.0" styleClass="fontverdabold" stylesheets="@../css/gray.css">
+            <ChoiceBox fx:id="styleChoice" nodeOrientation="LEFT_TO_RIGHT" prefHeight="25.0" prefWidth="324.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css">
                <HBox.margin>
                   <Insets left="60.0" />
                </HBox.margin></ChoiceBox>
@@ -58,8 +58,8 @@
       </HBox>
       <HBox alignment="TOP_RIGHT" prefHeight="141.0" prefWidth="424.0">
          <children>
-            <Button fx:id="okBtn" onAction="#okAndSave" mnemonicParsing="false" prefHeight="30.0" prefWidth="60.0" styleClass="fontverdabold" stylesheets="@../css/gray.css" text="Ok" />
-            <Button fx:id="cancelBtn" onAction="#close" mnemonicParsing="false" prefHeight="30.0" prefWidth="80.0" styleClass="fontverdabold" stylesheets="@../css/gray.css" text="Cancel">
+            <Button fx:id="okBtn" onAction="#okAndSave" mnemonicParsing="false" prefHeight="30.0" prefWidth="60.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Ok" />
+            <Button fx:id="cancelBtn" onAction="#close" mnemonicParsing="false" prefHeight="30.0" prefWidth="80.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Cancel">
                <HBox.margin>
                   <Insets left="10.0" />
                </HBox.margin>

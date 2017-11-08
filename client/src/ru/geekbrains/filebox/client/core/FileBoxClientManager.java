@@ -31,6 +31,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     private boolean isAuthorized;
     private final static int PORT = 8189;
 
+    private String CLIENT_INBOX_PATH;
     SocketThread socketThread;
 
     public void setListOutFiles(List<File> listOutFiles) {
@@ -178,7 +179,6 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 
     // обрабатываем полученный пакет
 
-    private String CLIENT_INBOX_PATH = "C:/FileBoxFolder/";
     private void handlePacket(Packet packet) {
 
         // если в полученном пакете файл
@@ -277,7 +277,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     }
 
     private void handleFilePacket(Packet packet) {
-        File folder = new File(CLIENT_INBOX_PATH);
+        File folder = new File( mainApp.getConfig().getPath());
         if (!folder.exists()) {
             folder.mkdir();
         }
@@ -344,13 +344,37 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         updateList(fXMLlist, mainApp.fileListDataProp);
         //    mainApp.setFileListDataProp(fXMLlist);
         //handleSaveAs();
-
+        updateClientFileList(mainApp.getConfig().getPath(), mainApp.getClientFileList());
         Platform.runLater(()->{
             lastUpdate();
         });
 
         Logger.writeLog("FILE_LIST received");
     }
+    private void updateClientFileList(String path, ObservableList<FileListXMLElement> fileList) {
+
+
+        // создаем списаок
+        File[] fList;
+        File clientFolder = new File(path);
+        //  String len;
+        fList = clientFolder.listFiles();
+        fileList.clear();
+//        for (int i = 0; i < fList.size(); i++) {
+//            fileList.add(new FileListXMLElement(fList.get(i).getFileName(), fList.get(i).getFileSize()));
+//        }
+        for (int i = 0; i < fList.length; i++) {
+            //Нужны только папки в место isFile() пишим isDirectory()
+            if (fList[i].isFile()) {
+                String name =fList[i].getName();
+                long  len =  fList[i].length();
+                fileList.add(new FileListXMLElement(fList[i].getName(), fList[i].length()));
+            }
+        }
+
+
+    }
+
     private void handleRegAcceptPacket() {
         // isRegistrated = (Boolean) packet.getOutputPacket();
 //            Platform.runLater(() -> infoMesage("User " + loginReg + " successfully registered in FileBox"));
