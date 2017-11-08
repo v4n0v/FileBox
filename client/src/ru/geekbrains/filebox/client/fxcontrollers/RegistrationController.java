@@ -31,7 +31,8 @@ public class RegistrationController extends BaseController{
     private final static int MAX_PASS_LENGTH = 32;
 
     public void addUser() {
-        FileBoxClientManager clientManager = clientController.getClientManager();
+       // FileBoxClientManager clientManager = clientController.getClientManager();
+        FileBoxClientManager clientManager = new FileBoxClientManager(mainApp);
 
         String loginReg = loginRegField.getText();
         String mailReg = mailRegField.getText();

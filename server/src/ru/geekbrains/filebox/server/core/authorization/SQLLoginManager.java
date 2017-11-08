@@ -51,11 +51,12 @@ public class SQLLoginManager implements LoginManager {
     }
     // проверяем логин\пароль,
     @Override
-    public boolean isLoginAndPassCorrect(String login, String pass) {
-        try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM users WHERE login=? AND pass=? ;")) {
+    public boolean isLoginAndPassCorrect(String login, int pass) {
+//    public boolean isLoginAndPassCorrect(String login, String pass) {
+        try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM users WHERE login=? AND passHash=? ;")) {
 
             ps.setString(1, login);
-            ps.setString(2, pass);
+            ps.setInt(2, pass);
             try (ResultSet resultSet = ps.executeQuery()) {
                 if (resultSet.next())
                     return true;
@@ -72,15 +73,16 @@ public class SQLLoginManager implements LoginManager {
     }
     // лобавляем пользователя
     @Override
-    public void addNewUser(String login, String mail, String pass) {
+    public void addNewUser(String login, String mail,  int passHash) {
 
         try {
             connection.setAutoCommit(false);
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO users (login , mail, pass, space) VALUES (?, ?, ?, ?) ");
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO users (login , mail, passHash, space) VALUES (?, ?, ?, ?) ");
 
             ps.setString(1, login);
             ps.setString(2, mail);
-            ps.setString(3, pass);
+      //   ps.setString(3, pass);
+            ps.setInt(3, passHash);
             ps.setInt(4, 10);
             ps.executeUpdate();
             connection.commit();

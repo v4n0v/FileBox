@@ -1,10 +1,8 @@
 package ru.geekbrains.filebox.client.core;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.stage.Stage;
 import ru.geekbrains.filebox.client.FileBoxClientStart;
 import ru.geekbrains.filebox.client.fxcontrollers.ClientController;
 import ru.geekbrains.filebox.library.AlertWindow;
@@ -30,15 +28,16 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     private String errorMsg;
     private boolean isAuthorized;
     private final static int PORT = 8189;
+    FileBoxClientStart mainApp;
+    //   private String CLIENT_INBOX_PATH;
+    private SocketThread socketThread;
 
-    private String CLIENT_INBOX_PATH;
-    SocketThread socketThread;
+//    public void setListOutFiles(List<File> listOutFiles) {
+//        this.listOutFiles = listOutFiles;
+//    }
 
-    public void setListOutFiles(List<File> listOutFiles) {
-        this.listOutFiles = listOutFiles;
-    }
+    private List<File> listOutFiles;
 
-   private List<File> listOutFiles;
     public void setLogin(String login) {
         this.login = login;
     }
@@ -56,17 +55,17 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 
     private ClientController clientController;
 
-    public void setLoginReg(String loginReg) {
-        this.loginReg = loginReg;
-    }
-
-    public void setMailReg(String mailReg) {
-        this.mailReg = mailReg;
-    }
-
-    public void setPass1Reg(String pass1Reg) {
-        this.pass1Reg = pass1Reg;
-    }
+//    public void setLoginReg(String loginReg) {
+//        this.loginReg = loginReg;
+//    }
+//
+//    public void setMailReg(String mailReg) {
+//        this.mailReg = mailReg;
+//    }
+//
+//    public void setPass1Reg(String pass1Reg) {
+//        this.pass1Reg = pass1Reg;
+//    }
 
     public void setRegistrationInfo(String loginReg, String mailReg, String pass1Reg) {
         this.pass1Reg = pass1Reg;
@@ -79,12 +78,11 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     private String pass1Reg;
     private final static long MAX_FILE_SIZE = 5_242_880;
 
-    FileBoxClientStart mainApp;
 
-    public void setMainApp(FileBoxClientStart mainApp) {
-        this.mainApp = mainApp;
-        //     this.socketThread=mainApp.getSocketThread();
-    }
+//    public void setMainApp(FileBoxClientStart mainApp) {
+//        this.mainApp = mainApp;
+//        //     this.socketThread=mainApp.getSocketThread();
+//    }
 
     public FileBoxClientManager(FileBoxClientStart mainApp) {
         this.mainApp = mainApp;
@@ -184,7 +182,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         // если в полученном пакете файл
         if (packet.getPacketType() == PackageType.FILE) {
             handleFilePacket(packet);
-   //         }
+            //         }
             // если получили сообщение, отрыли информационное окно
         } else if (packet.getPacketType() == PackageType.MESSAGE) {
             handleMessagePacket(packet);
@@ -192,16 +190,16 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
             handeFileListPacket(packet);
             // прилетела ошибка на сервере, открыли окно об ошибкке
         } else if (packet.getPacketType() == PackageType.ERROR) {
-          handleErrorPacket(packet);
+            handleErrorPacket(packet);
             // такое сообщение не должно придти
         } else if (packet.getPacketType() == PackageType.LOGIN) {
             LoginContainer lc = (LoginContainer) packet.getOutputPacket();
             //сервер одбрил логин и парроль
         } else if (packet.getPacketType() == PackageType.AUTH_ACCEPT) {
-         handleAuthPacket(packet);
+            handleAuthPacket(packet);
             // зарегистрировали нового пользователя
         } else if (packet.getPacketType() == PackageType.REG_ACCEPT) {
-           handleRegAcceptPacket();
+            handleRegAcceptPacket(packet);
         } else if (packet.getPacketType() == PackageType.FILE_WAITING) {
             sendFileBytes(listOutFiles);
         } else {
@@ -213,55 +211,55 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     }
 
 
-
-
     public void updateList(ObservableList<FileListXMLElement> newFileList,
                            ObservableList<FileListXMLElement> currentFileList) {
 
         // обнуляем и заполняем список файлов
         currentFileList.clear();
-        if (currentFileList.size()==0)
+        if (currentFileList.size() == 0)
             currentFileList.addAll(newFileList);
 
     }
+
     public synchronized void lastUpdate() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM' at ' HH:mm:ss ");
 
         // upd = lbLastUpd.getText();
         String upd = dateFormat.format(System.currentTimeMillis());
-        System.out.println(  clientController.lbLastUpd);
-        clientController.lbLastUpd.setText("Last upd "+upd);
+        System.out.println(clientController.lbLastUpd);
+        clientController.lbLastUpd.setText("Last upd " + upd);
     }
-    public void handleSaveAs() {
 
-        File file = new File("fblist");
-
-        if (file != null) {
-            // Make sure it has the correct extension
-            if (!file.getPath().endsWith(".xml")) {
-                file = new File(file.getPath() + ".xml");
-            }
-            mainApp.saveFileListDataToFile(file);
-        }
-    }
+    //    public void handleSaveAs() {
+//
+//        File file = new File("fblist");
+//
+//        if (file != null) {
+//            // Make sure it has the correct extension
+//            if (!file.getPath().endsWith(".xml")) {
+//                file = new File(file.getPath() + ".xml");
+//            }
+//            mainApp.saveFileListDataToFile(file);
+//        }
+//    }
     // TODO зафигачить побайтовую передачу
-    public void sendFileBytes(List<File> list){
+    public void sendFileBytes(List<File> list) {
         int countFiles = list.size();
         Socket socket = mainApp.getSocketThread().getSocket();
 
         DataOutputStream outD;
-        try{
+        try {
             outD = new DataOutputStream(socket.getOutputStream());
 
-           // outD.writeInt(countFiles);//отсылаем количество файлов
+            // outD.writeInt(countFiles);//отсылаем количество файлов
 
-            for(int i = 0; i<list.size(); i++){
+            for (int i = 0; i < list.size(); i++) {
                 File f = list.get(i);
-               // сохраняю файл в массив байт
+                // сохраняю файл в массив байт
                 byte[] bytes = Files.readAllBytes(Paths.get(f.getPath()));
 
                 // создаю поток байт
-                ByteArrayOutputStream baos  = new ByteArrayOutputStream();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 // пишу в него сохраненнный массив
                 baos.write(bytes);
 
@@ -269,15 +267,14 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
                 baos.close();
             }
             socket.close();
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
     private void handleFilePacket(Packet packet) {
-        File folder = new File( mainApp.getConfig().getPath());
+        File folder = new File(mainApp.getConfig().getPath());
         if (!folder.exists()) {
             folder.mkdir();
         }
@@ -322,6 +319,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         }
 
     }
+
     private void handleMessagePacket(Packet packet) {
         String msg = (String) packet.getOutputPacket();
         Platform.runLater(() -> AlertWindow.infoMesage(msg));
@@ -340,17 +338,18 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         for (int i = 0; i < flist.size(); i++) {
             fXMLlist.add(new FileListXMLElement(flist.get(i).getFileName(), flist.get(i).getFileSize()));
         }
-        mainApp.fillFileList(flist);
-        updateList(fXMLlist, mainApp.fileListDataProp);
-        //    mainApp.setFileListDataProp(fXMLlist);
+        //  mainApp.fillFileList(flist);
+        updateList(fXMLlist, mainApp.getServerFileList());
+        //    mainApp.setServerFileList(fXMLlist);
         //handleSaveAs();
         updateClientFileList(mainApp.getConfig().getPath(), mainApp.getClientFileList());
-        Platform.runLater(()->{
+        Platform.runLater(() -> {
             lastUpdate();
         });
 
         Logger.writeLog("FILE_LIST received");
     }
+
     private void updateClientFileList(String path, ObservableList<FileListXMLElement> fileList) {
 
 
@@ -366,8 +365,8 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         for (int i = 0; i < fList.length; i++) {
             //Нужны только папки в место isFile() пишим isDirectory()
             if (fList[i].isFile()) {
-                String name =fList[i].getName();
-                long  len =  fList[i].length();
+                String name = fList[i].getName();
+                long len = fList[i].length();
                 fileList.add(new FileListXMLElement(fList[i].getName(), fList[i].length()));
             }
         }
@@ -375,16 +374,23 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 
     }
 
-    private void handleRegAcceptPacket() {
-        // isRegistrated = (Boolean) packet.getOutputPacket();
-//            Platform.runLater(() -> infoMesage("User " + loginReg + " successfully registered in FileBox"));
-//            Platform.runLater(() -> regExit());
-        state = State.REGISTERED;
-        disconnect();
-        state = State.NOT_CONNECTED;
+    private void handleRegAcceptPacket(Packet packet) {
+       boolean  isRegistrated = (Boolean) packet.getOutputPacket();
+       if (isRegistrated) {
+           Platform.runLater(() -> AlertWindow.infoMesage("User " + loginReg + " successfully registered in FileBox"));
+           Platform.runLater(() -> regExit());
+           state = State.REGISTERED;
+           disconnect();
+           state = State.NOT_CONNECTED;
 //            Stage stage = (Stage) reg.getScene().getWindow();
 //            stage.showAndWait();
+           Platform.runLater(() ->  mainApp.regExit());
+       } else {
+           Platform.runLater(() -> AlertWindow.errorMesage("User " + loginReg + " registration error"));
+       }
+    }
 
+    private void regExit() {
     }
 
     private void handleAuthPacket(Packet packet) {

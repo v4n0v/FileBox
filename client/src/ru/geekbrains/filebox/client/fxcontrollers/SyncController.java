@@ -13,8 +13,6 @@ import ru.geekbrains.filebox.library.Logger;
 import ru.geekbrains.filebox.network.packet.FileOperationPacket;
 import ru.geekbrains.filebox.network.packet.PackageType;
 import ru.geekbrains.filebox.network.packet.packet_container.FileContainerSingle;
-import ru.geekbrains.filebox.network.packet.packet_container.FileListContainer;
-import ru.geekbrains.filebox.network.packet.packet_container.FileListElement;
 
 
 import java.io.File;
@@ -40,7 +38,7 @@ public class SyncController extends BaseController {
     private TableColumn<FileListXMLElement, Long> severSizeColumn;
 
 //    public void updTable() {
-//        tblClientContent.setItems(mainApp.fileListDataProp);
+//        tblClientContent.setItems(mainApp.serverFileList);
 //    }
 
     public void initTable() {
@@ -57,7 +55,7 @@ public class SyncController extends BaseController {
 
     @Override
     public void init() {
-        serverFileList = mainApp.getFileListDataProp();
+        serverFileList = mainApp.getServerFileList();
         clientFileList=mainApp.getClientFileList();
       //  clientFileList=
       //  ArrayList<FileListXMLElement> fileList = new ArrayList<>();

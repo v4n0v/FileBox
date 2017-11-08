@@ -4,84 +4,71 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import ru.geekbrains.filebox.client.core.ClientPreferences;
-import ru.geekbrains.filebox.client.core.FileListWrapper;
 import ru.geekbrains.filebox.client.core.FileListXMLElement;
-import ru.geekbrains.filebox.client.core.FileListXMLWrapper;
 import ru.geekbrains.filebox.client.fxcontrollers.*;
-import ru.geekbrains.filebox.library.AlertWindow;
 import ru.geekbrains.filebox.network.SocketThread;
-import ru.geekbrains.filebox.network.packet.packet_container.FileListElement;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.prefs.Preferences;
 
 public class FileBoxClientStart extends Application {
-    public Stage getPrimaryStage() {
-        return primaryStage;
-    }
 
-    public FileBoxClientStart getMainApp() {
-        return this;
-    }
-
-    public void setFileListData(ObservableList<FileListElement> fileListData) {
-        this.fileListData = fileListData;
-    }
-
-    public ObservableList<FileListElement> fileListData = FXCollections.observableArrayList();
-
-    public ObservableList<FileListXMLElement> getFileListDataProp() {
-        return fileListDataProp;
-    }
-
-    public void setFileListDataProp(ObservableList<FileListXMLElement> fileListDataProp) {
-        this.fileListDataProp = fileListDataProp;
-    }
-
-    public ObservableList<FileListXMLElement> fileListDataProp = FXCollections.observableArrayList();
-
-    public ObservableList<FileListXMLElement> getClientFileList() {
-        return clientFileList;
-    }
-
-    ObservableList<FileListXMLElement> clientFileList = FXCollections.observableArrayList();
-    public void fillFileList(ArrayList<FileListElement> list) {
-        fileListData.clear();
-        for (int i = 0; i < list.size(); i++) {
-            fileListData.add(list.get(i));
-        }
-    }
-
+    // перменные
+    private ProgressModalController progressController;
+    private ObservableList<FileListXMLElement> clientFileList = FXCollections.observableArrayList();
+    private ObservableList<FileListXMLElement> serverFileList = FXCollections.observableArrayList();
     private Stage primaryStage;
     private VBox loggedRootElement;
     private String logoPath;
     private ClientController clientController;
+    public SocketThread socketThread;
+    private ClientPreferences config;
+    private String currentStyleCSS;
 
+    // геттеры и сеттеры
+    public ObservableList<FileListXMLElement> getServerFileList() {
+        return serverFileList;
+    }
+    public ObservableList<FileListXMLElement> getClientFileList() {
+        return clientFileList;
+    }
+    public void setServerFileList(ObservableList<FileListXMLElement> serverFileList) {
+        this.serverFileList = serverFileList;
+    }
+    public ClientPreferences getConfig() {
+        return config;
+    }
+    public ProgressModalController getProgressController() {
+        return progressController;
+    }
     public SocketThread getSocketThread() {
         return socketThread;
     }
-
     public void setSocketThread(SocketThread socketThread) {
         this.socketThread = socketThread;
     }
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+    public FileBoxClientStart getMainApp() {
+        return this;
+    }
+    public String getCurrentStyleCSS() {
+        return currentStyleCSS;
+    }
+    public void setCurrentStyleCSS(String currentStyleCSS) {
+        this.currentStyleCSS = currentStyleCSS;
+    }
 
-    public SocketThread socketThread;
+    // инициализация всех окон приложения
 
     public void showClientLayout() {
         try {
@@ -94,20 +81,16 @@ public class FileBoxClientStart extends Application {
             primaryStage.setScene(scene);
             primaryStage.setResizable(false);
 
-              primaryStage.getIcons().add(new Image(logoPath));
-            setStyleToStage(currentStyleCSS,scene);
+            primaryStage.getIcons().add(new Image(logoPath));
+            setStyleToStage(currentStyleCSS, scene);
             // Give the clientController access to the main app.
             clientController = loader.getController();
             clientController.setMainApp(this);
 
-            //   clientController.updateTable();
             primaryStage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-//        // подгружаем последний список файлов из XML
-
 
     }
 
@@ -115,17 +98,13 @@ public class FileBoxClientStart extends Application {
         launch(args);
     }
 
-    public ClientPreferences getConfig() {
-        return config;
-    }
 
-    private ClientPreferences config;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("FileBoxClientManager");
-        File logo=new File ("logo.png");
+        File logo = new File("logo.png");
         logoPath = "file:///" + logo.getAbsolutePath().replace("\\", "/");
         //инициализируем окно клиента
         File cfgFile = new File("config.xml");
@@ -133,78 +112,23 @@ public class FileBoxClientStart extends Application {
             config = new ClientPreferences();
             config.loadConfig();
         }
-        currentStyleCSS=config.getCurrentStyle();
+        currentStyleCSS = config.getCurrentStyle();
 
         showClientLayout();
         //инициализируем модальное окно логина
         showClientLoginLayout();
-        //  clientController.initClientLoginLayout();
 
         // связываем таблицу и ObservableList  данными
         clientController.initTable();
 
-//        // получаем последний сохранненный  список файлов
-//        File file = getFileListFilePath();
-//        if (file != null) {
-//            loadFileListDataFromFile(file);
-//        }
-        //    System.out.println(clientController.lbLastUpd);
-        // обновляем время последней синхронизации
-        // clientController.lastUpdate();
-    }
-
-    public File getFileListFilePath() {
-        Preferences prefs = Preferences.userNodeForPackage(FileBoxClientStart.class);
-        String filePath = prefs.get("filePath", null);
-        if (filePath != null) {
-            return new File(filePath);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Задаёт путь текущему загруженному файлу. Этот путь сохраняется
-     * в реестре, специфичном для конкретной операционной системы.
-     */
-    public void setFileListFilePath(File file) {
-        Preferences prefs = Preferences.userNodeForPackage(FileBoxClientStart.class);
-        if (file != null) {
-            prefs.put("filePath", file.getPath());
-
-            // Обновление заглавия сцены.
-//            primaryStage.setTitle("FileBox - " + file.getName());
-            primaryStage.setTitle("FileBox - " + file.getName());
-        } else {
-            prefs.remove("filePath");
-
-            // Обновление заглавия сцены.
-            primaryStage.setTitle("FileBox");
-        }
     }
 
 
-    //    public void loadFileListDataFromFile(File file) {
-    public void loadFileListDataFromFile(File file) {
-        try {
-            JAXBContext context = JAXBContext
-                    .newInstance(FileListXMLWrapper.class);
-            Unmarshaller um = context.createUnmarshaller();
-
-            System.out.println(file.getAbsolutePath());
-            // Reading XML from the file and unmarshalling.
-            FileListXMLWrapper wrapper = (FileListXMLWrapper) um.unmarshal(file);
-
-            fileListDataProp.clear();
-            fileListDataProp.addAll(wrapper.getFiles());
-
-            // Save the file path to the registry.
-            setFileListFilePath(file);
-
-        } catch (Exception e) { // catches ANY exception
-            e.printStackTrace();
-            AlertWindow.errorMesage(e.getMessage());
-        }
+    private void initController(BaseController controller, Stage stage) {
+        // controller = loader.getController();
+        controller.setMainApp(this);
+        controller.setStage(stage);
+        controller.setClientController(clientController);
     }
 
     public void showClientLoginLayout() {
@@ -222,7 +146,7 @@ public class FileBoxClientStart extends Application {
             loginStage.getIcons().add(new Image(logoPath));
             loginStage.setTitle("Login");
             loginStage.setOnCloseRequest((event) -> primaryStage.close());
-            setStyleToStage(currentStyleCSS,sceneLog );
+            setStyleToStage(currentStyleCSS, sceneLog);
             loginStage.setResizable(false);
             loginStage.setScene(sceneLog);
             loginStage.initModality(Modality.WINDOW_MODAL);
@@ -233,27 +157,6 @@ public class FileBoxClientStart extends Application {
             clientController.setLoginStage(loginStage);
             controller.setStage(loginStage);
 
-
-//            Stage renameStage = new Stage();
-//            FXMLLoader loader = new FXMLLoader();
-//            loader.setLocation(FileBoxClientStart.class.getResource("fxml/rename_modal.fxml"));
-//
-//            // создаем сцену, задаем параметры
-//            HBox page = (HBox) loader.load();
-//            Scene scene = new Scene(page);
-//            renameStage.setScene(scene);
-//            renameStage.setTitle("Rename " + fileName);
-//            renameStage.initModality(Modality.WINDOW_MODAL);
-//            renameStage.initOwner(primaryStage);
-//
-//            // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
-//            RenameController renameController = loader.getController();
-//            renameController.setMainApp(this);
-//            renameController.setCurrentName(fileName);
-//            renameController.setDialogStage(renameStage);
-//            renameController.setClientController(clientController);
-//            renameStage.show();
-
             loginStage.show();
         } catch (IOException e) {
             e.printStackTrace();
@@ -261,50 +164,19 @@ public class FileBoxClientStart extends Application {
 
     }
 
-    public void saveFileListDataToFile(File file) {
-        try {
-            JAXBContext context = JAXBContext
-                    .newInstance(FileListWrapper.class);
-            Marshaller m = context.createMarshaller();
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-            // Обёртываем наши данные об адресатах.
-            FileListWrapper wrapper = new FileListWrapper();
-            wrapper.setFiles(fileListData);
-
-            // Маршаллируем и сохраняем XML в файл.
-            m.marshal(wrapper, file);
-            System.out.println("file '" + file + "' marshalised");
-            // Сохраняем путь к файлу в реестре.
-            //     setFileListFilePath(file);
-        } catch (Exception e) { // catches ANY exception
-            AlertWindow.errorMesage("Could not save data to file:\n" + file.getPath() + "\n" + e.getMessage());
-        }
-    }
-
     public void removeFromTable(String name) {
         FileListXMLElement element;
-        for (int i = 0; i < fileListDataProp.size(); i++) {
-            element = fileListDataProp.get(i);
+        for (int i = 0; i < serverFileList.size(); i++) {
+            element = serverFileList.get(i);
             if (name.equals(element.getFileName().getValue())) {
-                fileListDataProp.remove(i);
+                serverFileList.remove(i);
                 return;
             }
         }
-
-
     }
 
-    private void initController(BaseController controller, Stage stage) {
-        // controller = loader.getController();
-        controller.setMainApp(this);
-        controller.setStage(stage);
-        controller.setClientController(clientController);
-    }
 
     // инициализация дилогового окна переименования файла
-
-
     public void showRenameLayout(String fileName) {
 
         try {
@@ -320,7 +192,7 @@ public class FileBoxClientStart extends Application {
             renameStage.setTitle("Rename " + fileName);
             renameStage.initModality(Modality.WINDOW_MODAL);
             renameStage.initOwner(primaryStage);
-            setStyleToStage(currentStyleCSS,scene );
+            setStyleToStage(currentStyleCSS, scene);
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
             RenameController renameController = loader.getController();
             renameController.setMainApp(this);
@@ -333,10 +205,10 @@ public class FileBoxClientStart extends Application {
             e.printStackTrace();
         }
     }
-
+    Stage registerStage;
     public void showRegisterNewLayout() {
         try {
-            Stage registerStage = new Stage();
+           registerStage = new Stage();
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(FileBoxClientStart.class.getResource("fxml/registration_modal.fxml"));
             registerStage.getIcons().add(new Image(logoPath));
@@ -346,14 +218,10 @@ public class FileBoxClientStart extends Application {
             registerStage.setTitle("Register new user");
             registerStage.initModality(Modality.WINDOW_MODAL);
             registerStage.initOwner(primaryStage);
-            setStyleToStage(currentStyleCSS,scene );
-            RegistrationController regController = loader.getController();
-//            regController.setMainApp(this);
-//            regController.setStage(registrStage);
-//            regController.setClientController(clientController);
-            initController(regController, registerStage);
-            //   regController.setClientController(clientController);
 
+            setStyleToStage(currentStyleCSS, scene);
+            RegistrationController regController = loader.getController();
+            initController(regController, registerStage);
             registerStage.setResizable(false);
             registerStage.show();
         } catch (IOException e) {
@@ -361,7 +229,9 @@ public class FileBoxClientStart extends Application {
         }
 
     }
-
+    public void regExit() {
+        registerStage.close();
+    }
     public void showOptionsLayout() {
 
         try {
@@ -377,7 +247,7 @@ public class FileBoxClientStart extends Application {
             optionsStage.setTitle("Options");
             optionsStage.initModality(Modality.WINDOW_MODAL);
             optionsStage.initOwner(primaryStage);
-            setStyleToStage(currentStyleCSS,scene );
+            setStyleToStage(currentStyleCSS, scene);
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
             OptionsController optionsController = loader.getController();
             optionsController.setMainApp(this);
@@ -391,11 +261,6 @@ public class FileBoxClientStart extends Application {
         }
     }
 
-    public ProgressModalController getProgressController() {
-        return progressController;
-    }
-
-    private ProgressModalController progressController;
 
     //    public void showProgressLayout(String title, String fileName, File file) {
     public void showProgressLayout(String title) {
@@ -413,17 +278,15 @@ public class FileBoxClientStart extends Application {
             progressStage.setTitle(title);
             progressStage.initModality(Modality.WINDOW_MODAL);
             progressStage.initOwner(primaryStage);
-            setStyleToStage(currentStyleCSS,scene );
+            setStyleToStage(currentStyleCSS, scene);
             ProgressBar pb = (ProgressBar) page.getChildren().get(1);
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
-//            ProgressModalController progressController = loader.getController();
+
             progressController = new ProgressModalController();
             progressController.setMainApp(this);
             progressController.setProgressBar(pb);
-            // progressController.setCurrentName(fileName);
             progressController.setStage(progressStage);
             progressController.setModalController(progressController);
-            //   progressController.setFile(file);
             progressController.setClientController(clientController);
             progressStage.show();
         } catch (IOException e) {
@@ -447,15 +310,13 @@ public class FileBoxClientStart extends Application {
             syncStage.setTitle("Synchronize your FileBox");
             syncStage.initModality(Modality.WINDOW_MODAL);
             syncStage.initOwner(primaryStage);
-            setStyleToStage(currentStyleCSS,scene );
+            setStyleToStage(currentStyleCSS, scene);
 
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
             SyncController syncController = loader.getController();
             syncController.setMainApp(this);
             syncController.init();
-            // progressController.setCurrentName(fileName);
             syncController.setStage(syncStage);
-            //   progressController.setFile(file);
             syncController.setClientController(clientController);
             syncStage.show();
         } catch (IOException e) {
@@ -463,33 +324,12 @@ public class FileBoxClientStart extends Application {
         }
     }
 
-    public void showDioalogLayout(String title, String message) {
-        Stage dialog = new Stage();
-        dialog.initStyle(StageStyle.UTILITY);
-        VBox box = new VBox();
-        box.setAlignment(Pos.CENTER);
-        HBox buttons = new HBox();
-        buttons.setAlignment(Pos.CENTER);
-        dialog.setTitle(title);
-        buttons.getChildren().addAll(new Button("Ok"), new Button("Cancel"));
-        box.getChildren().addAll(new Label(message), new TextField(), buttons);
-        Scene scene = new Scene(box);
-        dialog.setScene(scene);
-        dialog.show();
-    }
 
-    private void setStyleToStage(String style, Scene scene){
+    private void setStyleToStage(String style, Scene scene) {
         scene.getStylesheets().clear();
         scene.getStylesheets().add(style);
 
     }
 
-    public String getCurrentStyleCSS() {
-        return currentStyleCSS;
-    }
 
-    String currentStyleCSS;
-    public void setCurrentStyleCSS(String currentStyleCSS) {
-        this.currentStyleCSS = currentStyleCSS;
-    }
 }

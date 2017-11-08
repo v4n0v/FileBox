@@ -1,10 +1,7 @@
 package ru.geekbrains.filebox.client.fxcontrollers;
 
-import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
@@ -24,11 +21,8 @@ import ru.geekbrains.filebox.network.packet.packet_container.FileContainer;
 import ru.geekbrains.filebox.network.packet.packet_container.FileContainerSingle;
 
 import java.io.*;
-import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -231,14 +225,14 @@ public class ClientController {
     private TableColumn<FileListXMLElement, Long> sizeColumn;
 
     public void updTable() {
-        tblContent.setItems(mainApp.fileListDataProp);
+        tblContent.setItems(mainApp.getServerFileList());
     }
 
     public void initTable() {
         tblContent.setEditable(false);
         fileNameColumn.setCellValueFactory(cellData -> cellData.getValue().getFileName());
         sizeColumn.setCellValueFactory(cellData -> cellData.getValue().getFileSize());
-        tblContent.setItems(mainApp.fileListDataProp);
+        tblContent.setItems(mainApp.getServerFileList());
         System.out.println();
 
     }
@@ -257,9 +251,6 @@ public class ClientController {
             if (currentFilename != null)
                 mainApp.showRenameLayout(currentFilename);
         }
-//          ObservableList<FileListXMLElement> list = mainApp.getFileListDataProp();
-//             list.add(new FileListXMLElement("sasa", "1111111"));
-
     }
 
     public void syncFileBox(){
@@ -291,7 +282,7 @@ public class ClientController {
 
             //  mainApp.showDioalogLayout("Delete file ", "Are you sure?");
         }
-//        ObservableList<FileListXMLElement> list = mainApp.getFileListDataProp();
+//        ObservableList<FileListXMLElement> list = mainApp.getServerFileList();
 //        list.add(new FileListXMLElement("sasaф", "1111111"));
     }
 

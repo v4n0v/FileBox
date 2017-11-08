@@ -31,11 +31,11 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     private final FileBoxServerListener eventListener;
     private final SQLLoginManager loginManager;
     private ServerSocketThread serverSocketThread;
-    private final int port = 8189;
+
     private final Vector<SocketThread> clients = new Vector<>();
     private PrintWriter log;
     private FileWriter logFile;
-    private String clientPath = "";
+
 
     enum ServerState {WORKING, STOPPED}
 
@@ -177,12 +177,6 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             if (!folder.exists()) {
                 folder.mkdir();
             }
-
-
-            // получаем содержимое пакета и записываем в соответствующую логину папку
-//            FileContainer filePackage = (FileContainer) packet.getOutputPacket();
-//            ArrayList<byte[]> files = filePackage.getFiles();
-//            ArrayList<String> names = filePackage.getNames();
             Path path;
             FileContainerSingle fileContainer = (FileContainerSingle) packet.getOutputPacket();
             byte[] file = fileContainer.getFile();
@@ -204,25 +198,16 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
                 path = Paths.get(folder.getPath() + "\\" + name);
                 Files.write(path, file);
-//                    FileOutputStream fos = new FileOutputStream(new File(folder.getPath() + "\\" + names.get(i)));
-//                    fos.write(files.get(i));
-//                    fos.close();
+
                 putLog(client.getLogin() + " " + "File '" + name + "' received. ");
             } catch (IOException e) {
 
                 e.printStackTrace();
                 return;
             }
-//            }
 
-            String filesStr = "";
-//            for (String fileName : name) {
-//                filesStr += "File: " + fileName + "\n";
-//            }
             //отправляем пользователю сообщение об успешной загрузки
-            filesStr += "upload complete";
-          //  sendFileList(socketThread, client);
-            MessagePacket msgPkt = new MessagePacket(filesStr);
+         //   MessagePacket msgPkt = new MessagePacket("upload complete");
             // сообщение от пользователя
         } else if (packet.getPacketType() == PackageType.FILE_REQUEST) {
             String fileRequest = (String) packet.getOutputPacket();
@@ -233,7 +218,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
             // пользователь запросил список файлов
         } else if (packet.getPacketType() == PackageType.FILE_LIST) {
-           // sendFileList(socketThread, client);
+
             // сообщение об ощибке
         } else if (packet.getPacketType() == PackageType.ERROR) {
             putLog(client.getLogin() + " " + "ERROR received");
@@ -253,7 +238,9 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             RegContainer rc = (RegContainer) packet.getOutputPacket();
             // если логи не заня
             if (!loginManager.isLoginBusy(rc.getLogin())) {
-                loginManager.addNewUser(rc.getLogin(), rc.getMail(), rc.getPassword());
+            //    int passHash =      rc.getPassword().hashCode();
+                loginManager.addNewUser(rc.getLogin(), rc.getMail(), rc.getPassword().hashCode());
+//                loginManager.addNewUser(rc.getLogin(), rc.getMail(), rc.getPassword());
                 putLog("New user '" + rc.getLogin() + "' resistrated and added to database");
                 RegAcceptPacket rap = new RegAcceptPacket(true);
                 // если ок, отправляем пользователю пакет одбрящий аутентификацию
@@ -270,7 +257,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             if (file.renameTo(newFile)) {
                 putLog(client.getLogin() + " " + "rename '" + rename[0] + "' to '" + rename[1] + "' complete");
             }
-         //   sendFileList(socketThread, client);
+
 
             //TODO допилить прием файла
         } else if (packet.getPacketType() == PackageType.FILE_WAITING) {
@@ -282,19 +269,20 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             if (!folder.exists()) {
                 folder.mkdir();
             }
-            for (int i = 0; i < filesCount ; i++) {
+            for (int i = 0; i < filesCount; i++) {
                 try {
-                    int x=0;
+                    int x = 0;
                     DataInputStream dis = new DataInputStream(socket.getInputStream());
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-                    while ((dis.read())!=-1){
+                    while ((dis.read()) != -1) {
                         baos.write(x);
                     }
-                    byte[] file=baos.toByteArray();
+                    byte[] file = baos.toByteArray();
                     path = Paths.get(folder.getPath() + "\\" + "filename");
                     Files.write(path, file);
-                    baos.close(); dis.close();
+                    baos.close();
+                    dis.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -309,14 +297,14 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             if (file.delete()) {
                 putLog(client.getLogin() + " " + "delete file '" + deleteRequest + "' complete");
             }
-        //    sendFileList(socketThread, client);
+
 
         } else {
             putLog(client.getLogin() + " " + "Exception: Unknown package type :(");
             throw new RuntimeException("Unknown package type");
 
         }
-        sendFileList(socketThread, client);
+        if (client.isAuthorized()) sendFileList(socketThread, client);
     }
 
     // если клиент уже автроризован
@@ -329,7 +317,8 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     private void handleNonAuthorizedClient(FileBoxSocketThread newClient, LoginContainer lc) {
         // проверяем логин и пароль из содержимого полученного пакета
         String login = lc.getLogin();
-        boolean isAuth = loginManager.isLoginAndPassCorrect(lc.getLogin(), lc.getPassword());
+        int passh = lc.getPassword().hashCode();
+        boolean isAuth = loginManager.isLoginAndPassCorrect(lc.getLogin(), lc.getPassword().hashCode());
         // если данные не верны, отправляем пакет ошибки, что логин\пароль не верны
         if (!isAuth) {
             newClient.sendError("Wrong email or password");
@@ -357,20 +346,13 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     private void sendFileList(SocketThread socketThread, FileBoxSocketThread client) {
         putLog("FILE_LIST request received");
         File clientFolder = new File(SERVER_INBOX_PATH + client.getLogin());
-        // создаем списаок
         File[] fList;
-        String name;
-        //  String len;
         fList = clientFolder.listFiles();
-        ///ArrayList<String> fileList = new ArrayList<>();
         FileListContainer fc = new FileListContainer();
         for (int i = 0; i < fList.length; i++) {
             //Нужны только папки в место isFile() пишим isDirectory()
             if (fList[i].isFile()) {
-//                    info(String.valueOf(i) + " - " + fList[i].getName());
-                //     fileList.add(fList[i].getName());
-//                /name = fList[i].getName();
-//                long len = fList[i].length()/1024;
+
                 FileListElement element = new FileListElement(fList[i].getName(), fList[i].length() / 1024);
                 fc.add(element);
             }
@@ -398,35 +380,14 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
     }
 
-    public synchronized void sendFile() {
 
-        // выбираем файл
-        FileChooser fileChooser = new FileChooser();
-        List<File> list = fileChooser.showOpenMultipleDialog(null);
-        FileContainer fileContainer = new FileContainer();
-
-        // упаковываем в контейнер  и отправляем
-        //   packFiles(list, fileContainer);
-
-    }
 
     void packFiles(String fileName, FileBoxSocketThread client) {
         FilePacket filePacket = null;
         // FileContainer fileContainer = new FileContainer();
         FileContainerSingle fileContainer = new FileContainerSingle();
         File file = new File(SERVER_INBOX_PATH + client.getLogin() + "\\" + fileName);
-        // ArrayList<File> list = new ArrayList<>();
 
-        // подсчитываем кол-во файлов и проверяем размер каждого файла
-//        if (list.size() > 0) {
-//            for (int i = 0; i < list.size(); i++) {
-//                File file = list.get(i);
-//                if (file.length() > MAX_FILE_SIZE) {
-//                    AlertWindow.errorMesage("File size is more than 50MB");
-//                    Logger.writeLog(file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
-//                    continue;
-//                }
-        // если файл подходящего размера, упаковываем в пакет
         try {
             fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName(), file.length(), 1);
             filePacket = new FilePacket(fileContainer);
@@ -436,7 +397,6 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
         putLog("Sending packet. Type: " + filePacket.getPacketType());
         // логируем  и отправляем
         client.sendPacket(filePacket);
-//            }
-//        }
+
     }
 }
