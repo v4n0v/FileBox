@@ -167,9 +167,10 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     // обрабатываем полученные пакеты
     @Override
     public synchronized void onReceivePacket(SocketThread socketThread, Socket socket, Packet packet) {
-        putLog("Incoming packet type = " + packet.getPacketType());
+
         // создаем поток клиента, с информацией о нем
         FileBoxSocketThread client = (FileBoxSocketThread) socketThread;
+        putLog("From "+client.getLogin()+" incoming packet type = " + packet.getPacketType());
         // если пакет содержит файлы
         if (packet.getPacketType() == PackageType.FILE) {
             // проверяем наличие папки пользователя
@@ -249,6 +250,10 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
                 loginManager.addNewUser(rc.getLogin(), rc.getMail(), rc.getPassword().hashCode());
 //                loginManager.addNewUser(rc.getLogin(), rc.getMail(), rc.getPassword());
                 putLog("New user '" + rc.getLogin() + "' resistrated and added to database");
+                File folder = new File(SERVER_INBOX_PATH + rc.getLogin());
+                if (!folder.exists()) {
+                    folder.mkdir();
+                }
                 RegAcceptPacket rap = new RegAcceptPacket(true);
                 // если ок, отправляем пользователю пакет одбрящий аутентификацию
                 socketThread.sendPacket(rap);
@@ -362,7 +367,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
         return usedSpace;
     }
     private void sendFileList(SocketThread socketThread, FileBoxSocketThread client) {
-        putLog("FILE_LIST request received");
+        putLog(client.getLogin()+" FILE_LIST request received");
         File clientFolder = new File(SERVER_INBOX_PATH + client.getLogin());
         File[] fList = clientFolder.listFiles();
         FileListContainer fc = new FileListContainer();
