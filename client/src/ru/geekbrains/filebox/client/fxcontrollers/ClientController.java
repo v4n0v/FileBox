@@ -83,7 +83,10 @@ public class ClientController {
     Button exit;
     @FXML
     Button addNew;
-
+    @FXML
+    Label lblLogedInfo;
+    @FXML
+    Label lblFreeSpaceInfo;
     private Alert alert;
     private String loginReg;
     private String mailReg;
@@ -122,7 +125,12 @@ public class ClientController {
         }
 
     }
-
+    public void setLoggedInfoLabel(String name){
+        lblLogedInfo.setText("Logged in as "+name);
+    }
+    public void setFreeSpaceLabel(int space, int totalClientSpace){
+        lblFreeSpaceInfo.setText("Free space "+space+"kb"+" from "+totalClientSpace+"kb");
+    }
     // оправка логниа пароля для аутентификации
     public void loginToFileBox() {
 

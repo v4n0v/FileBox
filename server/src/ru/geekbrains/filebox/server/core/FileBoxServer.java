@@ -185,6 +185,13 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             // создаем список
             File[] fList;
             fList = folder.listFiles();
+            int x = file.length/1024+getUsedSpace(client)/1024;
+            int y = client.getTotalSpace();
+            if (file.length/1024+getUsedSpace(client)/1024>client.getTotalSpace()){
+                MessagePacket msgPkt = new MessagePacket("No free space in yot FileBox. Delete some and try again ;)");
+                socketThread.sendPacket(msgPkt);
+                return;
+            }
 
             for (int i = 0; i < fList.length; i++) {
 
@@ -343,20 +350,33 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
     }
 
+    private int getUsedSpace(FileBoxSocketThread client){
+        int usedSpace=0;
+        File clientFolder = new File(SERVER_INBOX_PATH + client.getLogin());
+        File[] fList= clientFolder.listFiles();
+        for (int i = 0; i < fList.length; i++) {
+            if (fList[i].isFile()) {
+                usedSpace += fList[i].length();
+            }
+        }
+        return usedSpace;
+    }
     private void sendFileList(SocketThread socketThread, FileBoxSocketThread client) {
         putLog("FILE_LIST request received");
         File clientFolder = new File(SERVER_INBOX_PATH + client.getLogin());
-        File[] fList;
-        fList = clientFolder.listFiles();
+        File[] fList = clientFolder.listFiles();
         FileListContainer fc = new FileListContainer();
+        int usedSpace=0;
+
         for (int i = 0; i < fList.length; i++) {
             //Нужны только папки в место isFile() пишим isDirectory()
             if (fList[i].isFile()) {
-
+             usedSpace+=fList[i].length();
                 FileListElement element = new FileListElement(fList[i].getName(), fList[i].length() / 1024);
                 fc.add(element);
             }
         }
+        fc.setUsedSpace(usedSpace);
         //отправляем список
         FileListPacket fileListRequest = new FileListPacket(fc);
         socketThread.sendPacket(fileListRequest);

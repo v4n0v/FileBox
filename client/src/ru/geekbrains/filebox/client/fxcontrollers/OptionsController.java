@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class OptionsController extends BaseController {
+public class OptionsController extends BaseController implements InitLayout{
     public void setPrefereces(ClientPreferences prefereces) {
         this.prefereces = prefereces;
     }

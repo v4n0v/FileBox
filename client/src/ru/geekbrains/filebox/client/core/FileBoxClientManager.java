@@ -49,6 +49,11 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     private String login;
     private String password;
 
+    private int FRASPACE_TOTAL = 10;
+    private int usedSpace;
+
+
+
     public void setClientController(ClientController clientController) {
         this.clientController = clientController;
     }
@@ -342,9 +347,11 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         updateList(fXMLlist, mainApp.getServerFileList());
         //    mainApp.setServerFileList(fXMLlist);
         //handleSaveAs();
+        usedSpace =fc.getUsedSpace();
         updateClientFileList(mainApp.getConfig().getPath(), mainApp.getClientFileList());
         Platform.runLater(() -> {
             lastUpdate();
+            clientController.setFreeSpaceLabel(FRASPACE_TOTAL*1024-usedSpace /1024, FRASPACE_TOTAL*1024);
         });
 
         Logger.writeLog("FILE_LIST received");
@@ -382,8 +389,6 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
            state = State.REGISTERED;
            disconnect();
            state = State.NOT_CONNECTED;
-//            Stage stage = (Stage) reg.getScene().getWindow();
-//            stage.showAndWait();
            Platform.runLater(() ->  mainApp.regExit());
        } else {
            Platform.runLater(() -> AlertWindow.errorMesage("User " + loginReg + " registration error"));
@@ -398,7 +403,9 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         if (isAuthorized) {
             state = State.CONNECTED;
             //clientController.loginHide();
-            Platform.runLater(() -> clientController.loginHide());
+            Platform.runLater(() -> {clientController.loginHide();
+                clientController.setLoggedInfoLabel(login);
+            });
 
             FileListPacket fileListRequest = new FileListPacket(null);
             mainApp.socketThread.sendPacket(fileListRequest);

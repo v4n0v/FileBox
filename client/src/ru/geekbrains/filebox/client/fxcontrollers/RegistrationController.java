@@ -12,6 +12,8 @@ import ru.geekbrains.filebox.client.core.FileBoxClientManager;
 import ru.geekbrains.filebox.client.core.State;
 import ru.geekbrains.filebox.library.AlertWindow;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RegistrationController extends BaseController{
     @FXML
@@ -26,6 +28,8 @@ public class RegistrationController extends BaseController{
     Button exit;
     @FXML
     Button addNew;
+    public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
+            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
     private final static int MIN_PASS_LENGTH = 2;
     private final static int MAX_PASS_LENGTH = 32;
@@ -44,6 +48,8 @@ public class RegistrationController extends BaseController{
             AlertWindow.errorMesage("Fill the all fields");
         } else if (pass1Reg.length() < MIN_PASS_LENGTH || pass1Reg.length() > MAX_PASS_LENGTH) {
             AlertWindow.errorMesage("Password must be from" + MIN_PASS_LENGTH + " to " + MAX_PASS_LENGTH + " words.");
+        } else if (!isValidMail(mailReg)){
+            AlertWindow.errorMesage("Wrong email. Right example 'admin@filebox.com'");
         } else {
             if (pass1Reg.equals(pass2Reg)) {
                 clientManager.setRegistrationInfo(loginReg, mailReg, pass1Reg);
@@ -56,15 +62,10 @@ public class RegistrationController extends BaseController{
 
 
     }
-//    public void setRegistrationInfo(String loginReg, String mailReg, String pass1Reg) {
-//        this.pass1Reg = pass1Reg;
-//        this.mailReg = mailReg;
-//        this.loginReg = loginReg;
-//    }
 
-//    public void exit(){
-//        Stage stage = (Stage) exit.getScene().getWindow();
-//        stage.close();
-//    }
+    public static boolean isValidMail(String emailStr) {
+        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX .matcher(emailStr);
+        return matcher.find();
+    }
 
 }

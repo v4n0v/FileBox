@@ -21,10 +21,10 @@ public class BaseController {
         this.mainApp = mainApp;
     }
 
-    public void init(){
-
-
-    }
+//    public void init(){
+//
+//
+//    }
  //   @FXML
     public void close(){
 

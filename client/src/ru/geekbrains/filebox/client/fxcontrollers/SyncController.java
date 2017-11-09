@@ -18,7 +18,7 @@ import ru.geekbrains.filebox.network.packet.packet_container.FileContainerSingle
 import java.io.File;
 import java.util.ArrayList;
 
-public class SyncController extends BaseController {
+public class SyncController extends BaseController implements InitLayout {
     ObservableList<FileListXMLElement> clientFileList = FXCollections.observableArrayList();
     ObservableList<FileListXMLElement> serverFileList = FXCollections.observableArrayList();
     FileBoxClientManager clientManager;

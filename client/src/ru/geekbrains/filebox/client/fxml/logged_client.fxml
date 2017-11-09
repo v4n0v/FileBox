@@ -95,12 +95,12 @@
                   </HBox>
                   <VBox prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="1">
                      <children>
-                        <Label id="lbLoggedAs" styleClass="fontverdabold" stylesheets="@../css/style.css" text="Logged in as ">
+                        <Label id="lbLoggedAs" fx:id="lblLogedInfo" styleClass="fontverdabold, lbInfo" stylesheets="@../css/style.css" text="Logged in as ">
                            <VBox.margin>
                               <Insets bottom="5.0" left="15.0" top="5.0" />
                            </VBox.margin>
                         </Label>
-                        <Label id="lbFreeSpace" layoutX="25.0" layoutY="20.0" styleClass="fontverdabold" stylesheets="@../css/style.css" text="Free space">
+                        <Label id="lbFreeSpace" fx:id="lblFreeSpaceInfo" layoutX="25.0" layoutY="20.0" styleClass="fontverdabold, lbInfo" stylesheets="@../css/style.css" text="Free space">
                            <VBox.margin>
                               <Insets left="15.0" />
                            </VBox.margin>
@@ -121,13 +121,13 @@
       </Pane>
       <VBox>
          <children>
-                <TableView fx:id="tblContent" editable="true" minWidth="-Infinity" onDragDropped="#handleDrop" onDragOver="#handleDragOver" prefHeight="490.0" prefWidth="435.0" stylesheets="@../css/style.css">
+                <TableView fx:id="tblContent" editable="true" minWidth="-Infinity" onDragDropped="#handleDrop" onDragOver="#handleDragOver" prefHeight="490.0" prefWidth="430.0" stylesheets="@../css/style.css">
                     <columns>
                         <TableColumn fx:id="fileNameColumn" editable="false" prefWidth="337.0" resizable="false" text="File" />
                         <TableColumn fx:id="sizeColumn" editable="false" minWidth="1.0" prefWidth="97.0" resizable="false" text="Size (kb)" />
                     </columns>
                 </TableView>
-            <Label id="lastUpd" fx:id="lbLastUpd" styleClass="lastUpd" stylesheets="@../css/style.css" text="Last update: ">
+            <Label id="lastUpd" fx:id="lbLastUpd" styleClass="fontverdabold, lbInfo" stylesheets="@../css/style.css" text="Last update: ">
                <VBox.margin>
                   <Insets top="5.0" />
                </VBox.margin>

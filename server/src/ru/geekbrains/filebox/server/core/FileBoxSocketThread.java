@@ -4,7 +4,6 @@ import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
 import ru.geekbrains.filebox.network.packet.AuthAcceptPacket;
 import ru.geekbrains.filebox.network.packet.ErrorPacket;
-import ru.geekbrains.filebox.network.packet.MessagePacket;
 
 import java.net.Socket;
 
@@ -17,6 +16,17 @@ public class FileBoxSocketThread extends SocketThread {
     String login;
     private boolean isAuthorized;
     private boolean isReconnected;
+
+    public int getTotalSpace() {
+        return totalSpace;
+    }
+
+    public void setTotalSpace(int totalSpace) {
+        this.totalSpace = totalSpace;
+    }
+
+    private int totalSpace =10240;
+
 
     public FileBoxSocketThread(SocketThreadListener eventListener, String name, Socket socket) {
         super(eventListener, name, socket);

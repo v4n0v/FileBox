@@ -20,7 +20,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 
-public class RenameController extends BaseController{
+public class RenameController extends BaseController implements InitLayout{
 
     public void setCurrentName(String currentName) {
         this.currentName = currentName;

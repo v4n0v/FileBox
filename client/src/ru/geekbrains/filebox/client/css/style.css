@@ -21,8 +21,7 @@
     -fx-text-fill: red;
 }
 
-#lastUpd{
-     -fx-font-weight:bold;
-    -fx-font-size: 9;
-    -fx-text-fill:#818181;
+
+.lbInfo{
+    -fx-font-size: 10;
 }

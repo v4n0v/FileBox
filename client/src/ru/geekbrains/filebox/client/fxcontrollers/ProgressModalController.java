@@ -14,25 +14,11 @@ public class ProgressModalController extends BaseController {
 
     @FXML
     Label lblFileName;
-
-    public void setProgressBar(ProgressBar progress) {
-        this.progress = progress;
-    }
-
     ProgressBar progress;
-
+    ProgressModalController modalController;
     //final ProgressIndicator progressIndicator = new ProgressIndicator(0);
     boolean isFinished;
 
-    public void setModalController(ProgressModalController modalController) {
-        this.modalController = modalController;
-    }
-
-    public ProgressModalController getModalController() {
-        return modalController;
-    }
-
-    ProgressModalController modalController;
     private File file;
 
     public void setFile(File file) {
@@ -44,13 +30,24 @@ public class ProgressModalController extends BaseController {
             progress.setProgress(val);
         });
     }
-
+    public void setProgressBar(ProgressBar progress) {
+        this.progress = progress;
+    }
     public Stage getStage(){
         return this.stage;
     }
     public void setClientController(ClientController clientController) {
         this.clientController = clientController;
     }
+
+    public void setModalController(ProgressModalController modalController) {
+        this.modalController = modalController;
+    }
+
+    public ProgressModalController getModalController() {
+        return modalController;
+    }
+
 
     //    public void bindToProgressBar(Object o){
 //        progress.progressProperty().bind(o);

@@ -192,6 +192,7 @@ public class FileBoxClientStart extends Application {
             renameStage.setTitle("Rename " + fileName);
             renameStage.initModality(Modality.WINDOW_MODAL);
             renameStage.initOwner(primaryStage);
+            renameStage.setResizable(false);
             setStyleToStage(currentStyleCSS, scene);
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
             RenameController renameController = loader.getController();
@@ -247,6 +248,7 @@ public class FileBoxClientStart extends Application {
             optionsStage.setTitle("Options");
             optionsStage.initModality(Modality.WINDOW_MODAL);
             optionsStage.initOwner(primaryStage);
+            optionsStage.setResizable(false);
             setStyleToStage(currentStyleCSS, scene);
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
             OptionsController optionsController = loader.getController();
@@ -279,6 +281,7 @@ public class FileBoxClientStart extends Application {
             progressStage.initModality(Modality.WINDOW_MODAL);
             progressStage.initOwner(primaryStage);
             setStyleToStage(currentStyleCSS, scene);
+            progressStage.setResizable(false);
             ProgressBar pb = (ProgressBar) page.getChildren().get(1);
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
 
@@ -311,7 +314,7 @@ public class FileBoxClientStart extends Application {
             syncStage.initModality(Modality.WINDOW_MODAL);
             syncStage.initOwner(primaryStage);
             setStyleToStage(currentStyleCSS, scene);
-
+            syncStage.setResizable(false);
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
             SyncController syncController = loader.getController();
             syncController.setMainApp(this);
