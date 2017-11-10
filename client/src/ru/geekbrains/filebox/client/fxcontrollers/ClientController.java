@@ -15,6 +15,7 @@ import ru.geekbrains.filebox.client.core.FileBoxClientManager;
 import ru.geekbrains.filebox.client.core.FileListXMLElement;
 import ru.geekbrains.filebox.client.core.State;
 import ru.geekbrains.filebox.library.AlertWindow;
+import ru.geekbrains.filebox.library.FileType;
 import ru.geekbrains.filebox.library.Logger;
 import ru.geekbrains.filebox.network.packet.*;
 import ru.geekbrains.filebox.network.packet.packet_container.FileContainer;
@@ -243,9 +244,52 @@ public class ClientController {
         tblContent.setItems(mainApp.getServerFileList());
         System.out.println();
 
+        tblContent.setRowFactory( tv -> {
+            TableRow<FileListXMLElement> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (! row.isEmpty()) ) {
+                    //FileListXMLElement rowData = row.getItem();
+                    System.out.println("double click");
+                    FileListXMLElement rowData = row.getItem();
+                    if (rowData.getType().equals(FileType.FILE )){
+                        System.out.println("its file");
+                        getFile(rowData.getFileName().getValue());
+
+                    } else if (rowData.getType().equals(FileType.DIR )){
+                        System.out.println("its dir");
+                        String dirName = getFolderName(rowData.getFileName().getValue());
+                        System.out.println(dirName);
+                        enterDirectory(dirName);
+                    } else if (rowData.getType().equals(FileType.UP_DIR )){
+                        System.out.println("up dir");
+                        enterDirectory("...");
+                    } else {
+                        System.out.println("wrong type of element");
+                    }
+                    //Делайте, что требуется с элементом.
+                }
+            });
+            return row ;
+        });
     }
 
+    private String getFolderName(String name){
+        String dirName = name;
+        dirName= dirName.replace("[", "");
+        dirName= dirName.replace("]", "");
+        return dirName;
+    }
+    private void enterDirectory(String dir){
 
+
+                FileOperationPacket dirPacket = new FileOperationPacket(PackageType.ENTER_DIR,  dir);
+                mainApp.socketThread.sendPacket(dirPacket);
+
+    }
+    public void createFolder(){
+        System.out.println("create folder");
+        mainApp.showNewFolderLayout();
+    }
     // методы обработки нажатия на кнопку
     // переименование файла
     public void renameFile() {
@@ -274,7 +318,12 @@ public class ClientController {
 
             // открывем дилоговое окно
             if (currentFilename != null) {
-                boolean answer = AlertWindow.dialogWindow("Delete file?", currentFilename);
+                boolean answer;
+                if (fileListElement.getType().equals(FileType.DIR)){
+                    currentFilename=getFolderName(currentFilename);
+                     answer = AlertWindow.dialogWindow("Delete folder and everything in it?", currentFilename);
+                } else
+                 answer = AlertWindow.dialogWindow("Delete file?", currentFilename);
 
                 if (answer) {
                     FileOperationPacket deletePacket = new FileOperationPacket(PackageType.DELETE, currentFilename);
@@ -301,22 +350,26 @@ public class ClientController {
         if (fileListElement != null) {
             String currentFilename = fileListElement.getFileName().getValue();
             // открывем дилоговое окно
-            if (currentFilename != null) {
-                boolean answer = AlertWindow.dialogWindow("Download file?", currentFilename);
-
-                if (answer) {
-                    FileOperationPacket downLoad = new FileOperationPacket(PackageType.FILE_REQUEST, currentFilename);
-                    mainApp.socketThread.sendPacket(downLoad);
-
-                    Logger.writeLog("download operation '" + currentFilename + "'complete");
-                } else {
-
-                    Logger.writeLog("download '" + currentFilename + "' operation canceled");
-                }
-            }
+            getFile(currentFilename);
         }
     }
 
+    private void getFile(String filename) {
+        if (filename != null) {
+            boolean answer = AlertWindow.dialogWindow("Download file?", filename);
+
+            if (answer) {
+                FileOperationPacket downLoad = new FileOperationPacket(PackageType.FILE_REQUEST, filename);
+                mainApp.socketThread.sendPacket(downLoad);
+
+                Logger.writeLog("download operation '" + filename + "'complete");
+            } else {
+
+                Logger.writeLog("download '" + filename + "' operation canceled");
+            }
+        }
+
+    }
     //загрузка файла на сервер
     public void uploadFile() {
         sendFile();

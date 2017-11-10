@@ -18,6 +18,7 @@ import ru.geekbrains.filebox.network.SocketThread;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 public class FileBoxClientStart extends Application {
 
@@ -258,13 +259,12 @@ public class FileBoxClientStart extends Application {
             optionsController.setStage(optionsStage);
             optionsController.setClientController(clientController);
             optionsStage.show();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-
-    //    public void showProgressLayout(String title, String fileName, File file) {
     public void showProgressLayout(String title) {
 
         try {
@@ -326,7 +326,34 @@ public class FileBoxClientStart extends Application {
             e.printStackTrace();
         }
     }
+    public void showNewFolderLayout( ) {
+        try {
+            // новое окно переименования
+            Stage newFolderStage = new Stage();
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(FileBoxClientStart.class.getResource("fxml/folder_modal.fxml"));
+            newFolderStage.getIcons().add(new Image(logoPath));
+            // создаем сцену, задаем параметры
+            HBox page = (HBox) loader.load();
+            Scene scene = new Scene(page);
+            newFolderStage.setScene(scene);
+            newFolderStage.setTitle("New folder");
+            newFolderStage.initModality(Modality.WINDOW_MODAL);
+            newFolderStage.initOwner(primaryStage);
+            newFolderStage.setResizable(false);
+            setStyleToStage(currentStyleCSS, scene);
+            // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
+            NewFolderController newFolderController = loader.getController();
+            newFolderController.setMainApp(this);
 
+            newFolderController.setStage(newFolderStage);
+            newFolderController.init();
+            newFolderController.setClientController(clientController);
+            newFolderStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void setStyleToStage(String style, Scene scene) {
         scene.getStylesheets().clear();

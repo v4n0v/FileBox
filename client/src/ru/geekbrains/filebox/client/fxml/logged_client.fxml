@@ -23,7 +23,7 @@
                   <children>
                       <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
                           <children>
-                              <Button id="btnDownload" fx:id="btnDownload" onAction="#downloadFile" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Download">
+                              <Button id="btnDownload" fx:id="btnDownload" onAction="#createFolder" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="New Folder">
                                   <HBox.margin>
                                       <Insets left="5.0" right="5.0" top="15.0" />
                                   </HBox.margin>
@@ -79,7 +79,7 @@
                               <Insets right="10.0" top="15.0" />
                            </HBox.margin>
                         </Button>
-                        <Button id="btnLogout" fx:id="btnSync" layoutX="74.0" layoutY="25.0" onAction="#syncFileBox" prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/style.css">
+                        <Button id="btnSync" fx:id="btnSync" layoutX="74.0" layoutY="25.0" onAction="#syncFileBox" prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/style.css">
                            <graphic>
                               <ImageView fitHeight="25.0" fitWidth="25.0">
                                  <image>

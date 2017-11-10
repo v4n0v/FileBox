@@ -8,9 +8,16 @@ public class FileListElement implements Serializable{
 //    private long fileSize;
     private Long fileSize;
 
+
+    private String type;
     public FileListElement(String fileName, long fileSize) {
         this.fileName = fileName;
         this.fileSize = fileSize;
+    }
+    public FileListElement(String fileName, long fileSize, String type) {
+        this.fileName = fileName;
+        this.fileSize = fileSize;
+        this.type=type;
     }
     public String getFileName() {
         return fileName;
@@ -25,5 +32,12 @@ public class FileListElement implements Serializable{
         this.fileSize = fileSize;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
 }

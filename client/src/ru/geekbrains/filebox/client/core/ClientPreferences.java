@@ -23,12 +23,6 @@ public class ClientPreferences {
     private String path;
     private String style;
 
-
-//    public ClientPreferences getConfig() {
-//        return config;
-//    }
-
-//    ClientPreferences config;
     @XmlElement(name="path")
     public String getPath() {
         return path;
@@ -37,8 +31,6 @@ public class ClientPreferences {
         this.path = path;
     }
 
-
-//    public List<Style> getStyleList() { return styleList; }
     @XmlElement(name="style_list")
     public void setStyleList(List<Style> styleList) {
         this.styleList = styleList;
@@ -52,10 +44,13 @@ public class ClientPreferences {
     public String getCurrentStyle() {
         return style;
     }
+    // устанавливаем стиль
     public void setCurrentStyle(String style) {
         this.style= style;
     }
 
+
+    // загружаем последнюю созранненную настройку клиента
     public void loadConfig() {
         System.out.println("loadConfig");
 

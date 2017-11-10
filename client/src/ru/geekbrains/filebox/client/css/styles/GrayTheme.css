@@ -20,7 +20,9 @@
 .table-row-cell:filled:focused:selected {
     -fx-text-fill: red;
 }
-
+.button:hover{
+-fx-text-fill:black;
+}
 #lastUpd{
      -fx-font-weight:bold;
     -fx-font-size: 9;

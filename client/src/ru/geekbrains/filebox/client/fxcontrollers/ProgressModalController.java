@@ -16,8 +16,7 @@ public class ProgressModalController extends BaseController {
     Label lblFileName;
     ProgressBar progress;
     ProgressModalController modalController;
-    //final ProgressIndicator progressIndicator = new ProgressIndicator(0);
-    boolean isFinished;
+
 
     private File file;
 
@@ -33,9 +32,7 @@ public class ProgressModalController extends BaseController {
     public void setProgressBar(ProgressBar progress) {
         this.progress = progress;
     }
-    public Stage getStage(){
-        return this.stage;
-    }
+
     public void setClientController(ClientController clientController) {
         this.clientController = clientController;
     }
@@ -43,16 +40,6 @@ public class ProgressModalController extends BaseController {
     public void setModalController(ProgressModalController modalController) {
         this.modalController = modalController;
     }
-
-    public ProgressModalController getModalController() {
-        return modalController;
-    }
-
-
-    //    public void bindToProgressBar(Object o){
-//        progress.progressProperty().bind(o);
-//    }
-
 
 
 }

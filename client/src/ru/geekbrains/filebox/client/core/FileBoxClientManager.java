@@ -32,9 +32,6 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     //   private String CLIENT_INBOX_PATH;
     private SocketThread socketThread;
 
-//    public void setListOutFiles(List<File> listOutFiles) {
-//        this.listOutFiles = listOutFiles;
-//    }
 
     private List<File> listOutFiles;
 
@@ -60,17 +57,6 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 
     private ClientController clientController;
 
-//    public void setLoginReg(String loginReg) {
-//        this.loginReg = loginReg;
-//    }
-//
-//    public void setMailReg(String mailReg) {
-//        this.mailReg = mailReg;
-//    }
-//
-//    public void setPass1Reg(String pass1Reg) {
-//        this.pass1Reg = pass1Reg;
-//    }
 
     public void setRegistrationInfo(String loginReg, String mailReg, String pass1Reg) {
         this.pass1Reg = pass1Reg;
@@ -235,18 +221,6 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         clientController.lbLastUpd.setText("Last upd " + upd);
     }
 
-    //    public void handleSaveAs() {
-//
-//        File file = new File("fblist");
-//
-//        if (file != null) {
-//            // Make sure it has the correct extension
-//            if (!file.getPath().endsWith(".xml")) {
-//                file = new File(file.getPath() + ".xml");
-//            }
-//            mainApp.saveFileListDataToFile(file);
-//        }
-//    }
     // TODO зафигачить побайтовую передачу
     public void sendFileBytes(List<File> list) {
         int countFiles = list.size();
@@ -341,7 +315,8 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         ObservableList<FileListXMLElement> fXMLlist = FXCollections.observableArrayList();
 
         for (int i = 0; i < flist.size(); i++) {
-            fXMLlist.add(new FileListXMLElement(flist.get(i).getFileName(), flist.get(i).getFileSize()));
+            fXMLlist.add(new FileListXMLElement(flist.get(i).getFileName(),
+                    flist.get(i).getFileSize(), flist.get(i).getType()));
         }
         //  mainApp.fillFileList(flist);
         updateList(fXMLlist, mainApp.getServerFileList());
@@ -358,13 +333,9 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     }
 
     private void updateClientFileList(String path, ObservableList<FileListXMLElement> fileList) {
-
-
-        // создаем списаок
-        File[] fList;
+        // создаем список
         File clientFolder = new File(path);
-        //  String len;
-        fList = clientFolder.listFiles();
+        File[] fList = clientFolder.listFiles();
         fileList.clear();
 //        for (int i = 0; i < fList.size(); i++) {
 //            fileList.add(new FileListXMLElement(fList.get(i).getFileName(), fList.get(i).getFileSize()));
@@ -372,9 +343,10 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         for (int i = 0; i < fList.length; i++) {
             //Нужны только папки в место isFile() пишим isDirectory()
             if (fList[i].isFile()) {
-                String name = fList[i].getName();
-                long len = fList[i].length();
                 fileList.add(new FileListXMLElement(fList[i].getName(), fList[i].length()));
+            }
+            if (fList[i].isDirectory()) {
+                fileList.add(new FileListXMLElement("["+fList[i].getName()+"]", fList[i].length()));
             }
         }
 
@@ -402,8 +374,9 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         isAuthorized = (Boolean) packet.getOutputPacket();
         if (isAuthorized) {
             state = State.CONNECTED;
-            //clientController.loginHide();
-            Platform.runLater(() -> {clientController.loginHide();
+
+            Platform.runLater(() -> {
+                clientController.loginHide();
                 clientController.setLoggedInfoLabel(login);
             });
 

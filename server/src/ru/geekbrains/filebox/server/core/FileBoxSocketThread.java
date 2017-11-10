@@ -17,6 +17,27 @@ public class FileBoxSocketThread extends SocketThread {
     private boolean isAuthorized;
     private boolean isReconnected;
 
+    public String getCurrentFolder() {
+        return currentFolder;
+    }
+
+    public void setCurrentFolder(String currentFolder) {
+        this.currentFolder +="/"+ currentFolder;
+    }
+    public void setPreviousFolder(){
+        String[] folderPath = currentFolder.split("/");
+//        String[] prevFolderPath = new String[folderPath.length-1];
+//        System.arraycopy(folderPath, 0, prevFolderPath, 0, prevFolderPath.length);
+//        this.currentFolder
+        currentFolder="";
+        if (folderPath.length!=2) {
+            for (int i = 0; i < folderPath.length - 1; i++) {
+                currentFolder += folderPath[i] + "/";
+            }
+        }
+    }
+    private String currentFolder;
+
     public int getTotalSpace() {
         return totalSpace;
     }
@@ -30,6 +51,7 @@ public class FileBoxSocketThread extends SocketThread {
 
     public FileBoxSocketThread(SocketThreadListener eventListener, String name, Socket socket) {
         super(eventListener, name, socket);
+        currentFolder="";
     }
 // отсылаем юзерыу сообщение об ошибке
     void sendError(String msg) {
