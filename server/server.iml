@@ -17,5 +17,6 @@
       </library>
     </orderEntry>
     <orderEntry type="module" module-name="network" />
+    <orderEntry type="module" module-name="library" />
   </component>
 </module>

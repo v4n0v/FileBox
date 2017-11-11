@@ -6,7 +6,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import ru.geekbrains.filebox.library.AlertWindow;
-import ru.geekbrains.filebox.library.Logger;
+import ru.geekbrains.filebox.library.Log2File;
 import ru.geekbrains.filebox.network.packet.FileOperationPacket;
 import ru.geekbrains.filebox.network.packet.PackageType;
 
@@ -35,7 +35,7 @@ public class NewFolderController extends BaseController implements InitLayout {
             FileOperationPacket fop = new FileOperationPacket(PackageType.NEW_FOLDER, newName);
 
             mainApp.socketThread.sendPacket(fop);
-            Logger.writeLog("Created folder '"+newName+"'");
+            Log2File.writeLog("Created folder '"+newName+"'");
         }
         Stage stage = (Stage) renameRootElement.getScene().getWindow();
 

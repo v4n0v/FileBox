@@ -11,7 +11,7 @@
             <HBox.margin>
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </HBox.margin></TextField>
-        <Button fx:id="btnRename" mnemonicParsing="false" onAction="#newFolder" prefHeight="47.0" prefWidth="117.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Create Folder">
+        <Button fx:id="btnRename" mnemonicParsing="false" onAction="#newFolder" prefHeight="47.0" prefWidth="192.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Create Folder" textAlignment="CENTER">
             <opaqueInsets>
                 <Insets />
             </opaqueInsets>

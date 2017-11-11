@@ -16,7 +16,7 @@ public class SQLLoginManager implements LoginManager {
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:fileBox.db");
             statement = connection.createStatement();
-            System.out.println("DB init");
+
         } catch (ClassNotFoundException | SQLException e) {
             throw new RuntimeException(e);
         }

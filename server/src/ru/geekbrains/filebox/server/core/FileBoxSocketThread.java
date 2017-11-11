@@ -4,6 +4,8 @@ import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
 import ru.geekbrains.filebox.network.packet.AuthAcceptPacket;
 import ru.geekbrains.filebox.network.packet.ErrorPacket;
+import ru.geekbrains.filebox.network.packet.FileOperationPacket;
+import ru.geekbrains.filebox.network.packet.PackageType;
 
 import java.net.Socket;
 
@@ -55,7 +57,7 @@ public class FileBoxSocketThread extends SocketThread {
     }
 // отсылаем юзерыу сообщение об ошибке
     void sendError(String msg) {
-        sendPacket(new ErrorPacket(msg));
+        sendPacket(new FileOperationPacket(PackageType.ERROR, msg));
         close();
     }
     // сообщение об успешной авторизации

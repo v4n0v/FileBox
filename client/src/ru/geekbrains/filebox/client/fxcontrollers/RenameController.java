@@ -12,6 +12,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ru.geekbrains.filebox.client.FileBoxClientStart;
 import ru.geekbrains.filebox.library.AlertWindow;
+import ru.geekbrains.filebox.library.Log2File;
 import ru.geekbrains.filebox.network.packet.FileOperationPacket;
 import ru.geekbrains.filebox.network.packet.PackageType;
 
@@ -52,6 +53,7 @@ public class RenameController extends BaseController implements InitLayout{
         } else {
             FileOperationPacket renamePacket = new FileOperationPacket(PackageType.RENAME, currentName + "<>" + newName);
             mainApp.socketThread.sendPacket(renamePacket);
+            Log2File.writeLog("File '"+currentName+"' renamed to '"+newName+"'");
         }
         Stage stage = (Stage) renameRootElement.getScene().getWindow();
 

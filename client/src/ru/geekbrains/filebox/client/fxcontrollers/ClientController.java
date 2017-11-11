@@ -1,45 +1,41 @@
 package ru.geekbrains.filebox.client.fxcontrollers;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.*;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ru.geekbrains.filebox.client.FileBoxClientStart;
 import ru.geekbrains.filebox.client.core.FileBoxClientManager;
 import ru.geekbrains.filebox.client.core.FileListXMLElement;
-import ru.geekbrains.filebox.client.core.State;
 import ru.geekbrains.filebox.library.AlertWindow;
 import ru.geekbrains.filebox.library.FileType;
-import ru.geekbrains.filebox.library.Logger;
-import ru.geekbrains.filebox.network.packet.*;
-import ru.geekbrains.filebox.network.packet.packet_container.FileContainer;
+import ru.geekbrains.filebox.library.Log2File;
+import ru.geekbrains.filebox.network.packet.FileOperationPacket;
+import ru.geekbrains.filebox.network.packet.FilePacket;
+import ru.geekbrains.filebox.network.packet.PackageType;
 import ru.geekbrains.filebox.network.packet.packet_container.FileContainerSingle;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-
-import static java.lang.Thread.sleep;
+import java.util.logging.Level;
 
 public class ClientController {
 
-    private final static int MIN_PASS_LENGTH = 2;
-    private final static int MAX_PASS_LENGTH = 32;
     private final static long MAX_FILE_SIZE = 5_242_880;
     private FilePacket filePacket;
     private FileBoxClientStart mainApp;
 
+    //Logger logger =Logger.getLogger("Filebox.ClientController");
+
     public void setMainApp(FileBoxClientStart mainApp) {
         this.mainApp = mainApp;
-        //     this.socketThread=mainApp.getSocketThread();
     }
 
     public void setClientController(ClientController clientController) {
@@ -53,37 +49,16 @@ public class ClientController {
     }
 
     private FileBoxClientManager clientManager;
-    @FXML
-    VBox loggedRootElement;
-    @FXML
-    GridPane upperPanelLogin;
+
     @FXML
     GridPane upperPanelLogged;
-    @FXML
-    TextField fieldLogin;
-    @FXML
-    PasswordField fieldPass;
-    @FXML
-    Button reg;
-    @FXML
-    VBox rootElement;
+
     @FXML
     Button btnRename;
     @FXML
     public Label lbLastUpd;
     /// регистрацию сую сюда же
-    @FXML
-    TextField loginRegField;
-    @FXML
-    TextField mailRegField;
-    @FXML
-    PasswordField pass1RegField;
-    @FXML
-    PasswordField pass2RegField;
-    @FXML
-    Button exit;
-    @FXML
-    Button addNew;
+
     @FXML
     Label lblLogedInfo;
     @FXML
@@ -98,133 +73,28 @@ public class ClientController {
         this.loginStage = loginStage;
     }
 
-    /// инициализация модального окна логина, в которое передается ссылка на mainApp
-    public void initClientLoginLayout() {
-        try {
-            // новое окно логина
-            loginStage = new Stage();
-            FXMLLoader loaderLog = new FXMLLoader();
-            loaderLog.setLocation(FileBoxClientStart.class.getResource("fxml/login_modal.fxml"));
-            loginRootElement = (VBox) loaderLog.load();
-        //    ClientController controller = loaderLog.getController();
-            // получаем ссылку у контроллера окна
-           // controller.
-                    setMainApp(mainApp);
-            loginStage.setTitle("Login");
-            loginStage.setOnCloseRequest((event) -> mainApp.getPrimaryStage().close());
-
-            loginStage.setResizable(false);
-            Scene sceneLog = new Scene(loginRootElement);
-            loginStage.setScene(sceneLog);
-            loginStage.initModality(Modality.WINDOW_MODAL);
-            loginStage.initOwner(btnRename.getScene().getWindow());
 
 
-            loginStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
     public void setLoggedInfoLabel(String name){
         lblLogedInfo.setText("Logged in as "+name);
     }
     public void setFreeSpaceLabel(int space, int totalClientSpace){
         lblFreeSpaceInfo.setText("Free space "+space+"kb"+" from "+totalClientSpace+"kb");
     }
-    // оправка логниа пароля для аутентификации
-    public void loginToFileBox() {
-
-        // предаем сылки на главный гласс и контроллер
-        clientManager = new FileBoxClientManager(mainApp);
-        clientManager.setClientController(this);
-
-        // если поля не пусты
-        if (!fieldLogin.getText().isEmpty() || !fieldLogin.getText().isEmpty()) {
-            clientManager.setLogin(fieldLogin.getText());
-            clientManager.setPassword(fieldPass.getText());
-
-            // меняем статус скиента и соединяемся
-            clientManager.state = State.LOGIN;
-            clientManager.connect();
-
-        } else {
-            AlertWindow.warningMesage("Fill mail and password fields");
-        }
-
-    }
-
-    public void registerNew() {
-//        Stage stage = (Stage) reg.getScene().getWindow();
-//
-//        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/registration_modal.fxml"));
-//        Parent root1 = null;
-//        try {
-//            root1 = (Parent) fxmlLoader.load();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        Stage registrStage = new Stage();
-//        registrStage.initModality(Modality.WINDOW_MODAL);
-//        registrStage.initOwner(stage);///
-//        registrStage.setTitle("New user registration ");
-//        registrStage.setScene(new Scene(root1));
-//
-//        registrStage.setResizable(false);
-//        registrStage.show();
-        clientManager = new FileBoxClientManager(mainApp);
-        clientManager.setClientController(this);
-
-        mainApp.showRegisterNewLayout();
-    }
-
-    // добавляем пользователя
-    public void addUser() {
-        String pass2Reg;
-        loginReg = loginRegField.getText();
-        mailReg = mailRegField.getText();
-        mailReg = mailRegField.getText();
-        pass1Reg = pass1RegField.getText();
-        pass2Reg = pass2RegField.getText();
-        if (loginReg.isEmpty() && mailReg.isEmpty()
-                && pass1Reg.isEmpty() && pass2Reg.isEmpty()) {
-            AlertWindow.errorMesage("Fill the all fields");
-        } else if (pass1Reg.length() < MIN_PASS_LENGTH || pass1Reg.length() > MAX_PASS_LENGTH) {
-            AlertWindow.errorMesage("Password must be from" + MIN_PASS_LENGTH + " to " + MAX_PASS_LENGTH + " words.");
-        } else {
-            if (pass1Reg.equals(pass2Reg)) {
-                clientManager.setRegistrationInfo(loginReg, mailReg, pass1Reg);
-                clientManager.state = State.REGISTRATION;
-                clientManager.connect();
-            } else {
-                AlertWindow.errorMesage("Password fields are not equals");
-            }
-        }
-    }
-
-    // отработка нажатия на cancel
-    public void regExit() {
-        Stage stage = (Stage) exit.getScene().getWindow();
-        stage.close();
-    }
 
     // прячем окно логина
-
     public void loginHide() {
-//        Stage stage = (Stage) rootElement.getScene().getWindow();
-//        stage.close();
         loginStage.close();
     }
 
     public void loginShow() {
         mainApp.showClientLoginLayout();
         //initClientLoginLayout();
-
+        Log2File.writeLog("Login window opened");
+      //  logger.info("Login window opened");
     }
 
     // ссылка на элемент модального окна дляполучения ссылки на общий элемент класса mainApp
-    @FXML
-    private VBox loginRootElement;
 
     @FXML
     private TableView<FileListXMLElement> tblContent;
@@ -248,47 +118,47 @@ public class ClientController {
             TableRow<FileListXMLElement> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && (! row.isEmpty()) ) {
-                    //FileListXMLElement rowData = row.getItem();
-                    System.out.println("double click");
                     FileListXMLElement rowData = row.getItem();
                     if (rowData.getType().equals(FileType.FILE )){
-                        System.out.println("its file");
                         getFile(rowData.getFileName().getValue());
-
                     } else if (rowData.getType().equals(FileType.DIR )){
-                        System.out.println("its dir");
+
                         String dirName = getFolderName(rowData.getFileName().getValue());
                         System.out.println(dirName);
                         enterDirectory(dirName);
                     } else if (rowData.getType().equals(FileType.UP_DIR )){
-                        System.out.println("up dir");
                         enterDirectory("...");
                     } else {
                         System.out.println("wrong type of element");
+                    //    logger.warning("wrong type of ");
                     }
                     //Делайте, что требуется с элементом.
                 }
             });
             return row ;
         });
+        Log2File.writeLog("Table initialized");
+     //   logger.info("Table initialized");
     }
 
-    private String getFolderName(String name){
+    public String getFolderName(String name){
         String dirName = name;
         dirName= dirName.replace("[", "");
         dirName= dirName.replace("]", "");
         return dirName;
     }
-    private void enterDirectory(String dir){
+    public void enterDirectory(String dir){
 
 
                 FileOperationPacket dirPacket = new FileOperationPacket(PackageType.ENTER_DIR,  dir);
                 mainApp.socketThread.sendPacket(dirPacket);
+                Log2File.writeLog("Entering '"+dir+"' directory");
+     //   logger.info("Entering '"+dir+"' directory");
 
     }
     public void createFolder(){
-        System.out.println("create folder");
         mainApp.showNewFolderLayout();
+        Log2File.writeLog("create new folder window opened");
     }
     // методы обработки нажатия на кнопку
     // переименование файла
@@ -329,18 +199,17 @@ public class ClientController {
                     FileOperationPacket deletePacket = new FileOperationPacket(PackageType.DELETE, currentFilename);
                     mainApp.socketThread.sendPacket(deletePacket);
                     mainApp.removeFromTable(currentFilename);
-                    Logger.writeLog(currentFilename + " deleted");
+                    Log2File.writeLog(currentFilename + " deleted");
                     System.out.println("OK");
+
                 } else {
 
-                    Logger.writeLog("deleting operation canceled");
+                    Log2File.writeLog("deleting operation canceled");
                 }
             }
 
-            //  mainApp.showDioalogLayout("Delete file ", "Are you sure?");
         }
-//        ObservableList<FileListXMLElement> list = mainApp.getServerFileList();
-//        list.add(new FileListXMLElement("sasaф", "1111111"));
+
     }
 
     public void downloadFile() {
@@ -354,7 +223,7 @@ public class ClientController {
         }
     }
 
-    private void getFile(String filename) {
+    public void getFile(String filename) {
         if (filename != null) {
             boolean answer = AlertWindow.dialogWindow("Download file?", filename);
 
@@ -362,10 +231,10 @@ public class ClientController {
                 FileOperationPacket downLoad = new FileOperationPacket(PackageType.FILE_REQUEST, filename);
                 mainApp.socketThread.sendPacket(downLoad);
 
-                Logger.writeLog("download operation '" + filename + "'complete");
+                Log2File.writeLog("download operation '" + filename + "'complete");
             } else {
 
-                Logger.writeLog("download '" + filename + "' operation canceled");
+                Log2File.writeLog("download '" + filename + "' operation canceled");
             }
         }
 
@@ -373,12 +242,12 @@ public class ClientController {
     //загрузка файла на сервер
     public void uploadFile() {
         sendFile();
-        System.out.println("upload");
+
       //  lastUpdate();
     }
 
     public void openOptions() {
-        System.out.println("options");
+
         mainApp.showOptionsLayout();
     }
 
@@ -387,7 +256,7 @@ public class ClientController {
 
         System.out.println("Client logOut");
         mainApp.socketThread.close();
-        Logger.writeLog("Client LogOut");
+        Log2File.writeLog("Client LogOut");
         loginShow();
     }
 
@@ -403,24 +272,8 @@ public class ClientController {
 
         // упаковываем в контейнер  и отправляем
         packContainerAndSendFile(list, fileContainer);
-
-//        FileWaitingPacket fwp = new FileWaitingPacket(list.size());
-//        mainApp.socketThread.sendPacket(fwp);
-////      /// clientManager.setListOutFiles(list);
-//       clientManager.sendFileBytes(list);
+        Log2File.writeLog("all files uploaded");
     }
-
-//    private String upd;
-
-//    // обновлени даты последнего обновления
-//    public synchronized void lastUpdate() {
-//        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM' at ' HH:mm:ss ");
-//
-//       // upd = lbLastUpd.getText();
-//        upd = dateFormat.format(System.currentTimeMillis());
-//        System.out.println(lbLastUpd);
-//        lbLastUpd.setText("Last upd:"+upd);
-//    }
 
 
     // обработка Drag'N'Drop
@@ -436,9 +289,9 @@ public class ClientController {
     @FXML
     public void handleDrop(DragEvent event) {
         List<File> list = event.getDragboard().getFiles();
-        FileContainer fileContainer = new FileContainer();
         FileContainerSingle fcs = new FileContainerSingle();
         packContainerAndSendFile(list, fcs);
+        Log2File.writeLog( "drog'n'drop");
     }
 
     public void packContainerAndSendFile(List<File> list, FileContainerSingle fileContainer) {
@@ -454,18 +307,21 @@ public class ClientController {
                 File file = list.get(i);
                 if (file.length() > MAX_FILE_SIZE) {
                     AlertWindow.errorMesage("File size is more than 50MB");
-                    Logger.writeLog(file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
+                    Log2File.writeLog( Level.WARNING, file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
+                 //   logger.warning(file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
                     return;
                 }
                 // если файл подходящего размера, упаковываем в пакет
                 try {
-
                     fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName(), file.length(), list.size());
                     filePacket = new FilePacket(fileContainer);
+                   // logger.info("file '"+fileContainer.getName()+"' uploaded");
+                    Log2File.writeLog("file '"+fileContainer.getName()+"' uploaded");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                Logger.writeLog("Sending packet. Type: " + filePacket.getPacketType());
+               // logger.info("Sending packet. Type: " + filePacket.getPacketType());
+                Log2File.writeLog(Level.WARNING,"Sending packet. Type: " + filePacket.getPacketType());
                 // логируем  и отправляем
                 mainApp.socketThread.sendPacket(filePacket);
                 prgress+=cntStep;

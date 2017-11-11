@@ -4,6 +4,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.stage.FileChooser;
+import ru.geekbrains.filebox.library.FileType;
+import ru.geekbrains.filebox.library.Log2File;
 import ru.geekbrains.filebox.network.ServerSocketThread;
 import ru.geekbrains.filebox.network.ServerSocketThreadListener;
 import ru.geekbrains.filebox.network.SocketThread;
@@ -23,6 +25,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class FileBoxServer implements ServerSocketThreadListener, SocketThreadListener {
@@ -53,10 +57,12 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
         if (state != ServerState.WORKING) {
             serverSocketThread = new ServerSocketThread(this, "ServerSocketThread", port, 1000);
             loginManager.init();
-            putLog("Server is working");
+            putLog(Level.INFO,"Server is working");
+          //  Log2File.writeServerLog("Server is working");
             state = ServerState.WORKING;
         } else
-            putLog("Server is already working.");
+            //putLog("Server is already working.");
+            putLog( Level.WARNING, "Server is already working.");
     }
 
     // выключили сервер
@@ -65,53 +71,61 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
         if (state != ServerState.STOPPED) {
             serverSocketThread.interrupt();
             loginManager.dispose();
-            putLog("Server stopped");
+            putLog(Level.INFO,"Server stopped");
             state = ServerState.STOPPED;
         } else {
-            putLog("Server is not started");
+            putLog( Level.WARNING, "Server is not started");
+            //putLog("Server is not started");
         }
     }
 
+
     // пишем лог в окно сервера и в файл
-    public synchronized void putLog(String msg) {
+    public synchronized void putLog(Level level, String msg) {
+        Log2File.writeServerLog(level, msg);
         msg = dateFormat.format(System.currentTimeMillis()) +
                 Thread.currentThread().getName() + ": " + msg;
         eventListener.onFileBoxServerLog(this, msg);
 
-        // логирую все, что происходит на сервере в файл
-        try {
-            logFile = new FileWriter("server.log", true);
-            log = new PrintWriter((java.io.Writer) logFile);
-        } catch (IOException ex) {
-            log.printf(msg);
-            ex.printStackTrace();
-            return;
-        }
-        try {
-            throw new Exception();
-        } catch (Exception ex) {
-            log.printf(msg + "\n");
-            log.flush();
-        }
+//        // логирую все, что происходит на сервере в файл
+//        try {
+//            logFile = new FileWriter("server.log", true);
+//            log = new PrintWriter((java.io.Writer) logFile);
+//        } catch (IOException ex) {
+//            log.printf(msg);
+//            ex.printStackTrace();
+//            return;
+//        }
+//        try {
+//            throw new Exception();
+//        } catch (Exception ex) {
+//            log.printf(msg + "\n");
+//            log.flush();
+//        }
     }
 
     // методы SSTListener'a
     // запустили сервер
     @Override
     public void onStartServerSocketThread(ServerSocketThread thread) {
-        putLog("SSocket started...");
+
+        putLog(Level.INFO,"SSocket started...");
+
     }
 
     // закрыли сервер
     @Override
     public void onStopServerSocketThread(ServerSocketThread thread) {
-        putLog("SSocket stopped...");
+      putLog(Level.INFO,"SSocket stopped...");
+
     }
 
     // приняли входящее соединение
     @Override
     public void onServerSocketThreadReady(ServerSocketThread thread, ServerSocket serverSocket) {
-        putLog("SSocket is ready...");
+        putLog(Level.INFO,"SSocket is ready...");
+
+
     }
 
     //
@@ -120,49 +134,50 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
         //putLog("accept()timeout...");
     }
-    // методы SocketThreadListener
 
+    // методы SocketThreadListener
     @Override
     // установили сединение, создали поток
     public void onAcceptedSocket(ServerSocketThread thread, ServerSocket serverSocket, Socket socket) {
-        putLog("Client connected: " + socket);
+
         String threadName = "Socket thread: " + socket.getInetAddress() + ": " + socket.getPort();
         //clients.add(new SocketThread(this, threadName, socket));
         //  new SocketThread(this, threadName, socket);
         new FileBoxSocketThread(this, threadName, socket);
-        putLog("socket accepted...");
+        putLog(Level.INFO,"Client connected: " + socket);
+        //putLog(Level.INFO,"socket accepted...");
     }
 
     // если из потока прилетело исключение
     @Override
     public void onExceptionServerSocketThread(ServerSocketThread thread, Exception e) {
-        putLog("Exception..." + e.getClass().getName());
+        putLog(Level.WARNING,"Exception..." + e.getClass().getName());
     }
 
     // начало соединения логруем
     @Override
     public synchronized void onStartSocketThread(SocketThread socketThread) {
-        putLog("started...");
+        putLog(Level.INFO,"started...");
     }
 
     //конец соединения. очищаем подлюченных клиентов, логируем
     @Override
     public synchronized void onStopSocketThread(SocketThread socketThread) {
         clients.remove(socketThread);
-        putLog("stopped.");
+        putLog(Level.INFO,"stopped.");
     }
 
     // соединение устоновлено, подключенный пользователь добавился в очередь
     @Override
     public synchronized void onReadySocketThread(SocketThread socketThread, Socket socket) {
-        putLog("Socket is ready");
+        putLog(Level.INFO,"Socket is ready");
         clients.add(socketThread);
     }
 
     // если прила строка, не стал удалять метод, тк может переделаю получение пакетов сообщений
     @Override
     public synchronized void onReceiveString(SocketThread socketThread, Socket socket, String msg) {
-        putLog("Send " + msg);
+        putLog(Level.INFO,"Send " + msg);
     }
 
     // обрабатываем полученные пакеты
@@ -171,7 +186,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
         // создаем поток клиента, с информацией о нем
         FileBoxSocketThread client = (FileBoxSocketThread) socketThread;
-        putLog(client.getLogin() + ": incoming packet type = " + packet.getPacketType());
+        putLog(Level.INFO,client.getLogin() + ": incoming packet type = " + packet.getPacketType());
         // если пакет содержит файлы
         if (packet.getPacketType() == PackageType.FILE) {
             // проверяем наличие папки пользователя
@@ -190,7 +205,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             int x = file.length / 1024 + getUsedSpace(client) / 1024;
             int y = client.getTotalSpace();
             if (file.length / 1024 + getUsedSpace(client) / 1024 > client.getTotalSpace()) {
-                MessagePacket msgPkt = new MessagePacket("No free space in yot FileBox. Delete some and try again ;)");
+                FileOperationPacket msgPkt = new FileOperationPacket(PackageType.MESSAGE,"No free space in yot FileBox. Delete some and try again ;)");
                 socketThread.sendPacket(msgPkt);
                 return;
             }
@@ -198,7 +213,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             for (int i = 0; i < fList.length; i++) {
 
                 if (fList[i].getName().equals(name)) {
-                    MessagePacket msgPkt = new MessagePacket("File '" + name + "'was already uploaded. Delete it, or upload another file");
+                    FileOperationPacket msgPkt = new FileOperationPacket(PackageType.MESSAGE,"File '" + name + "'was already uploaded. Delete it, or upload another file");
                     socketThread.sendPacket(msgPkt);
                     return;
                 }
@@ -208,7 +223,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
                 path = Paths.get(folder.getPath() + "\\" + name);
                 Files.write(path, file);
 
-                putLog(client.getLogin() + " " + "File '" + name + "' received. ");
+                putLog(Level.INFO,client.getLogin() + " " + "File '" + name + "' received. ");
             } catch (IOException e) {
 
                 e.printStackTrace();
@@ -223,7 +238,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             packFiles(fileRequest, client);
 
         } else if (packet.getPacketType() == PackageType.MESSAGE) {
-            putLog(client.getLogin() + " MESSAGE received");
+            putLog(Level.INFO,client.getLogin() + " MESSAGE received");
 
             // пользователь запросил список файлов
         } else if (packet.getPacketType() == PackageType.FILE_LIST) {
@@ -231,7 +246,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             // сообщение об ощибке
         } else if (packet.getPacketType() == PackageType.ENTER_DIR) {
             String dir = (String) packet.getOutputPacket();
-            System.out.println(dir);
+
             if (dir.equals("...")){
                 client.setPreviousFolder();
             } else {
@@ -250,7 +265,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
 
         } else if (packet.getPacketType() == PackageType.ERROR) {
-            putLog(client.getLogin() + " " + "ERROR received");
+            putLog(Level.INFO,client.getLogin() + " " + "ERROR received");
             // пришел пакет с логином и паролем
         } else if (packet.getPacketType() == PackageType.LOGIN) {
             LoginContainer lc = (LoginContainer) packet.getOutputPacket();
@@ -270,7 +285,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
                 //    int passHash =      rc.getPassword().hashCode();
                 loginManager.addNewUser(rc.getLogin(), rc.getMail(), rc.getPassword().hashCode());
 //                loginManager.addNewUser(rc.getLogin(), rc.getMail(), rc.getPassword());
-                putLog("New user '" + rc.getLogin() + "' resistrated and added to database");
+                putLog(Level.INFO,"New user '" + rc.getLogin() + "' resistrated and added to database");
                 File folder = new File(SERVER_INBOX_PATH + rc.getLogin());
                 if (!folder.exists()) {
                     folder.mkdir();
@@ -282,14 +297,15 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
                 ((FileBoxSocketThread) socketThread).sendError("Login is busy");
             }
         } else if (packet.getPacketType() == PackageType.RENAME) {
-            putLog("rename");
+
             String renameRequest = (String) packet.getOutputPacket();
             String[] rename = renameRequest.split("<>");
             File file = new File(SERVER_INBOX_PATH + client.getLogin()+"/" + client.getCurrentFolder()+"/" + rename[0]);
 
             File newFile = new File(SERVER_INBOX_PATH + client.getLogin() +"/" + client.getCurrentFolder()+"/" + rename[1]);
+            putLog(Level.INFO, "client.getLogin() rename '"+ rename[0]+"' -> '"+rename[1]+"'");
             if (file.renameTo(newFile)) {
-                putLog(client.getLogin() + " " + "rename '" + rename[0] + "' to '" + rename[1] + "' complete");
+                putLog(Level.INFO,client.getLogin()  + " rename '" + rename[0] + "' to '" + rename[1] + "' complete");
             }
 
         } else if (packet.getPacketType() == PackageType.FILE_WAITING) {
@@ -323,7 +339,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
 
         } else if (packet.getPacketType() == PackageType.DELETE) {
-            putLog("deleting file");
+
             String deleteRequest = (String) packet.getOutputPacket();
 
             File file = new File(SERVER_INBOX_PATH + client.getLogin() + "\\" + deleteRequest);
@@ -332,11 +348,11 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             } else{
                 file.delete();
             }
-//            admi
+            putLog(Level.INFO,"deleting file "+deleteRequest);
 
 
         } else {
-            putLog(client.getLogin() + " " + "Exception: Unknown package type :(");
+            putLog(Level.WARNING,client.getLogin() + " " + "Exception: Unknown package type :(");
             throw new RuntimeException("Unknown package type");
 
         }
@@ -367,20 +383,20 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
         // если данные не верны, отправляем пакет ошибки, что логин\пароль не верны
         if (!isAuth) {
             newClient.sendError("Wrong email or password");
-            putLog("Wrong mail\\pass '" + lc.getLogin() + "\\" + lc.getPassword() + "'");
+            putLog(Level.WARNING,"Wrong mail\\pass '" + lc.getLogin() + "\\" + lc.getPassword() + "'");
             return;
         }
         // если все ок, создаем одноименный с пользователем поток сокета
         FileBoxSocketThread client = getClientByNick(login);
         // авторицзуем и отправляем пользователю сообщение об успешнй аутентификации
         newClient.authorizeAccept(login);
-        MessagePacket msg = new MessagePacket("Login accepted");
+        FileOperationPacket msg = new FileOperationPacket(PackageType.MESSAGE,"Login accepted");
         newClient.sendPacket(msg);
         if (client == null) {
 
-            putLog("Client " + login + " connected");
+            putLog(Level.INFO,"Client " + login + " connected");
         } else {
-            putLog("Client " + login + " reconnected.");
+            putLog(Level.INFO,"Client " + login + " reconnected.");
             client.reconnect();
 
         }
@@ -392,10 +408,22 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
         int usedSpace = 0;
         File clientFolder = new File(SERVER_INBOX_PATH + client.getLogin());
         File[] fList = clientFolder.listFiles();
-        for (int i = 0; i < fList.length; i++) {
-            if (fList[i].isFile()) {
-                usedSpace += fList[i].length();
+//        for (int i = 0; i < fList.length; i++) {
+//            if (fList[i].isFile()) {
+//                usedSpace += fList[i].length();
+//            }
+//        }
+        try {
+            List<File> myfiles = Files.walk(Paths.get(clientFolder.getPath()))
+                    .filter(Files::isRegularFile)
+                    .map(Path::toFile)
+                    .collect(Collectors.toList());
+            for (int i = 0; i < myfiles.size(); i++) {
+                File file = myfiles.get(i);
+                usedSpace += file.length();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return usedSpace;
     }
@@ -413,50 +441,52 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
     }
 
     private void sendFileList(SocketThread socketThread, FileBoxSocketThread client) {
-        putLog(client.getLogin() + " FILE_LIST request received");
+        putLog(Level.INFO,client.getLogin() + " FILE_LIST request received");
         FileListContainer fc = new FileListContainer();
         String path = SERVER_INBOX_PATH + client.getLogin();
-        String fldr = client.getCurrentFolder();
+        // путь для подсчета места
+     //   String root = path;
         if (client.getCurrentFolder() != null && !client.getCurrentFolder().equals("")) {
             path += client.getCurrentFolder();
-            fc.add(new FileListElement("...", 0, "//upDir"));
+            fc.add(new FileListElement("...", 0, FileType.UP_DIR));
         }
 
         File clientFolder = new File(path);
+      //  File rootFolder = new File(root);
         File[] fList = clientFolder.listFiles();
-
-        int usedSpace = 0;
-        long usedSpaceLong = 0;
-
-        // подсчитывает сумму всех вложенных файлов
-        try {
-            List<File> myfiles = Files.walk(Paths.get(clientFolder.getPath()))
-                    .filter(Files::isRegularFile)
-                    .map(Path::toFile)
-                    .collect(Collectors.toList());
-            for (int i = 0; i < myfiles.size(); i++) {
-                File file = myfiles.get(i);
-                usedSpaceLong += file.length();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//
+//        int usedSpace = 0;
+//        int usedSpaceLong = 0;
+//
+//        // подсчитывает сумму всех вложенных файлов
+//        try {
+//            List<File> myfiles = Files.walk(Paths.get(rootFolder.getPath()))
+//                    .filter(Files::isRegularFile)
+//                    .map(Path::toFile)
+//                    .collect(Collectors.toList());
+//            for (int i = 0; i < myfiles.size(); i++) {
+//                File file = myfiles.get(i);
+//                usedSpaceLong += file.length();
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         // считает сумму файлов в конкретной папке
         for (int i = 0; i < fList.length; i++) {
             //Нужны только папки в место isFile() пишим isDirectory()
             if (fList[i].isFile()) {
-                usedSpace += fList[i].length();
-                FileListElement element = new FileListElement(fList[i].getName(), fList[i].length() / 1024, "file");
+           //     usedSpace += fList[i].length();
+                FileListElement element = new FileListElement(fList[i].getName(), fList[i].length() / 1024, FileType.FILE);
                 fc.add(element);
             }
             //папка
             if (fList[i].isDirectory()) {
-                FileListElement element = new FileListElement("[" + fList[i].getName() + "]", fList[i].length() / 1024, "dir");
+                FileListElement element = new FileListElement("[" + fList[i].getName() + "]", fList[i].length() / 1024, FileType.DIR);
                 fc.add(element);
             }
         }
-        fc.setUsedSpace(usedSpace);
+        fc.setUsedSpace(getUsedSpace(client));
 
         //отправляем список
         FileListPacket fileListRequest = new FileListPacket(fc);
@@ -478,7 +508,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
 
     @Override
     public synchronized void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {
-
+        putLog(Level.WARNING, "Exception: "+e);
     }
 
 
@@ -494,7 +524,7 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
         } catch (IOException e) {
             e.printStackTrace();
         }
-        putLog("Sending packet. Type: " + filePacket.getPacketType());
+        putLog(Level.INFO,"Sending packet. Type: " + filePacket.getPacketType());
         // логируем  и отправляем
         client.sendPacket(filePacket);
 

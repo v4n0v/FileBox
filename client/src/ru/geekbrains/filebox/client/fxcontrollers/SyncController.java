@@ -5,14 +5,17 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import ru.geekbrains.filebox.client.core.FileBoxClientManager;
 import ru.geekbrains.filebox.client.core.FileListXMLElement;
 import ru.geekbrains.filebox.library.AlertWindow;
-import ru.geekbrains.filebox.library.Logger;
+import ru.geekbrains.filebox.library.FileType;
+import ru.geekbrains.filebox.library.Log2File;
 import ru.geekbrains.filebox.network.packet.FileOperationPacket;
 import ru.geekbrains.filebox.network.packet.PackageType;
 import ru.geekbrains.filebox.network.packet.packet_container.FileContainerSingle;
+import ru.geekbrains.filebox.network.packet.packet_container.FileListElement;
 
 
 import java.io.File;
@@ -51,42 +54,115 @@ public class SyncController extends BaseController implements InitLayout {
         serverFileNameColumn.setCellValueFactory(cellData -> cellData.getValue().getFileName());
         severSizeColumn.setCellValueFactory(cellData -> cellData.getValue().getFileSize());
         tblServerContent.setItems(serverFileList);
-    }
 
+
+        tblServerContent.setRowFactory(tv -> {
+            TableRow<FileListXMLElement> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                    FileListXMLElement rowData = row.getItem();
+                    if (rowData.getType().equals(FileType.FILE)) {
+                        clientController.getFile(rowData.getFileName().getValue());
+                    } else if (rowData.getType().equals(FileType.DIR)) {
+                        String dirName = clientController.getFolderName(rowData.getFileName().getValue());
+                        System.out.println(dirName);
+                        clientController.enterDirectory(dirName);
+                    } else if (rowData.getType().equals(FileType.UP_DIR)) {
+                        clientController.enterDirectory("...");
+                    } else {
+                        System.out.println("wrong type of element");
+                        //    logger.warning("wrong type of ");
+                    }
+                    //Делайте, что требуется с элементом.
+                }
+            });
+            return row;
+        });
+
+        tblClientContent.setRowFactory(tv -> {
+            TableRow<FileListXMLElement> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                    FileListXMLElement rowData = row.getItem();
+                    if (rowData.getType().equals(FileType.FILE)) {
+                        System.out.println("double click " + rowData.getFileName().getValue());
+                        //
+                    } else if (rowData.getType().equals(FileType.DIR)) {
+                        String dirName = clientController.getFolderName(rowData.getFileName().getValue());
+                        clientPath+="\\"+dirName;
+                        updateClientFileList(mainApp.getConfig().getPath( ) + clientPath, clientFileList);
+//                        System.out.println(dirName);
+//                        clientController.enterDirectory(dirName);
+                    } else if (rowData.getType().equals(FileType.UP_DIR)) {
+                       // clientController.enterDirectory("...");
+                        System.out.println("...");
+                        clientPath=clientPath.replace("\\", "/");
+                        String[] folderPath = clientPath.split("/");
+                        clientPath=clientPath.replace("/", "\\");
+//        String[] prevFolderPath = new String[folderPath.length-1];
+//        System.arraycopy(folderPath, 0, prevFolderPath, 0, prevFolderPath.length);
+//        this.currentFolder
+                        clientPath="";
+                        if (folderPath.length!=2) {
+                            for (int i = 0; i < folderPath.length - 1; i++) {
+                                clientPath += folderPath[i] + "\\";
+                            }
+                        }
+                        updateClientFileList(mainApp.getConfig().getPath( ) + clientPath, clientFileList);
+                    } else {
+                        System.out.println("wrong type of element");
+                        //    logger.warning("wrong type of ");
+                    }
+                    //Делайте, что требуется с элементом.
+                }
+            });
+            return row;
+        });
+    }
+private String clientPath="";
     @Override
     public void init() {
         serverFileList = mainApp.getServerFileList();
-        clientFileList=mainApp.getClientFileList();
-      //  clientFileList=
-      //  ArrayList<FileListXMLElement> fileList = new ArrayList<>();
-        updateClientFileList(mainApp.getConfig().getPath(), clientFileList);
+        clientFileList = mainApp.getClientFileList();
+        //  clientFileList=
+        //  ArrayList<FileListXMLElement> fileList = new ArrayList<>();
+        updateClientFileList(mainApp.getConfig().getPath()+clientPath, clientFileList);
 //        clientFileList.addAll(updateClientFileList(mainApp.getConfig().getPath()));
 
         initTable();
     }
 
     private void updateClientFileList(String path, ObservableList fileList) {
+        fileList.clear();
+        if (clientPath != null && !clientPath.equals("")) {
 
-
-        // создаем списаок
+            fileList.add(new FileListXMLElement("...", 0l, FileType.UP_DIR));
+        }
+        // создаем список
         File[] fList;
         File clientFolder = new File(path);
         //  String len;
         fList = clientFolder.listFiles();
-        fileList.clear();
+
 //        for (int i = 0; i < fList.size(); i++) {
 //            fileList.add(new FileListXMLElement(fList.get(i).getFileName(), fList.get(i).getFileSize()));
 //        }
-        for (int i = 0; i < fList.length; i++) {
-            //Нужны только папки в место isFile() пишим isDirectory()
-            if (fList[i].isFile()) {
-                String name =fList[i].getName();
-                long  len =  fList[i].length();
-                        fileList.add(new FileListXMLElement(fList[i].getName(), fList[i].length()));
+        if (fList.length!=0) {
+
+            for (int i = 0; i < fList.length; i++) {
+                //Нужны только папки в место isFile() пишим isDirectory()
+                if (fList[i].isFile()) {
+                    String name = fList[i].getName();
+                    long len = fList[i].length();
+                    fileList.add(new FileListXMLElement(fList[i].getName(), fList[i].length(), FileType.FILE));
+
+                } else if (fList[i].isDirectory()) {
+                    fileList.add(new FileListXMLElement("[" + fList[i].getName() + "]", fList[i].length() / 1024, FileType.DIR));
+                    // fc.add(element);
+                }
+
             }
         }
-
-
     }
 
     public void uploadToServer() {
@@ -102,21 +178,22 @@ public class SyncController extends BaseController implements InitLayout {
 
                 if (answer) {
 
-                    // прикостылис сброр фалов в список. в таблице выбирается только 1 файл, будет несколько в лубом случае будет список,
+                    // прикостылил сброр фалов в список. в таблице выбирается только 1 файл, будет несколько, в любом
+                    // случае, будет список,
                     // packContainerAndSendFile работет со списками
-                    // TODO сделать возможность мультивыбора
-                    ArrayList <File>files =  new ArrayList();
-                    files.add(new File (mainApp.getConfig().getPath()+"\\"+currentFilename));
+
+                    ArrayList<File> files = new ArrayList();
+                    files.add(new File(mainApp.getConfig().getPath()+clientPath + "\\" + currentFilename));
 
                     FileContainerSingle fcs = new FileContainerSingle();
                     clientController.packContainerAndSendFile(files, fcs);
 //                    FileOperationPacket downLoad = new FileOperationPacket(PackageType.FILE_REQUEST, currentFilename);
 //                    mainApp.socketThread.sendPacket(downLoad);
 
-                    Logger.writeLog("download operation '" + currentFilename + "'complete");
+                    Log2File.writeLog("download operation '" + currentFilename + "'complete");
                 } else {
 
-                    Logger.writeLog("download '" + currentFilename + "' operation canceled");
+                    Log2File.writeLog("download '" + currentFilename + "' operation canceled");
                 }
             }
         }
@@ -137,14 +214,14 @@ public class SyncController extends BaseController implements InitLayout {
                     FileOperationPacket downLoad = new FileOperationPacket(PackageType.FILE_REQUEST, currentFilename);
                     mainApp.socketThread.sendPacket(downLoad);
 
-                    Logger.writeLog("download operation '" + currentFilename + "'complete");
+                    Log2File.writeLog("download operation '" + currentFilename + "'complete");
                 } else {
 
-                    Logger.writeLog("download '" + currentFilename + "' operation canceled");
+                    Log2File.writeLog("download '" + currentFilename + "' operation canceled");
                 }
             }
         }
-
+      //  updateClientFileList(mainApp.getConfig().getPath()+clientPath, clientFileList);
         System.out.println("download");
 
     }

@@ -21,7 +21,6 @@ public class ServerSocketThread extends Thread {
     // цекл сокета сервера, слушает порт, пока в него не постучит пользователь.
     @Override
     public void run() {
-        System.out.println("SST start");
         eventListener.onStartServerSocketThread(this);
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             serverSocket.setSoTimeout(timeout);

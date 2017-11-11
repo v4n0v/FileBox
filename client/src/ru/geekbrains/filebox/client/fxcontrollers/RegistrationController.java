@@ -57,6 +57,7 @@ public class RegistrationController extends BaseController{
                 clientManager.connect();
             } else {
                 AlertWindow.errorMesage("Password fields are not equals");
+
             }
         }
 

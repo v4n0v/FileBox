@@ -12,7 +12,7 @@ import ru.geekbrains.filebox.client.core.ClientPreferences;
 import ru.geekbrains.filebox.client.core.FileListXMLWrapper;
 import ru.geekbrains.filebox.client.core.preferences.Style;
 import ru.geekbrains.filebox.library.AlertWindow;
-import ru.geekbrains.filebox.library.Logger;
+import ru.geekbrains.filebox.library.Log2File;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -20,6 +20,7 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 
 public class OptionsController extends BaseController implements InitLayout{
@@ -70,7 +71,7 @@ public class OptionsController extends BaseController implements InitLayout{
 
         styleChoice.setItems(FXCollections.observableArrayList(styles));
 
-
+        Log2File.writeLog("Options opened");
     }
 
     public void selectDir() {
@@ -82,11 +83,12 @@ public class OptionsController extends BaseController implements InitLayout{
             inboxPath.setText(path);
         } else {
             AlertWindow.warningMesage("Directory not chosen");
+            Log2File.writeLog(Level.WARNING, "Directory not chosen");
         }
     }
 
     public void loginConfig() {
-        System.out.println("loadConfig");
+
 
         File file = new File("config.xml");
 
@@ -156,9 +158,10 @@ public class OptionsController extends BaseController implements InitLayout{
                 AlertWindow.errorMesage(e.getMessage());
             }
             stage.close();
-            Logger.writeLog("Config saved");
+            Log2File.writeLog("Config saved");
         } else {
             AlertWindow.warningMesage("Select folder");
+
         }
         System.out.println("saveConfig");
 
