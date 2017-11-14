@@ -34,6 +34,12 @@ public class FileBoxClientStart extends Application {
     private ClientPreferences config;
     private String currentStyleCSS;
 
+    public String getRootPath() {
+        return ROOT_CLIENT_PATH;
+    }
+
+    private String ROOT_CLIENT_PATH;
+
     // геттеры и сеттеры
     public ObservableList<FileListXMLElement> getServerFileList() {
         return serverFileList;
@@ -104,7 +110,7 @@ public class FileBoxClientStart extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
-        this.primaryStage.setTitle("FileBoxClientManager");
+        this.primaryStage.setTitle("ClientConnectionManager");
         File logo = new File("logo.png");
         logoPath = "file:///" + logo.getAbsolutePath().replace("\\", "/");
         //инициализируем окно клиента
@@ -112,6 +118,7 @@ public class FileBoxClientStart extends Application {
         if (cfgFile.exists()) {
             config = new ClientPreferences();
             config.loadConfig();
+            ROOT_CLIENT_PATH=config.getPath();
         }
         currentStyleCSS = config.getCurrentStyle();
 
@@ -314,12 +321,14 @@ public class FileBoxClientStart extends Application {
             syncStage.initModality(Modality.WINDOW_MODAL);
             syncStage.initOwner(primaryStage);
             setStyleToStage(currentStyleCSS, scene);
+
             syncStage.setResizable(false);
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
             SyncController syncController = loader.getController();
             syncController.setMainApp(this);
             syncController.init();
             syncController.setStage(syncStage);
+            syncStage.setOnCloseRequest((event) -> syncController.close());
             syncController.setClientController(clientController);
             syncStage.show();
         } catch (IOException e) {

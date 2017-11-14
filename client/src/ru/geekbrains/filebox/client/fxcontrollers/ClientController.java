@@ -8,7 +8,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ru.geekbrains.filebox.client.FileBoxClientStart;
-import ru.geekbrains.filebox.client.core.FileBoxClientManager;
+import ru.geekbrains.filebox.client.core.ClientConnectionManager;
 import ru.geekbrains.filebox.client.core.FileListXMLElement;
 import ru.geekbrains.filebox.library.AlertWindow;
 import ru.geekbrains.filebox.library.FileType;
@@ -44,11 +44,11 @@ public class ClientController {
 
     ClientController clientController;
 
-    public FileBoxClientManager getClientManager() {
+    public ClientConnectionManager getClientManager() {
         return clientManager;
     }
 
-    private FileBoxClientManager clientManager;
+    private ClientConnectionManager clientManager;
 
     @FXML
     GridPane upperPanelLogged;

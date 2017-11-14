@@ -2,8 +2,10 @@ package ru.geekbrains.filebox.client.core;
 
 import javafx.beans.property.*;
 
+import java.util.Comparator;
 
-public class FileListXMLElement {
+
+public class FileListXMLElement  {
 
     private StringProperty fileName;
   //  private StringProperty fileSize;
@@ -41,4 +43,41 @@ public class FileListXMLElement {
         this.fileSize = new SimpleObjectProperty<Long>(fileSize);
     }
 
+
+    public static Comparator<FileListXMLElement> FileNameComparator = new Comparator<FileListXMLElement>() {
+
+        @Override
+        public int compare(FileListXMLElement o1, FileListXMLElement o2) {
+            String obj1 = o1.getFileName().getValue();
+            String obj2 = o2.getFileName().getValue();
+            if (obj1 == null) {
+                return -1;
+            }
+            if (obj2 == null) {
+                return 1;
+            }
+            if (obj1.equals( obj2 )) {
+                return 0;
+            }
+            return obj1.compareTo(obj2);
+        }
+    };
+
+
+
+
+    public class ExampleComparator  implements Comparator<String> {
+        public int compare(String obj1, String obj2) {
+            if (obj1 == null) {
+                return -1;
+            }
+            if (obj2 == null) {
+                return 1;
+            }
+            if (obj1.equals( obj2 )) {
+                return 0;
+            }
+            return obj1.compareTo(obj2);
+        }
+    }
 }

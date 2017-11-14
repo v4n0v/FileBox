@@ -7,24 +7,27 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import ru.geekbrains.filebox.client.core.FileBoxClientManager;
+import org.xml.sax.ext.Locator2;
+import ru.geekbrains.filebox.client.core.ClientConnectionManager;
 import ru.geekbrains.filebox.client.core.FileListXMLElement;
+import ru.geekbrains.filebox.client.core.preferences.ExampleComparator;
 import ru.geekbrains.filebox.library.AlertWindow;
 import ru.geekbrains.filebox.library.FileType;
 import ru.geekbrains.filebox.library.Log2File;
 import ru.geekbrains.filebox.network.packet.FileOperationPacket;
 import ru.geekbrains.filebox.network.packet.PackageType;
 import ru.geekbrains.filebox.network.packet.packet_container.FileContainerSingle;
-import ru.geekbrains.filebox.network.packet.packet_container.FileListElement;
 
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.logging.Level;
 
 public class SyncController extends BaseController implements InitLayout {
     ObservableList<FileListXMLElement> clientFileList = FXCollections.observableArrayList();
     ObservableList<FileListXMLElement> serverFileList = FXCollections.observableArrayList();
-    FileBoxClientManager clientManager;
+    ClientConnectionManager clientManager;
 
 
     @FXML
@@ -43,7 +46,8 @@ public class SyncController extends BaseController implements InitLayout {
 //    public void updTable() {
 //        tblClientContent.setItems(mainApp.serverFileList);
 //    }
-
+private String TEMP_PATH;
+    private String currentAbsPath;
     public void initTable() {
         tblClientContent.setEditable(false);
         clientFileNameColumn.setCellValueFactory(cellData -> cellData.getValue().getFileName());
@@ -70,8 +74,9 @@ public class SyncController extends BaseController implements InitLayout {
                     } else if (rowData.getType().equals(FileType.UP_DIR)) {
                         clientController.enterDirectory("...");
                     } else {
-                        System.out.println("wrong type of element");
-                        //    logger.warning("wrong type of ");
+                        System.out.println("Sync server.  wrong type of element");
+                        Log2File.writeLog(Level.WARNING, "Sync. Wrong type of table element");
+
                     }
                     //Делайте, что требуется с элементом.
                 }
@@ -89,29 +94,50 @@ public class SyncController extends BaseController implements InitLayout {
                         //
                     } else if (rowData.getType().equals(FileType.DIR)) {
                         String dirName = clientController.getFolderName(rowData.getFileName().getValue());
-                        clientPath+="\\"+dirName;
-                        updateClientFileList(mainApp.getConfig().getPath( ) + clientPath, clientFileList);
-//                        System.out.println(dirName);
-//                        clientController.enterDirectory(dirName);
+                        //clientPath+="\\"+dirName;
+                        clientPath +=  dirName+"\\";
+                        currentAbsPath=TEMP_PATH+clientPath;
+                        mainApp.getConfig().setPath(currentAbsPath);
+                        updateClientFileList(mainApp.getConfig().getPath( ) , clientFileList);
+//                        updateClientFileList(mainApp.getConfig().getPath( ) + clientPath, clientFileList);
+                        Log2File.writeLog("Sync client. Enter dir:"+mainApp.getConfig().getPath( ));
+
                     } else if (rowData.getType().equals(FileType.UP_DIR)) {
                        // clientController.enterDirectory("...");
                         System.out.println("...");
-                        clientPath=clientPath.replace("\\", "/");
+
+                        clientPath = clientPath.replace("\\", "/");
+                        currentAbsPath=TEMP_PATH+clientPath;
                         String[] folderPath = clientPath.split("/");
-                        clientPath=clientPath.replace("/", "\\");
-//        String[] prevFolderPath = new String[folderPath.length-1];
-//        System.arraycopy(folderPath, 0, prevFolderPath, 0, prevFolderPath.length);
-//        this.currentFolder
+//                        clientPath=clientPath.replace("\\", "/");
+//                        String[] folderPath = clientPath.split("/");
+//                        clientPath=clientPath.replace("/", "\\");
+                        clientPath = TEMP_PATH.replace("\\", "/");
+                        String[] defaultFolderPath = clientPath.split("/");
                         clientPath="";
-                        if (folderPath.length!=2) {
+
+                        if (folderPath.length+defaultFolderPath.length > defaultFolderPath.length) {
                             for (int i = 0; i < folderPath.length - 1; i++) {
                                 clientPath += folderPath[i] + "\\";
                             }
                         }
-                        updateClientFileList(mainApp.getConfig().getPath( ) + clientPath, clientFileList);
+
+                        currentAbsPath = TEMP_PATH + clientPath;
+                        mainApp.getConfig().setPath(currentAbsPath);
+//                        if (folderPath.length!=2) {
+//                            for (int i = 0; i < folderPath.length - 1; i++) {
+//                                clientPath += folderPath[i] + "\\";
+//                            }
+//                        }
+
+
+                        updateClientFileList(mainApp.getConfig().getPath( ) , clientFileList);
+                        Log2File.writeLog("Sync client. Enter dir:"+mainApp.getConfig().getPath( ));
+//                        updateClientFileList(mainApp.getConfig().getPath( ) + clientPath, clientFileList);
                     } else {
                         System.out.println("wrong type of element");
                         //    logger.warning("wrong type of ");
+                        Log2File.writeLog("Sync client. Wrong type of table element");
                     }
                     //Делайте, что требуется с элементом.
                 }
@@ -128,7 +154,7 @@ private String clientPath="";
         //  ArrayList<FileListXMLElement> fileList = new ArrayList<>();
         updateClientFileList(mainApp.getConfig().getPath()+clientPath, clientFileList);
 //        clientFileList.addAll(updateClientFileList(mainApp.getConfig().getPath()));
-
+        TEMP_PATH = mainApp.getConfig().getPath()+"\\";
         initTable();
     }
 
@@ -147,7 +173,8 @@ private String clientPath="";
 //        for (int i = 0; i < fList.size(); i++) {
 //            fileList.add(new FileListXMLElement(fList.get(i).getFileName(), fList.get(i).getFileSize()));
 //        }
-        if (fList.length!=0) {
+
+        if (fList.length!=0 || fileList.size()!=0) {
 
             for (int i = 0; i < fList.length; i++) {
                 //Нужны только папки в место isFile() пишим isDirectory()
@@ -163,6 +190,7 @@ private String clientPath="";
 
             }
         }
+        Collections.sort(fileList, FileListXMLElement.FileNameComparator);
     }
 
     public void uploadToServer() {
@@ -177,10 +205,8 @@ private String clientPath="";
 
 
                 if (answer) {
-
                     // прикостылил сброр фалов в список. в таблице выбирается только 1 файл, будет несколько, в любом
                     // случае, будет список,
-                    // packContainerAndSendFile работет со списками
 
                     ArrayList<File> files = new ArrayList();
                     files.add(new File(mainApp.getConfig().getPath()+clientPath + "\\" + currentFilename));
@@ -226,7 +252,15 @@ private String clientPath="";
 
     }
 
-    public void setClientManager(FileBoxClientManager clientManager) {
+    public void setClientManager(ClientConnectionManager clientManager) {
         this.clientManager = clientManager;
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        mainApp.getConfig().setPath(TEMP_PATH);
+        System.out.println(mainApp.getConfig().getPath());
+        Log2File.writeLog("Sync closed, client directory: "+mainApp.getConfig().getPath());
     }
 }

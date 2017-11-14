@@ -8,7 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
-import ru.geekbrains.filebox.client.core.FileBoxClientManager;
+import ru.geekbrains.filebox.client.core.ClientConnectionManager;
 import ru.geekbrains.filebox.client.core.State;
 import ru.geekbrains.filebox.library.AlertWindow;
 
@@ -35,8 +35,8 @@ public class RegistrationController extends BaseController{
     private final static int MAX_PASS_LENGTH = 32;
 
     public void addUser() {
-       // FileBoxClientManager clientManager = clientController.getClientManager();
-        FileBoxClientManager clientManager = new FileBoxClientManager(mainApp);
+       // ClientConnectionManager clientManager = clientController.getClientManager();
+        ClientConnectionManager clientManager = new ClientConnectionManager(mainApp);
 
         String loginReg = loginRegField.getText();
         String mailReg = mailRegField.getText();

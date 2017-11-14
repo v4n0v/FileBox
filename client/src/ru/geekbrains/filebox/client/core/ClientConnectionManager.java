@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import ru.geekbrains.filebox.client.FileBoxClientStart;
 import ru.geekbrains.filebox.client.fxcontrollers.ClientController;
 import ru.geekbrains.filebox.library.AlertWindow;
+import ru.geekbrains.filebox.library.FileType;
 import ru.geekbrains.filebox.library.Log2File;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
@@ -19,13 +20,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class FileBoxClientManager implements SocketThreadListener, Thread.UncaughtExceptionHandler {
+public class ClientConnectionManager implements SocketThreadListener, Thread.UncaughtExceptionHandler {
 
-    private final Logger logger =Logger.getLogger("Filebox.ClientManager");
+    private final Logger logger = Logger.getLogger("Filebox.ClientManager");
 
     public State state = State.NOT_CONNECTED;
     private final static String IP = "localhost";
@@ -54,7 +56,6 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     private int usedSpace;
 
 
-
     public void setClientController(ClientController clientController) {
         this.clientController = clientController;
     }
@@ -79,7 +80,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 //        //     this.socketThread=mainApp.getSocketThread();
 //    }
 
-    public FileBoxClientManager(FileBoxClientStart mainApp) {
+    public ClientConnectionManager(FileBoxClientStart mainApp) {
         this.mainApp = mainApp;
     }
 
@@ -90,13 +91,13 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
             socketThread = new SocketThread(this, "SocketThread", socket);
             // устанавливаем в mainApp ссылку на полученный поток сокета
             mainApp.setSocketThread(socketThread);
-         //   logger.info("Client connected");
+            //   logger.info("Client connected");
             Log2File.writeLog("Client connected");
         } catch (IOException e) {
             e.printStackTrace();
             AlertWindow.errorMesage(e.getMessage());
-    //        logger.warning("Exception: " + e.getMessage());
-            Log2File.writeLog(Level.WARNING,"Exception: " + e.getMessage());
+            //        logger.warning("Exception: " + e.getMessage());
+            Log2File.writeLog(Level.WARNING, "Exception: " + e.getMessage());
         }
 
     }
@@ -118,8 +119,8 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
             msg = e.getClass().getCanonicalName() + ": " + e.getMessage() + "\n" + stackTraceElements[0];
         }
         // AlertWindow.errorMesage(msg);
-      //  logger.warning("Exception: " + msg);
-        Log2File.writeLog(Level.WARNING,"Exception: " + msg + "\n");
+        //  logger.warning("Exception: " + msg);
+        Log2File.writeLog(Level.WARNING, "Exception: " + msg + "\n");
         System.exit(1);
     }
     // методы интерфейса SocketThread
@@ -130,7 +131,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     public void onStartSocketThread(SocketThread socketThread) {
         Log2File.writeLog(
                 "Socket started");
-      //  logger.info("Socket started");
+        //  logger.info("Socket started");
     }
 
     // соединение закончено
@@ -138,7 +139,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     public void onStopSocketThread(SocketThread socketThread) {
         isAuthorized = false;
         Log2File.writeLog("Socket closed. End of session");
-      //  logger.info("Socket closed. End of session");
+        //  logger.info("Socket closed. End of session");
     }
 
     // соединение установлено
@@ -153,7 +154,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
             LoginPacket loginPacket = new LoginPacket(login, password);
             mainApp.socketThread.sendPacket(loginPacket);
         }
-     //   logger.info("Connection to server complete!");
+        //   logger.info("Connection to server complete!");
     }
 
     @Override
@@ -173,7 +174,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     @Override
     public void onExceptionSocketThread(SocketThread socketThread, Socket socket, Exception e) {
         Platform.runLater(() -> AlertWindow.errorMesage(e.getMessage()));
-        Log2File.writeLog(Level.WARNING,"Exception: " + e.getMessage());
+        Log2File.writeLog(Level.WARNING, "Exception: " + e.getMessage());
     }
 
     // обрабатываем полученный пакет
@@ -204,7 +205,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         } else if (packet.getPacketType() == PackageType.FILE_WAITING) {
             sendFileBytes(listOutFiles);
         } else {
-            Log2File.writeLog(Level.WARNING,"Exception: Unknown package type :(");
+            Log2File.writeLog(Level.WARNING, "Exception: Unknown package type :(");
             throw new RuntimeException("Unknown package type");
 
         }
@@ -220,6 +221,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
         if (currentFileList.size() == 0)
             currentFileList.addAll(newFileList);
 
+
     }
 
     public synchronized void lastUpdate() {
@@ -227,7 +229,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 
         // upd = lbLastUpd.getText();
         String upd = dateFormat.format(System.currentTimeMillis());
-      //  System.out.println(clientController.lbLastUpd);
+        //  System.out.println(clientController.lbLastUpd);
         clientController.lbLastUpd.setText("Last upd " + upd);
     }
 
@@ -300,7 +302,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 //                    FileOutputStream fos = new FileOutputStream(new File(folder.getPath() + "\\" + names.get(i)));
 //                    fos.write(files.get(i));
 //                    fos.close();
-            Log2File.writeLog("File '" + name + "' received. ");
+            Log2File.writeLog("File '" + name + "' received into " + mainApp.getConfig().getPath());
         } catch (IOException e) {
 
             e.printStackTrace();
@@ -312,7 +314,7 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     private void handleMessagePacket(Packet packet) {
         String msg = (String) packet.getOutputPacket();
         Platform.runLater(() -> AlertWindow.infoMesage(msg));
-        Log2File.writeLog("MESSAGE received '"+msg+"'");
+        Log2File.writeLog("MESSAGE received '" + msg + "'");
 
         // получили список файлов в "облаке"
     }
@@ -329,14 +331,29 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
                     flist.get(i).getFileSize(), flist.get(i).getType()));
         }
         //  mainApp.fillFileList(flist);
+        //  fXMLlist.sorted();
+//
+//
+//        System.out.println(mainApp.getConfig().getPath());
+//        System.out.println(mainApp.getRootPath());
+//        if (!mainApp.getConfig().getPath().equals(mainApp.getRootPath()))
+//            fXMLlist.add(new FileListXMLElement("...", 0l, FileType.UP_DIR));
+
+
+        Collections.sort(fXMLlist, FileListXMLElement.FileNameComparator);
         updateList(fXMLlist, mainApp.getServerFileList());
         //    mainApp.setServerFileList(fXMLlist);
         //handleSaveAs();
-        usedSpace =fc.getUsedSpace();
+        usedSpace = fc.getUsedSpace();
+
+        // таблица клиента будет обновляться только если мы находимся в дуфолтном каталоге.
+        // в окне синхронизации свое обновление, чтоб не было конфликта обновления
+
+
         updateClientFileList(mainApp.getConfig().getPath(), mainApp.getClientFileList());
         Platform.runLater(() -> {
             lastUpdate();
-            clientController.setFreeSpaceLabel(FRASPACE_TOTAL*1024-usedSpace /1024, FRASPACE_TOTAL*1024);
+            clientController.setFreeSpaceLabel(FRASPACE_TOTAL * 1024 - usedSpace / 1024, FRASPACE_TOTAL * 1024);
         });
 
         Log2File.writeLog("FILE_LIST received");
@@ -350,13 +367,18 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
 //        for (int i = 0; i < fList.size(); i++) {
 //            fileList.add(new FileListXMLElement(fList.get(i).getFileName(), fList.get(i).getFileSize()));
 //        }
+        // если клиент не в дефолтной своей папке, то добавляем флаг UP_DIR
+        if (!mainApp.getConfig().getPath().equals(mainApp.getRootPath()))
+            fileList.add(new FileListXMLElement("...", 0l, FileType.UP_DIR));
+
+
         for (int i = 0; i < fList.length; i++) {
             //Нужны только папки в место isFile() пишим isDirectory()
             if (fList[i].isFile()) {
-                fileList.add(new FileListXMLElement(fList[i].getName(), fList[i].length()));
+                fileList.add(new FileListXMLElement(fList[i].getName(), fList[i].length(), FileType.FILE));
             }
             if (fList[i].isDirectory()) {
-                fileList.add(new FileListXMLElement("["+fList[i].getName()+"]", fList[i].length()));
+                fileList.add(new FileListXMLElement("[" + fList[i].getName() + "]", fList[i].length(), FileType.DIR));
             }
         }
 
@@ -364,17 +386,17 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
     }
 
     private void handleRegAcceptPacket(Packet packet) {
-       boolean  isRegistrated = (Boolean) packet.getOutputPacket();
-       if (isRegistrated) {
-           Platform.runLater(() -> AlertWindow.infoMesage("User " + loginReg + " successfully registered in FileBox"));
-           Platform.runLater(() -> regExit());
-           state = State.REGISTERED;
-           disconnect();
-           state = State.NOT_CONNECTED;
-           Platform.runLater(() ->  mainApp.regExit());
-       } else {
-           Platform.runLater(() -> AlertWindow.errorMesage("User " + loginReg + " registration error"));
-       }
+        boolean isRegistrated = (Boolean) packet.getOutputPacket();
+        if (isRegistrated) {
+            Platform.runLater(() -> AlertWindow.infoMesage("User " + loginReg + " successfully registered in FileBox"));
+            Platform.runLater(() -> regExit());
+            state = State.REGISTERED;
+            disconnect();
+            state = State.NOT_CONNECTED;
+            Platform.runLater(() -> mainApp.regExit());
+        } else {
+            Platform.runLater(() -> AlertWindow.errorMesage("User " + loginReg + " registration error"));
+        }
     }
 
     private void regExit() {
@@ -390,11 +412,11 @@ public class FileBoxClientManager implements SocketThreadListener, Thread.Uncaug
                 clientController.setLoggedInfoLabel(login);
             });
             Log2File.writeLog("Authorization complete");
-          //  FileListPacket fileListRequest = new FileListPacket(null);
-         //   mainApp.socketThread.sendPacket(fileListRequest);
+            //  FileListPacket fileListRequest = new FileListPacket(null);
+            //   mainApp.socketThread.sendPacket(fileListRequest);
 
         } else {
-            Log2File.writeLog(Level.WARNING,"Authorization error");
+            Log2File.writeLog(Level.WARNING, "Authorization error");
         }
     }
 

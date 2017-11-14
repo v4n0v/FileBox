@@ -243,17 +243,15 @@ public class FileBoxServer implements ServerSocketThreadListener, SocketThreadLi
             // пользователь запросил список файлов
         } else if (packet.getPacketType() == PackageType.FILE_LIST) {
 
-            // сообщение об ощибке
+            // пользователь входит в дирректорию
         } else if (packet.getPacketType() == PackageType.ENTER_DIR) {
             String dir = (String) packet.getOutputPacket();
 
             if (dir.equals("...")){
                 client.setPreviousFolder();
             } else {
-
                 client.setCurrentFolder(dir);
             }
-          //  sendFileList(socketThread, client);
 
         } else if (packet.getPacketType() == PackageType.NEW_FOLDER) {
             String folderName = (String) packet.getOutputPacket();
