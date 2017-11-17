@@ -7,10 +7,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import org.xml.sax.ext.Locator2;
 import ru.geekbrains.filebox.client.core.ClientConnectionManager;
 import ru.geekbrains.filebox.client.core.FileListXMLElement;
-import ru.geekbrains.filebox.client.core.preferences.ExampleComparator;
 import ru.geekbrains.filebox.library.AlertWindow;
 import ru.geekbrains.filebox.library.FileType;
 import ru.geekbrains.filebox.library.Log2File;
@@ -18,16 +16,15 @@ import ru.geekbrains.filebox.network.packet.FileOperationPacket;
 import ru.geekbrains.filebox.network.packet.PackageType;
 import ru.geekbrains.filebox.network.packet.packet_container.FileContainerSingle;
 
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Level;
 
 public class SyncController extends BaseController implements InitLayout {
-    ObservableList<FileListXMLElement> clientFileList = FXCollections.observableArrayList();
-    ObservableList<FileListXMLElement> serverFileList = FXCollections.observableArrayList();
-    ClientConnectionManager clientManager;
+    private ObservableList<FileListXMLElement> clientFileList = FXCollections.observableArrayList();
+    private ObservableList<FileListXMLElement> serverFileList = FXCollections.observableArrayList();
+    private ClientConnectionManager clientManager;
 
 
     @FXML
@@ -43,12 +40,12 @@ public class SyncController extends BaseController implements InitLayout {
     @FXML
     private TableColumn<FileListXMLElement, Long> severSizeColumn;
 
-//    public void updTable() {
-//        tblClientContent.setItems(mainApp.serverFileList);
-//    }
-private String TEMP_PATH;
+
+    private String TEMP_PATH;
     private String currentAbsPath;
-    public void initTable() {
+
+// инициализация таблицы
+    private  void initTable() {
         tblClientContent.setEditable(false);
         clientFileNameColumn.setCellValueFactory(cellData -> cellData.getValue().getFileName());
         clientSizeColumn.setCellValueFactory(cellData -> cellData.getValue().getFileSize());
@@ -59,18 +56,24 @@ private String TEMP_PATH;
         severSizeColumn.setCellValueFactory(cellData -> cellData.getValue().getFileSize());
         tblServerContent.setItems(serverFileList);
 
-
+// обработака двойного клика по таблице сервера
         tblServerContent.setRowFactory(tv -> {
             TableRow<FileListXMLElement> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && (!row.isEmpty())) {
                     FileListXMLElement rowData = row.getItem();
+                    // если это файл, качаем файл
                     if (rowData.getType().equals(FileType.FILE)) {
                         clientController.getFile(rowData.getFileName().getValue());
+
+                    /// если папка, вхходим в папку
                     } else if (rowData.getType().equals(FileType.DIR)) {
+
                         String dirName = clientController.getFolderName(rowData.getFileName().getValue());
                         System.out.println(dirName);
                         clientController.enterDirectory(dirName);
+
+                        // если "..." то идем вверх
                     } else if (rowData.getType().equals(FileType.UP_DIR)) {
                         clientController.enterDirectory("...");
                     } else {
@@ -83,83 +86,88 @@ private String TEMP_PATH;
             });
             return row;
         });
-
+// обработака двойного клика по таблице клиента
         tblClientContent.setRowFactory(tv -> {
             TableRow<FileListXMLElement> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && (!row.isEmpty())) {
                     FileListXMLElement rowData = row.getItem();
+
+                    // если файл ничего не делаем
                     if (rowData.getType().equals(FileType.FILE)) {
                         System.out.println("double click " + rowData.getFileName().getValue());
-                        //
+
+                    // если папка
                     } else if (rowData.getType().equals(FileType.DIR)) {
+                        // получаем путь
                         String dirName = clientController.getFolderName(rowData.getFileName().getValue());
-                        //clientPath+="\\"+dirName;
-                        clientPath +=  dirName+"\\";
-                        currentAbsPath=TEMP_PATH+clientPath;
+
+                        // сохраняем путь
+                        clientPath += dirName + "\\";
+                        currentAbsPath = TEMP_PATH + clientPath;
+                        // передаем ткущий путь в mainApp, тк путь этот путь нужен для указания директории куда качать
                         mainApp.getConfig().setPath(currentAbsPath);
-                        updateClientFileList(mainApp.getConfig().getPath( ) , clientFileList);
-//                        updateClientFileList(mainApp.getConfig().getPath( ) + clientPath, clientFileList);
-                        Log2File.writeLog("Sync client. Enter dir:"+mainApp.getConfig().getPath( ));
+                        // обновляем файл лист
+                        updateClientFileList(mainApp.getConfig().getPath(), clientFileList);
+//
+                        Log2File.writeLog("Sync client. Enter dir:" + mainApp.getConfig().getPath());
 
                     } else if (rowData.getType().equals(FileType.UP_DIR)) {
-                       // clientController.enterDirectory("...");
+                        // clientController.enterDirectory("...");
                         System.out.println("...");
 
+                        // костылю обратный слеш, тк не получается сделать сплит по "\\"
                         clientPath = clientPath.replace("\\", "/");
-                        currentAbsPath=TEMP_PATH+clientPath;
+                        currentAbsPath = TEMP_PATH + clientPath;
+                        // получаю длину текущей папки
                         String[] folderPath = clientPath.split("/");
-//                        clientPath=clientPath.replace("\\", "/");
-//                        String[] folderPath = clientPath.split("/");
-//                        clientPath=clientPath.replace("/", "\\");
+
+                        // получаю длину папки по умолчанию
                         clientPath = TEMP_PATH.replace("\\", "/");
                         String[] defaultFolderPath = clientPath.split("/");
-                        clientPath="";
-
-                        if (folderPath.length+defaultFolderPath.length > defaultFolderPath.length) {
+                        // обнуляю путь
+                        clientPath = "";
+                        // сравниваю длины путей папок, если не равны, значит мы не корневом каталоге
+                        if (folderPath.length + defaultFolderPath.length > defaultFolderPath.length) {
                             for (int i = 0; i < folderPath.length - 1; i++) {
                                 clientPath += folderPath[i] + "\\";
                             }
                         }
-
+                        // если равны, то тущая папка станет равна корневой
                         currentAbsPath = TEMP_PATH + clientPath;
                         mainApp.getConfig().setPath(currentAbsPath);
-//                        if (folderPath.length!=2) {
-//                            for (int i = 0; i < folderPath.length - 1; i++) {
-//                                clientPath += folderPath[i] + "\\";
-//                            }
-//                        }
+                        // обновляем файл лист
+                        updateClientFileList(mainApp.getConfig().getPath(), clientFileList);
+                        Log2File.writeLog("Sync client. Enter dir:" + mainApp.getConfig().getPath());
 
-
-                        updateClientFileList(mainApp.getConfig().getPath( ) , clientFileList);
-                        Log2File.writeLog("Sync client. Enter dir:"+mainApp.getConfig().getPath( ));
-//                        updateClientFileList(mainApp.getConfig().getPath( ) + clientPath, clientFileList);
                     } else {
                         System.out.println("wrong type of element");
-                        //    logger.warning("wrong type of ");
                         Log2File.writeLog("Sync client. Wrong type of table element");
                     }
-                    //Делайте, что требуется с элементом.
+
                 }
             });
             return row;
         });
     }
-private String clientPath="";
+
+    private String clientPath = "";
+    // bybwbfkbpfwbz лейаута
     @Override
     public void init() {
         serverFileList = mainApp.getServerFileList();
         clientFileList = mainApp.getClientFileList();
-        //  clientFileList=
-        //  ArrayList<FileListXMLElement> fileList = new ArrayList<>();
-        updateClientFileList(mainApp.getConfig().getPath()+clientPath, clientFileList);
-//        clientFileList.addAll(updateClientFileList(mainApp.getConfig().getPath()));
-        TEMP_PATH = mainApp.getConfig().getPath()+"\\";
+
+        updateClientFileList(mainApp.getConfig().getPath() + clientPath, clientFileList);
+        // сохраняем путь корнвого каталога клиента
+        TEMP_PATH = mainApp.getConfig().getPath() + "\\";
         initTable();
     }
 
+    // обнвление текущей папки клиента
     private void updateClientFileList(String path, ObservableList fileList) {
         fileList.clear();
+        // если каталог не корневой, добавляем элемент, указывающий на выход в прерыд каталог
         if (clientPath != null && !clientPath.equals("")) {
 
             fileList.add(new FileListXMLElement("...", 0l, FileType.UP_DIR));
@@ -167,29 +175,23 @@ private String clientPath="";
         // создаем список
         File[] fList;
         File clientFolder = new File(path);
-        //  String len;
         fList = clientFolder.listFiles();
 
-//        for (int i = 0; i < fList.size(); i++) {
-//            fileList.add(new FileListXMLElement(fList.get(i).getFileName(), fList.get(i).getFileSize()));
-//        }
-
-        if (fList.length!=0 || fileList.size()!=0) {
+        if (fList.length != 0 || fileList.size() != 0) {
 
             for (int i = 0; i < fList.length; i++) {
                 //Нужны только папки в место isFile() пишим isDirectory()
                 if (fList[i].isFile()) {
-                    String name = fList[i].getName();
-                    long len = fList[i].length();
                     fileList.add(new FileListXMLElement(fList[i].getName(), fList[i].length(), FileType.FILE));
-
                 } else if (fList[i].isDirectory()) {
                     fileList.add(new FileListXMLElement("[" + fList[i].getName() + "]", fList[i].length() / 1024, FileType.DIR));
-                    // fc.add(element);
+
                 }
 
             }
         }
+
+        // сортировка, но она не работает
         Collections.sort(fileList, FileListXMLElement.FileNameComparator);
     }
 
@@ -206,15 +208,13 @@ private String clientPath="";
 
                 if (answer) {
                     // прикостылил сброр фалов в список. в таблице выбирается только 1 файл, будет несколько, в любом
-                    // случае, будет список,
+                    // случае, будет список
 
                     ArrayList<File> files = new ArrayList();
-                    files.add(new File(mainApp.getConfig().getPath()+clientPath + "\\" + currentFilename));
+                    files.add(new File(mainApp.getConfig().getPath() + clientPath + "\\" + currentFilename));
 
                     FileContainerSingle fcs = new FileContainerSingle();
                     clientController.packContainerAndSendFile(files, fcs);
-//                    FileOperationPacket downLoad = new FileOperationPacket(PackageType.FILE_REQUEST, currentFilename);
-//                    mainApp.socketThread.sendPacket(downLoad);
 
                     Log2File.writeLog("download operation '" + currentFilename + "'complete");
                 } else {
@@ -226,7 +226,7 @@ private String clientPath="";
 
         System.out.println("uploadToServer");
     }
-
+    // скачиваем с сервера в текущую папку клиента
     public void downloadFromServer() {
 
         FileListXMLElement fileListElement = tblServerContent.getSelectionModel().getSelectedItem();
@@ -247,7 +247,7 @@ private String clientPath="";
                 }
             }
         }
-      //  updateClientFileList(mainApp.getConfig().getPath()+clientPath, clientFileList);
+        //  updateClientFileList(mainApp.getConfig().getPath()+clientPath, clientFileList);
         System.out.println("download");
 
     }
@@ -256,11 +256,12 @@ private String clientPath="";
         this.clientManager = clientManager;
     }
 
+    // закрываем окно, обнуляем текуйщий путь к папкие клиента на дефолтный
     @Override
     public void close() {
         super.close();
         mainApp.getConfig().setPath(TEMP_PATH);
         System.out.println(mainApp.getConfig().getPath());
-        Log2File.writeLog("Sync closed, client directory: "+mainApp.getConfig().getPath());
+        Log2File.writeLog("Sync closed, client directory: " + mainApp.getConfig().getPath());
     }
 }

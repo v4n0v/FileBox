@@ -46,9 +46,7 @@ public class SocketThread extends Thread {
                 eventListener.onReceivePacket(this, socket, packet);
 
             }
-        } catch (IOException e) {
-            eventListener.onExceptionSocketThread(this, socket, e);
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             eventListener.onExceptionSocketThread(this, socket, e);
         } finally {
             try {
@@ -61,7 +59,7 @@ public class SocketThread extends Thread {
         }
     }
 
-
+    // закрываем соединение
     public synchronized void close() {
         interrupt();
         try {

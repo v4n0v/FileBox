@@ -3,7 +3,6 @@ package ru.geekbrains.filebox.server.core;
 import ru.geekbrains.filebox.network.SocketThread;
 import ru.geekbrains.filebox.network.SocketThreadListener;
 import ru.geekbrains.filebox.network.packet.AuthAcceptPacket;
-import ru.geekbrains.filebox.network.packet.ErrorPacket;
 import ru.geekbrains.filebox.network.packet.FileOperationPacket;
 import ru.geekbrains.filebox.network.packet.PackageType;
 
@@ -11,7 +10,7 @@ import java.net.Socket;
 
 public class FileBoxSocketThread extends SocketThread {
 
-    public String getLogin() {
+    String getLogin() {
         return login;
     }
 
@@ -19,14 +18,14 @@ public class FileBoxSocketThread extends SocketThread {
     private boolean isAuthorized;
     private boolean isReconnected;
 
-    public String getCurrentFolder() {
+    String getCurrentFolder() {
         return currentFolder;
     }
 
-    public void setCurrentFolder(String currentFolder) {
+    void setCurrentFolder(String currentFolder) {
         this.currentFolder +="/"+ currentFolder;
     }
-    public void setPreviousFolder(){
+    void setPreviousFolder(){
         String[] folderPath = currentFolder.split("/");
 //        String[] prevFolderPath = new String[folderPath.length-1];
 //        System.arraycopy(folderPath, 0, prevFolderPath, 0, prevFolderPath.length);
@@ -40,7 +39,7 @@ public class FileBoxSocketThread extends SocketThread {
     }
     private String currentFolder;
 
-    public int getTotalSpace() {
+    int getTotalSpace() {
         return totalSpace;
     }
 
@@ -51,7 +50,7 @@ public class FileBoxSocketThread extends SocketThread {
     private int totalSpace =10240;
 
 
-    public FileBoxSocketThread(SocketThreadListener eventListener, String name, Socket socket) {
+    FileBoxSocketThread(SocketThreadListener eventListener, String name, Socket socket) {
         super(eventListener, name, socket);
         currentFolder="";
     }
@@ -78,7 +77,7 @@ public class FileBoxSocketThread extends SocketThread {
         close();
     }
     // проверка, авторизовали пользователь
-    public boolean isAuthorized() {
+    boolean isAuthorized() {
         return isAuthorized;
     }
 }

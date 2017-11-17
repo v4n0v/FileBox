@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class FileListElement implements Serializable{
 
     private String fileName;
-//    private long fileSize;
+
     private Long fileSize;
 
 

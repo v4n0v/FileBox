@@ -32,8 +32,6 @@ public class ClientController {
     private FilePacket filePacket;
     private FileBoxClientStart mainApp;
 
-    //Logger logger =Logger.getLogger("Filebox.ClientController");
-
     public void setMainApp(FileBoxClientStart mainApp) {
         this.mainApp = mainApp;
     }
@@ -42,13 +40,8 @@ public class ClientController {
         this.clientController = clientController;
     }
 
-    ClientController clientController;
+    private ClientController clientController;
 
-    public ClientConnectionManager getClientManager() {
-        return clientManager;
-    }
-
-    private ClientConnectionManager clientManager;
 
     @FXML
     GridPane upperPanelLogged;
@@ -67,19 +60,19 @@ public class ClientController {
     private String loginReg;
     private String mailReg;
     private String pass1Reg;
-    Stage loginStage;
+    private Stage loginStage;
 
     public void setLoginStage(Stage loginStage) {
         this.loginStage = loginStage;
     }
 
 
-
-    public void setLoggedInfoLabel(String name){
-        lblLogedInfo.setText("Logged in as "+name);
+    public void setLoggedInfoLabel(String name) {
+        lblLogedInfo.setText("Logged in as " + name);
     }
-    public void setFreeSpaceLabel(int space, int totalClientSpace){
-        lblFreeSpaceInfo.setText("Free space "+space+"kb"+" from "+totalClientSpace+"kb");
+
+    public void setFreeSpaceLabel(int space, int totalClientSpace) {
+        lblFreeSpaceInfo.setText("Free space " + space + "kb" + " from " + totalClientSpace + "kb");
     }
 
     // прячем окно логина
@@ -87,11 +80,11 @@ public class ClientController {
         loginStage.close();
     }
 
-    public void loginShow() {
+    private void loginShow() {
         mainApp.showClientLoginLayout();
         //initClientLoginLayout();
         Log2File.writeLog("Login window opened");
-      //  logger.info("Login window opened");
+        //  logger.info("Login window opened");
     }
 
     // ссылка на элемент модального окна дляполучения ссылки на общий элемент класса mainApp
@@ -103,7 +96,7 @@ public class ClientController {
     @FXML
     private TableColumn<FileListXMLElement, Long> sizeColumn;
 
-    public void updTable() {
+    private void updTable() {
         tblContent.setItems(mainApp.getServerFileList());
     }
 
@@ -114,52 +107,59 @@ public class ClientController {
         tblContent.setItems(mainApp.getServerFileList());
         System.out.println();
 
-        tblContent.setRowFactory( tv -> {
+        tblContent.setRowFactory(tv -> {
             TableRow<FileListXMLElement> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && (! row.isEmpty()) ) {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
                     FileListXMLElement rowData = row.getItem();
-                    if (rowData.getType().equals(FileType.FILE )){
-                        getFile(rowData.getFileName().getValue());
-                    } else if (rowData.getType().equals(FileType.DIR )){
-
-                        String dirName = getFolderName(rowData.getFileName().getValue());
-                        System.out.println(dirName);
-                        enterDirectory(dirName);
-                    } else if (rowData.getType().equals(FileType.UP_DIR )){
-                        enterDirectory("...");
-                    } else {
-                        System.out.println("wrong type of element");
-                    //    logger.warning("wrong type of ");
+                    switch (rowData.getType()) {
+                        case FileType.FILE:
+                            getFile(rowData.getFileName().getValue());
+                            break;
+                        case FileType.DIR:
+                            String dirName = getFolderName(rowData.getFileName().getValue());
+                            System.out.println(dirName);
+                            enterDirectory(dirName);
+                            break;
+                        case FileType.UP_DIR:
+                            enterDirectory("...");
+                            break;
+                        default:
+                            System.out.println("wrong type of element");
+                            //    logger.warning("wrong type of ");
+                            break;
                     }
                     //Делайте, что требуется с элементом.
                 }
             });
-            return row ;
+            return row;
         });
         Log2File.writeLog("Table initialized");
-     //   logger.info("Table initialized");
+        //   logger.info("Table initialized");
     }
 
-    public String getFolderName(String name){
+    public String getFolderName(String name) {
         String dirName = name;
-        dirName= dirName.replace("[", "");
-        dirName= dirName.replace("]", "");
+        dirName = dirName.replace("[", "");
+        dirName = dirName.replace("]", "");
         return dirName;
     }
-    public void enterDirectory(String dir){
+
+    public void enterDirectory(String dir) {
 
 
-                FileOperationPacket dirPacket = new FileOperationPacket(PackageType.ENTER_DIR,  dir);
-                mainApp.socketThread.sendPacket(dirPacket);
-                Log2File.writeLog("Entering '"+dir+"' directory");
-     //   logger.info("Entering '"+dir+"' directory");
+        FileOperationPacket dirPacket = new FileOperationPacket(PackageType.ENTER_DIR, dir);
+        mainApp.socketThread.sendPacket(dirPacket);
+        Log2File.writeLog("Entering '" + dir + "' directory");
+        //   logger.info("Entering '"+dir+"' directory");
 
     }
-    public void createFolder(){
+
+    public void createFolder() {
         mainApp.showNewFolderLayout();
         Log2File.writeLog("create new folder window opened");
     }
+
     // методы обработки нажатия на кнопку
     // переименование файла
     public void renameFile() {
@@ -175,7 +175,7 @@ public class ClientController {
         }
     }
 
-    public void syncFileBox(){
+    public void syncFileBox() {
         mainApp.showSyncLayout();
     }
 
@@ -189,11 +189,11 @@ public class ClientController {
             // открывем дилоговое окно
             if (currentFilename != null) {
                 boolean answer;
-                if (fileListElement.getType().equals(FileType.DIR)){
-                    currentFilename=getFolderName(currentFilename);
-                     answer = AlertWindow.dialogWindow("Delete folder and everything in it?", currentFilename);
+                if (fileListElement.getType().equals(FileType.DIR)) {
+                    currentFilename = getFolderName(currentFilename);
+                    answer = AlertWindow.dialogWindow("Delete folder and everything in it?", currentFilename);
                 } else
-                 answer = AlertWindow.dialogWindow("Delete file?", currentFilename);
+                    answer = AlertWindow.dialogWindow("Delete file?", currentFilename);
 
                 if (answer) {
                     FileOperationPacket deletePacket = new FileOperationPacket(PackageType.DELETE, currentFilename);
@@ -239,11 +239,12 @@ public class ClientController {
         }
 
     }
+
     //загрузка файла на сервер
     public void uploadFile() {
         sendFile();
 
-      //  lastUpdate();
+        //  lastUpdate();
     }
 
     public void openOptions() {
@@ -261,9 +262,9 @@ public class ClientController {
     }
 
 
-    //TODO допилить передачу файла
+
     // отправка файла
-    public synchronized void sendFile() {
+    private synchronized void sendFile() {
 
         // выбираем файл
         FileChooser fileChooser = new FileChooser();
@@ -291,14 +292,14 @@ public class ClientController {
         List<File> list = event.getDragboard().getFiles();
         FileContainerSingle fcs = new FileContainerSingle();
         packContainerAndSendFile(list, fcs);
-        Log2File.writeLog( "drog'n'drop");
+        Log2File.writeLog("drog'n'drop");
     }
 
     public void packContainerAndSendFile(List<File> list, FileContainerSingle fileContainer) {
-        mainApp.showProgressLayout("Files upload" );
+        mainApp.showProgressLayout("Files upload");
         ProgressModalController progressModalController = mainApp.getProgressController();
 
-        double cntStep = 1d/list.size();
+        double cntStep = 1d / list.size();
 
         double prgress = 0;
         // подсчитываем кол-во файлов и проверяем размер каждого файла
@@ -307,30 +308,30 @@ public class ClientController {
                 File file = list.get(i);
                 if (file.length() > MAX_FILE_SIZE) {
                     AlertWindow.errorMesage("File size is more than 50MB");
-                    Log2File.writeLog( Level.WARNING, file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
-                 //   logger.warning(file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
+                    Log2File.writeLog(Level.WARNING, file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
+                    //   logger.warning(file.getName() + " is too big for transmission (>" + MAX_FILE_SIZE + "bytes)");
                     return;
                 }
                 // если файл подходящего размера, упаковываем в пакет
                 try {
                     fileContainer.addFile(Files.readAllBytes(Paths.get(file.getPath())), file.getName(), file.length(), list.size());
                     filePacket = new FilePacket(fileContainer);
-                   // logger.info("file '"+fileContainer.getName()+"' uploaded");
-                    Log2File.writeLog("file '"+fileContainer.getName()+"' uploaded");
+                    // logger.info("file '"+fileContainer.getName()+"' uploaded");
+                    Log2File.writeLog("file '" + fileContainer.getName() + "' uploaded");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-               // logger.info("Sending packet. Type: " + filePacket.getPacketType());
-                Log2File.writeLog(Level.WARNING,"Sending packet. Type: " + filePacket.getPacketType());
+                // logger.info("Sending packet. Type: " + filePacket.getPacketType());
+                Log2File.writeLog(Level.WARNING, "Sending packet. Type: " + filePacket.getPacketType());
                 // логируем  и отправляем
                 mainApp.socketThread.sendPacket(filePacket);
-                prgress+=cntStep;
-                System.out.println("ProgressBar: "+prgress);
+                prgress += cntStep;
+                System.out.println("ProgressBar: " + prgress);
                 progressModalController.setProgress(prgress);
 
             }
         }
-       //   progressModalController.getStage().close();
+        //   progressModalController.getStage().close();
     }
 
     public boolean showConfirmation(String file) {
@@ -348,7 +349,6 @@ public class ClientController {
         }
         return answer;
     }
-
 
 
 }

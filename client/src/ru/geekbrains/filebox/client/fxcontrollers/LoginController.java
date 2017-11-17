@@ -20,7 +20,7 @@ public class LoginController extends  BaseController{
 
     @FXML
     VBox rootElement;
-    ClientConnectionManager clientManager;
+    private ClientConnectionManager clientManager;
     public void loginToFileBox() {
 
         // предаем сылки на главный гласс и контроллер
@@ -28,39 +28,23 @@ public class LoginController extends  BaseController{
         clientManager.setClientController(clientController);
 
         // если поля не пусты
-     //   if (!fieldLogin.getText().isEmpty() || !fieldLogin.getText().isEmpty()) {
+        if (!fieldLogin.getText().isEmpty() || !fieldLogin.getText().isEmpty()) {
             clientManager.setLogin(fieldLogin.getText());
             clientManager.setPassword(fieldPass.getText());
-            clientManager.setLogin("admin");
-            clientManager.setPassword("12345");
+//            clientManager.setLogin("admin");
+//            clientManager.setPassword("12345");
+
             // меняем статус скиента и соединяемся
             clientManager.state = State.LOGIN;
             clientManager.connect();
 
-//        } else {
-//            AlertWindow.warningMesage("Fill mail and password fields");
-//        }
+        } else {
+            AlertWindow.warningMesage("Fill mail and password fields");
+        }
 
     }
 
     public void registerNew() {
-//        Stage stage = (Stage) reg.getScene().getWindow();
-//
-//        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/registration_modal.fxml"));
-//        Parent root1 = null;
-//        try {
-//            root1 = (Parent) fxmlLoader.load();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        Stage registrStage = new Stage();
-//        registrStage.initModality(Modality.WINDOW_MODAL);
-//        registrStage.initOwner(stage);///
-//        registrStage.setTitle("New user registration ");
-//        registrStage.setScene(new Scene(root1));
-//
-//        registrStage.setResizable(false);
-//        registrStage.show();
         clientManager = new ClientConnectionManager(mainApp);
         clientManager.setClientController(clientController);
 

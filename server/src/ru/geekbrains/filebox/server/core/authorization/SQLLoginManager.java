@@ -52,17 +52,12 @@ public class SQLLoginManager implements LoginManager {
     // проверяем логин\пароль,
     @Override
     public boolean isLoginAndPassCorrect(String login, int pass) {
-//    public boolean isLoginAndPassCorrect(String login, String pass) {
         try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM users WHERE login=? AND passHash=? ;")) {
 
             ps.setString(1, login);
             ps.setInt(2, pass);
             try (ResultSet resultSet = ps.executeQuery()) {
-                if (resultSet.next())
-                    return true;
-                else {
-                    return false;
-                }
+                return resultSet.next();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -78,7 +73,6 @@ public class SQLLoginManager implements LoginManager {
         try {
             connection.setAutoCommit(false);
             PreparedStatement ps = connection.prepareStatement("INSERT INTO users (login , mail, passHash, space) VALUES (?, ?, ?, ?) ");
-
             ps.setString(1, login);
             ps.setString(2, mail);
       //   ps.setString(3, pass);
@@ -98,10 +92,7 @@ public class SQLLoginManager implements LoginManager {
             //      ps.setString(1, mail);
             ps.setString(1, login);
             try (ResultSet resultSet = ps.executeQuery()) {
-                if (resultSet.next())
-                    return true;
-                else
-                    return false;
+                return resultSet.next();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

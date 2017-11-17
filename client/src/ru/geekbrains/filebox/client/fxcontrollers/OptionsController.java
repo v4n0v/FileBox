@@ -9,21 +9,19 @@ import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import ru.geekbrains.filebox.client.core.ClientPreferences;
-import ru.geekbrains.filebox.client.core.FileListXMLWrapper;
 import ru.geekbrains.filebox.client.core.preferences.Style;
 import ru.geekbrains.filebox.library.AlertWindow;
 import ru.geekbrains.filebox.library.Log2File;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
 
-public class OptionsController extends BaseController implements InitLayout{
+public class OptionsController extends BaseController implements InitLayout {
     public void setPrefereces(ClientPreferences prefereces) {
         this.prefereces = prefereces;
     }
@@ -31,9 +29,8 @@ public class OptionsController extends BaseController implements InitLayout{
     private String STYLES_PATH = "client\\src\\ru\\geekbrains\\filebox\\client\\css\\styles\\";
     private String CURRENT_STYLE_PATH = "client\\src\\ru\\geekbrains\\filebox\\client\\css\\";
 
-    ClientPreferences prefereces;
-    ObservableList<Style> styles = FXCollections.observableArrayList();
-    ;
+    private ClientPreferences prefereces;
+    private ObservableList<Style>styles =FXCollections.observableArrayList();
     @FXML
     TextField inboxPath;
     @FXML
@@ -45,7 +42,7 @@ public class OptionsController extends BaseController implements InitLayout{
     @FXML
     ChoiceBox styleChoice;
 
-    String path;
+    private String path;
 
     public void setPrimaryStage(Stage stage) {
         this.primaryStage = stage;
@@ -87,27 +84,6 @@ public class OptionsController extends BaseController implements InitLayout{
         }
     }
 
-    public void loginConfig() {
-
-
-        File file = new File("config.xml");
-
-        try {
-            JAXBContext context = JAXBContext
-                    .newInstance(FileListXMLWrapper.class);
-            Unmarshaller um = context.createUnmarshaller();
-
-            System.out.println(file.getAbsolutePath());
-            // Reading XML from the file and unmarshalling.
-            ClientPreferences wrapper = (ClientPreferences) um.unmarshal(file);
-
-
-        } catch (Exception e) { // catches ANY exception
-            e.printStackTrace();
-            AlertWindow.errorMesage(e.getMessage());
-        }
-
-    }
 
     @FXML
     private void okAndSave() {
@@ -123,17 +99,10 @@ public class OptionsController extends BaseController implements InitLayout{
             absPath = "file:///" + newStyleFile.getAbsolutePath().replace("\\", "/");
             mainApp.setCurrentStyleCSS(absPath);
 //            Platform.runLater(() -> {
-                primaryStage.getScene().getStylesheets().clear();
-                primaryStage.getScene().getStylesheets().add(absPath);
+            primaryStage.getScene().getStylesheets().clear();
+            primaryStage.getScene().getStylesheets().add(absPath);
 //            });
-//            File currentStyle = new File (CURRENT_STYLE_PATH+"style.css");
-//            currentStyle.delete();
-//            newStyleFile.renameTo(new File(CURRENT_STYLE_PATH+"style.css"));
-//            try {
-//                Files.copy(newStyleFile.toPath(), currentStyle.toPath());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
+
         }
 
         // если
@@ -148,7 +117,7 @@ public class OptionsController extends BaseController implements InitLayout{
                 config.setPath(inboxPath.getText());
                 File cfg = new File("config.xml");
                 List<Style> l = new ArrayList<>();
-//            Style styleGray = new Style("Gray");
+
                 l.addAll(styles);
                 config.setStyleList(l);
                 config.setCurrentStyle(absPath);

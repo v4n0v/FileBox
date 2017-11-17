@@ -8,14 +8,9 @@ public class FileContainerSingle implements Serializable {
     private String name;
     private long size;
     // количество файлов в пакете
-    int count;
+    private int count;
 
     public FileContainerSingle(){}
-//    public FileContainerSingle(byte[] inFile, String name, long size) {
-//        this.name = name;
-//        this.files = inFile;
-//        this.size = size;
-//    }
 
     public void addFile(byte[] inFile, String name, long size, int count) {
         this.name = name;

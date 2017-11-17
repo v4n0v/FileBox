@@ -34,12 +34,29 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
     private String errorMsg;
     private boolean isAuthorized;
     private final static int PORT = 8189;
-    FileBoxClientStart mainApp;
-    //   private String CLIENT_INBOX_PATH;
+    private FileBoxClientStart mainApp;
     private SocketThread socketThread;
-
-
     private List<File> listOutFiles;
+    private String login;
+    private String password;
+
+    private final int FREE_SPACE_TOTAL = 10;
+    private int usedSpace;
+    private String loginReg;
+    private String mailReg;
+    private String pass1Reg;
+
+    private ClientController clientController;
+
+    public void setClientController(ClientController clientController) {
+        this.clientController = clientController;
+    }
+
+    public void setRegistrationInfo(String loginReg, String mailReg, String pass1Reg) {
+        this.pass1Reg = pass1Reg;
+        this.mailReg = mailReg;
+        this.loginReg = loginReg;
+    }
 
     public void setLogin(String login) {
         this.login = login;
@@ -48,37 +65,6 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
     public void setPassword(String password) {
         this.password = password;
     }
-
-    private String login;
-    private String password;
-
-    private int FRASPACE_TOTAL = 10;
-    private int usedSpace;
-
-
-    public void setClientController(ClientController clientController) {
-        this.clientController = clientController;
-    }
-
-    private ClientController clientController;
-
-
-    public void setRegistrationInfo(String loginReg, String mailReg, String pass1Reg) {
-        this.pass1Reg = pass1Reg;
-        this.mailReg = mailReg;
-        this.loginReg = loginReg;
-    }
-
-    private String loginReg;
-    private String mailReg;
-    private String pass1Reg;
-    private final static long MAX_FILE_SIZE = 5_242_880;
-
-
-//    public void setMainApp(FileBoxClientStart mainApp) {
-//        this.mainApp = mainApp;
-//        //     this.socketThread=mainApp.getSocketThread();
-//    }
 
     public ClientConnectionManager(FileBoxClientStart mainApp) {
         this.mainApp = mainApp;
@@ -102,7 +88,7 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
 
     }
 
-    public void disconnect() {
+    private void disconnect() {
         mainApp.socketThread.close();
     }
 
@@ -118,8 +104,6 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
         } else {
             msg = e.getClass().getCanonicalName() + ": " + e.getMessage() + "\n" + stackTraceElements[0];
         }
-        // AlertWindow.errorMesage(msg);
-        //  logger.warning("Exception: " + msg);
         Log2File.writeLog(Level.WARNING, "Exception: " + msg + "\n");
         System.exit(1);
     }
@@ -131,7 +115,6 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
     public void onStartSocketThread(SocketThread socketThread) {
         Log2File.writeLog(
                 "Socket started");
-        //  logger.info("Socket started");
     }
 
     // соединение закончено
@@ -139,7 +122,6 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
     public void onStopSocketThread(SocketThread socketThread) {
         isAuthorized = false;
         Log2File.writeLog("Socket closed. End of session");
-        //  logger.info("Socket closed. End of session");
     }
 
     // соединение установлено
@@ -154,7 +136,6 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
             LoginPacket loginPacket = new LoginPacket(login, password);
             mainApp.socketThread.sendPacket(loginPacket);
         }
-        //   logger.info("Connection to server complete!");
     }
 
     @Override
@@ -167,7 +148,6 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
     public void onReceivePacket(SocketThread socketThread, Socket socket, Packet packet) {
         handlePacket(packet);
         Log2File.writeLog("Packet " + packet.getPacketType() + " was handled...");
-
     }
 
     // прилетело исключение
@@ -188,6 +168,7 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
             // если получили сообщение, отрыли информационное окно
         } else if (packet.getPacketType() == PackageType.MESSAGE) {
             handleMessagePacket(packet);
+            // получили список файлов
         } else if (packet.getPacketType() == PackageType.FILE_LIST) {
             handeFileListPacket(packet);
             // прилетела ошибка на сервере, открыли окно об ошибкке
@@ -212,38 +193,30 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
 
     }
 
-
-    public void updateList(ObservableList<FileListXMLElement> newFileList,
-                           ObservableList<FileListXMLElement> currentFileList) {
+    // обновляем список файлов
+    private void updateList(ObservableList<FileListXMLElement> newFileList,
+                            ObservableList<FileListXMLElement> currentFileList) {
 
         // обнуляем и заполняем список файлов
         currentFileList.clear();
         if (currentFileList.size() == 0)
             currentFileList.addAll(newFileList);
-
-
     }
 
-    public synchronized void lastUpdate() {
+    // выводим информацию о времени последненего обновления файлЛиста
+    private synchronized void lastUpdate() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM' at ' HH:mm:ss ");
-
-        // upd = lbLastUpd.getText();
         String upd = dateFormat.format(System.currentTimeMillis());
-        //  System.out.println(clientController.lbLastUpd);
         clientController.lbLastUpd.setText("Last upd " + upd);
     }
 
-
-    public void sendFileBytes(List<File> list) {
+    // отправляем массив байт
+    private void sendFileBytes(List<File> list) {
         int countFiles = list.size();
         Socket socket = mainApp.getSocketThread().getSocket();
-
         DataOutputStream outD;
         try {
             outD = new DataOutputStream(socket.getOutputStream());
-
-            // outD.writeInt(countFiles);//отсылаем количество файлов
-
             for (int i = 0; i < list.size(); i++) {
                 File f = list.get(i);
                 // сохраняю файл в массив байт
@@ -264,49 +237,28 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
 
     }
 
+    // получаем файл
     private void handleFilePacket(Packet packet) {
         File folder = new File(mainApp.getConfig().getPath());
         if (!folder.exists()) {
             folder.mkdir();
         }
 
-
-        // получаем содержимое пакета и записываем в соответствующую логину папку
-//            FileContainer filePackage = (FileContainer) packet.getOutputPacket();
-//            ArrayList<byte[]> files = filePackage.getFile();
-//            ArrayList<String> names = filePackage.getName();
         Path path;
 
         FileContainerSingle fileContainer = (FileContainerSingle) packet.getOutputPacket();
         byte[] file = fileContainer.getFile();
         String name = fileContainer.getName();
 
-        // проверяем есть ли файл на сервере
-        // создаем список
-        File[] fList;
-        fList = folder.listFiles();
 
-//            for (int i = 0; i < files.size(); i++) {
-//                for (int j = 0; j < fList.length; j++) {
-//                    String s= fList[j].getName();
-//                    String s1 = names.get(i);
-//                    if (fList[j].getName().equals(names.get(i))){
-//                        MessagePacket msgPkt = new MessagePacket("File '"+names.get(i)+"'was already uploaded. Delete it, or upload another file");
-//                        socketThread.sendPacket(msgPkt);
-//                        return;
-//                    }
-//                }
         try {
             path = Paths.get(folder.getPath() + "\\" + name);
             Files.write(path, file);
-//                    FileOutputStream fos = new FileOutputStream(new File(folder.getPath() + "\\" + names.get(i)));
-//                    fos.write(files.get(i));
-//                    fos.close();
             Log2File.writeLog("File '" + name + "' received into " + mainApp.getConfig().getPath());
         } catch (IOException e) {
 
             e.printStackTrace();
-            return;
+
         }
 
     }
@@ -319,8 +271,9 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
         // получили список файлов в "облаке"
     }
 
+    // получили список файлов
     private void handeFileListPacket(Packet packet) {
-        //   ArrayList<FileListElement> fileList = (ArrayList<FileListElement>) packet.getOutputPacket();
+
         FileListContainer fc = (FileListContainer) packet.getOutputPacket();
 
         ArrayList<FileListElement> flist = (ArrayList<FileListElement>) fc.getList();
@@ -330,30 +283,15 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
             fXMLlist.add(new FileListXMLElement(flist.get(i).getFileName(),
                     flist.get(i).getFileSize(), flist.get(i).getType()));
         }
-        //  mainApp.fillFileList(flist);
-        //  fXMLlist.sorted();
-//
-//
-//        System.out.println(mainApp.getConfig().getPath());
-//        System.out.println(mainApp.getRootPath());
-//        if (!mainApp.getConfig().getPath().equals(mainApp.getRootPath()))
-//            fXMLlist.add(new FileListXMLElement("...", 0l, FileType.UP_DIR));
-
 
         Collections.sort(fXMLlist, FileListXMLElement.FileNameComparator);
         updateList(fXMLlist, mainApp.getServerFileList());
-        //    mainApp.setServerFileList(fXMLlist);
-        //handleSaveAs();
         usedSpace = fc.getUsedSpace();
-
-        // таблица клиента будет обновляться только если мы находимся в дуфолтном каталоге.
-        // в окне синхронизации свое обновление, чтоб не было конфликта обновления
-
 
         updateClientFileList(mainApp.getConfig().getPath(), mainApp.getClientFileList());
         Platform.runLater(() -> {
             lastUpdate();
-            clientController.setFreeSpaceLabel(FRASPACE_TOTAL * 1024 - usedSpace / 1024, FRASPACE_TOTAL * 1024);
+            clientController.setFreeSpaceLabel(FREE_SPACE_TOTAL * 1024 - usedSpace / 1024, FREE_SPACE_TOTAL * 1024);
         });
 
         Log2File.writeLog("FILE_LIST received");
@@ -364,9 +302,7 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
         File clientFolder = new File(path);
         File[] fList = clientFolder.listFiles();
         fileList.clear();
-//        for (int i = 0; i < fList.size(); i++) {
-//            fileList.add(new FileListXMLElement(fList.get(i).getFileName(), fList.get(i).getFileSize()));
-//        }
+
         // если клиент не в дефолтной своей папке, то добавляем флаг UP_DIR
         if (!mainApp.getConfig().getPath().equals(mainApp.getRootPath()))
             fileList.add(new FileListXMLElement("...", 0l, FileType.UP_DIR));
@@ -412,8 +348,6 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
                 clientController.setLoggedInfoLabel(login);
             });
             Log2File.writeLog("Authorization complete");
-            //  FileListPacket fileListRequest = new FileListPacket(null);
-            //   mainApp.socketThread.sendPacket(fileListRequest);
 
         } else {
             Log2File.writeLog(Level.WARNING, "Authorization error");
