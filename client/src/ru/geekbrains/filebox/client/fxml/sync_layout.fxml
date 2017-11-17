@@ -5,20 +5,33 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
 <!--onDragDropped="#handleDrop" onDragOver="#handleDragOver"-->
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="530.0" prefWidth="936.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="ru.geekbrains.filebox.client.fxcontrollers.SyncController">
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="530.0" prefWidth="936.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.SyncController">
     <children>
         <VBox>
             <children>
-                <Label styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Filebox on your computer">
-               <VBox.margin>
-                  <Insets bottom="5.0" />
-               </VBox.margin></Label>
+            <GridPane>
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="245.0" minWidth="10.0" prefWidth="245.0" />
+                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="126.0" minWidth="10.0" prefWidth="17.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <children>
+                      <Label styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Filebox on your computer" />
+                   <Button fx:id="folder" alignment="CENTER" contentDisplay="RIGHT" mnemonicParsing="false" onAction="#addFolder" prefHeight="25.0" prefWidth="26.0" text="+" GridPane.columnIndex="1" />
+                  <Button alignment="CENTER" contentDisplay="RIGHT" layoutX="382.0" layoutY="9.0" mnemonicParsing="false" onAction="#delClientFolder" prefHeight="25.0" prefWidth="26.0" text="-" GridPane.columnIndex="2" />
+               </children>
+            </GridPane>
                 <TableView fx:id="tblClientContent" editable="false" minWidth="-Infinity" prefHeight="490.0" prefWidth="430.0" stylesheets="@../css/currentStyleCSS.css">
                     <columns>
                         <TableColumn fx:id="clientFileNameColumn" editable="false" prefWidth="335.0" resizable="false" text="File" />
@@ -45,14 +58,25 @@
         </VBox>
         <VBox>
             <children>
-                <Label styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="FileBox on server">
-               <VBox.margin>
-                  <Insets bottom="5.0" />
-               </VBox.margin></Label>
+            <GridPane>
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="289.0" minWidth="10.0" prefWidth="279.0" />
+                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="141.0" minWidth="4.0" prefWidth="14.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <children>
+                      <Label styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="FileBox on server" />
+                  <Button mnemonicParsing="false" onAction="#addServerFolder" text="+" GridPane.columnIndex="1" />
+                  <Button layoutX="269.0" layoutY="9.0" mnemonicParsing="false" onAction="#delServerFolder" text="-" GridPane.columnIndex="2" />
+               </children>
+            </GridPane>
                 <TableView fx:id="tblServerContent" editable="false" minWidth="-Infinity" prefHeight="490.0" prefWidth="430.0" stylesheets="@../css/currentStyleCSS.css">
                     <columns>
                         <TableColumn fx:id="serverFileNameColumn" editable="false" prefWidth="335.0" resizable="false" text="File" />
-                        <TableColumn fx:id="severSizeColumn" editable="false" minWidth="1.0" prefWidth="95.0" resizable="false" text="Size (kb)"  />
+                        <TableColumn fx:id="severSizeColumn" editable="false" minWidth="1.0" prefWidth="95.0" resizable="false" text="Size (kb)" />
                     </columns>
                 </TableView>
             </children>

@@ -18,7 +18,6 @@ import ru.geekbrains.filebox.network.SocketThread;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 public class FileBoxClientStart extends Application {
 
@@ -304,6 +303,11 @@ public class FileBoxClientStart extends Application {
         }
     }
 
+    SyncController syncController;
+
+    public SyncController getSyncController() {
+        return syncController;
+    }
 
     public void showSyncLayout() {
 
@@ -324,7 +328,7 @@ public class FileBoxClientStart extends Application {
 
             syncStage.setResizable(false);
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
-            SyncController syncController = loader.getController();
+             syncController = loader.getController();
             syncController.setMainApp(this);
             syncController.init();
             syncController.setStage(syncStage);
@@ -335,7 +339,7 @@ public class FileBoxClientStart extends Application {
             e.printStackTrace();
         }
     }
-    public void showNewFolderLayout( ) {
+    public void showNewFolderLayout(NewFolderController.Destination destination) {
         try {
             // новое окно переименования
             Stage newFolderStage = new Stage();
@@ -354,7 +358,7 @@ public class FileBoxClientStart extends Application {
             // получаем контроллер текущей сцены и передаем в него ссылку на текущий класс
             NewFolderController newFolderController = loader.getController();
             newFolderController.setMainApp(this);
-
+            newFolderController.setDestinaton(destination);
             newFolderController.setStage(newFolderStage);
             newFolderController.init();
             newFolderController.setClientController(clientController);

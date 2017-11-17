@@ -156,7 +156,7 @@ public class ClientController {
     }
 
     public void createFolder() {
-        mainApp.showNewFolderLayout();
+        mainApp.showNewFolderLayout(NewFolderController.Destination.SERVER);
         Log2File.writeLog("create new folder window opened");
     }
 

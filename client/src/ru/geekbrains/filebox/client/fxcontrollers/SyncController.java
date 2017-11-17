@@ -26,6 +26,9 @@ public class SyncController extends BaseController implements InitLayout {
     private ObservableList<FileListXMLElement> serverFileList = FXCollections.observableArrayList();
     private ClientConnectionManager clientManager;
 
+    public ObservableList<FileListXMLElement> getClientFileList() {
+        return clientFileList;
+    }
 
     @FXML
     private TableView<FileListXMLElement> tblClientContent;
@@ -165,7 +168,7 @@ public class SyncController extends BaseController implements InitLayout {
     }
 
     // обнвление текущей папки клиента
-    private void updateClientFileList(String path, ObservableList fileList) {
+    public void updateClientFileList(String path, ObservableList fileList) {
         fileList.clear();
         // если каталог не корневой, добавляем элемент, указывающий на выход в прерыд каталог
         if (clientPath != null && !clientPath.equals("")) {
@@ -263,5 +266,91 @@ public class SyncController extends BaseController implements InitLayout {
         mainApp.getConfig().setPath(TEMP_PATH);
         System.out.println(mainApp.getConfig().getPath());
         Log2File.writeLog("Sync closed, client directory: " + mainApp.getConfig().getPath());
+    }
+
+    public void addFolder(){
+        mainApp.showNewFolderLayout(NewFolderController.Destination.CLIENT);
+        updateClientFileList(mainApp.getConfig().getPath(), clientFileList);
+    }
+    public void addServerFolder(){
+        mainApp.showNewFolderLayout(NewFolderController.Destination.SERVER);
+
+    }
+
+    public void delClientFolder(){
+
+        FileListXMLElement fileListElement = tblClientContent.getSelectionModel().getSelectedItem();
+        if (fileListElement != null) {
+            String currentFilename = fileListElement.getFileName().getValue();
+            currentFilename = currentFilename.replace("[", "");
+            currentFilename = currentFilename.replace("]", "");
+            // открывем дилоговое окно
+            if (currentFilename != null) {
+                boolean answer;
+                if (fileListElement.getType().equals(FileType.DIR)) {
+
+                    answer = AlertWindow.dialogWindow("Delete folder and everything in it?", currentFilename);
+                } else
+                    answer = AlertWindow.dialogWindow("Delete file?", currentFilename);
+
+                if (answer) {
+                    File file = new File(mainApp.getConfig().getPath() + "\\" + currentFilename);
+                    System.out.println(file.getAbsolutePath());
+                    if (file.isDirectory()) {
+
+                        deleteDirectory(file);
+                    } else {
+                        file.delete();
+                    }
+                }
+                System.out.println("delete " + currentFilename);
+                updateClientFileList(mainApp.getConfig().getPath(), clientFileList);
+            }
+        }
+
+    }
+    public void  delServerFolder(){
+        System.out.println("delete");
+        FileListXMLElement fileListElement = tblServerContent.getSelectionModel().getSelectedItem();
+        if (fileListElement != null) {
+            String currentFilename = fileListElement.getFileName().getValue();
+            currentFilename = currentFilename.replace("[", "");
+            currentFilename = currentFilename.replace("]", "");
+            // открывем дилоговое окно
+            if (currentFilename != null) {
+                boolean answer;
+                if (fileListElement.getType().equals(FileType.DIR)) {
+
+                    answer = AlertWindow.dialogWindow("Delete folder and everything in it?", currentFilename);
+                } else
+                    answer = AlertWindow.dialogWindow("Delete file?", currentFilename);
+
+                if (answer) {
+                    FileOperationPacket deletePacket = new FileOperationPacket(PackageType.DELETE, currentFilename);
+                    mainApp.socketThread.sendPacket(deletePacket);
+                    mainApp.removeFromTable(currentFilename);
+                    Log2File.writeLog(currentFilename + " deleted");
+                    System.out.println("OK");
+
+                } else {
+
+                    Log2File.writeLog("deleting operation canceled");
+                }
+            }
+
+        }
+    }
+
+    private static void deleteDirectory(File dir) {
+        // проверяем файл это или папка
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            // если папка не пуста, то удаляем все фалы внтри нее, а затем ее саму
+            for (int i=0; i<children.length; i++) {
+                File f = new File(dir, children[i]);
+                deleteDirectory(f);
+            }
+            dir.delete();
+        } else dir.delete();
     }
 }
