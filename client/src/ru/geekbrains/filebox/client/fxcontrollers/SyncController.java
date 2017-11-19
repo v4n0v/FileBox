@@ -282,10 +282,11 @@ public class SyncController extends BaseController implements InitLayout {
         FileListXMLElement fileListElement = tblClientContent.getSelectionModel().getSelectedItem();
         if (fileListElement != null) {
             String currentFilename = fileListElement.getFileName().getValue();
-            currentFilename = currentFilename.replace("[", "");
-            currentFilename = currentFilename.replace("]", "");
+            currentFilename= removeBrackets(currentFilename);
             // открывем дилоговое окно
             if (currentFilename != null) {
+                if (fileListElement.getType().equals(FileType.UP_DIR))
+                    return;
                 boolean answer;
                 if (fileListElement.getType().equals(FileType.DIR)) {
 
@@ -314,10 +315,11 @@ public class SyncController extends BaseController implements InitLayout {
         FileListXMLElement fileListElement = tblServerContent.getSelectionModel().getSelectedItem();
         if (fileListElement != null) {
             String currentFilename = fileListElement.getFileName().getValue();
-            currentFilename = currentFilename.replace("[", "");
-            currentFilename = currentFilename.replace("]", "");
+            currentFilename= removeBrackets(currentFilename);
             // открывем дилоговое окно
             if (currentFilename != null) {
+                if (fileListElement.getType().equals(FileType.UP_DIR))
+                    return;
                 boolean answer;
                 if (fileListElement.getType().equals(FileType.DIR)) {
 
@@ -340,7 +342,11 @@ public class SyncController extends BaseController implements InitLayout {
 
         }
     }
-
+    private String removeBrackets(String currentFilename) {
+        currentFilename = currentFilename.replace("[","");
+        currentFilename = currentFilename.replace("]","");
+        return currentFilename;
+    }
     private static void deleteDirectory(File dir) {
         // проверяем файл это или папка
         if (dir.isDirectory()) {

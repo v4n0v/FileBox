@@ -51,7 +51,8 @@ public class RenameController extends BaseController implements InitLayout{
             AlertWindow.warningMesage("Enter new name");
 
         } else {
-            FileOperationPacket renamePacket = new FileOperationPacket(PackageType.RENAME, currentName + "<>" + newName);
+            FileOperationPacket renamePacket = new FileOperationPacket(PackageType.RENAME,
+                    currentName + "<>" + newName);
             mainApp.socketThread.sendPacket(renamePacket);
             Log2File.writeLog("File '"+currentName+"' renamed to '"+newName+"'");
         }
@@ -65,4 +66,6 @@ public class RenameController extends BaseController implements InitLayout{
     public void init() {
         fieldNewName.setText(currentName);
     }
+
+
 }

@@ -286,9 +286,9 @@ public class ClientConnectionManager implements SocketThreadListener, Thread.Unc
 
         Collections.sort(fXMLlist, FileListXMLElement.FileNameComparator);
         updateList(fXMLlist, mainApp.getServerFileList());
-        usedSpace = fc.getUsedSpace();
+         usedSpace = fc.getUsedSpace();
 
-        updateClientFileList(mainApp.getConfig().getPath(), mainApp.getClientFileList());
+    //    updateClientFileList(mainApp.getConfig().getPath(), mainApp.getClientFileList());
         Platform.runLater(() -> {
             lastUpdate();
             clientController.setFreeSpaceLabel(FREE_SPACE_TOTAL * 1024 - usedSpace / 1024, FREE_SPACE_TOTAL * 1024);

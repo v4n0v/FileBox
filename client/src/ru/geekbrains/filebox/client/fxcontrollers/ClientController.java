@@ -166,8 +166,13 @@ public class ClientController {
         updTable();
         // получаем список выбранного элеменота таблицы
         FileListXMLElement fileListElement = tblContent.getSelectionModel().getSelectedItem();
+
         if (fileListElement != null) {
+            if (fileListElement.getType().equals(FileType.UP_DIR))
+                return;
             String currentFilename = fileListElement.getFileName().getValue();
+            if (fileListElement.getType().equals(FileType.DIR))
+               currentFilename= removeBrackets(currentFilename);
 
             // открывем дилоговое окно
             if (currentFilename != null)
@@ -175,17 +180,23 @@ public class ClientController {
         }
     }
 
+    private String removeBrackets(String currentFilename) {
+        currentFilename = currentFilename.replace("[","");
+        currentFilename = currentFilename.replace("]","");
+        return currentFilename;
+    }
+
+
     public void syncFileBox() {
         mainApp.showSyncLayout();
     }
 
     public void deleteFile() {
-
-        System.out.println("delete");
         FileListXMLElement fileListElement = tblContent.getSelectionModel().getSelectedItem();
         if (fileListElement != null) {
             String currentFilename = fileListElement.getFileName().getValue();
-
+            if (fileListElement.getType().equals(FileType.UP_DIR))
+                return;
             // открывем дилоговое окно
             if (currentFilename != null) {
                 boolean answer;
@@ -269,10 +280,12 @@ public class ClientController {
         // выбираем файл
         FileChooser fileChooser = new FileChooser();
         List<File> list = fileChooser.showOpenMultipleDialog(null);
-        FileContainerSingle fileContainer = new FileContainerSingle();
+        if (list.size()>0) {
+            FileContainerSingle fileContainer = new FileContainerSingle();
 
-        // упаковываем в контейнер  и отправляем
-        packContainerAndSendFile(list, fileContainer);
+            // упаковываем в контейнер  и отправляем
+            packContainerAndSendFile(list, fileContainer);
+        }
         Log2File.writeLog("all files uploaded");
     }
 

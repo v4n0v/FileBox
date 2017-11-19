@@ -14,129 +14,149 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.filebox.client.fxcontrollers.ClientController">
+<VBox xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ru.geekbrains.filebox.client.fxcontrollers.ClientController">
 
-    <children>
-      <Pane prefHeight="100.0" prefWidth="465.0">
-         <children>
-              <GridPane id="upperPanelLogged" fx:id="upperPanelLogged" prefHeight="100.0" prefWidth="465.0">
-                  <children>
-                      <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
-                          <children>
-                              <Button id="btnDownload" fx:id="btnDownload" onAction="#createFolder" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="New Folder">
-                                  <HBox.margin>
-                                      <Insets left="5.0" right="5.0" top="15.0" />
-                                  </HBox.margin>
-                              </Button>
-                              <Button id="btnUpload" fx:id="btnUpload" mnemonicParsing="false" onAction="#uploadFile" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Upload">
-                                  <HBox.margin>
-                                      <Insets bottom="5.0" left="5.0" right="5.0" top="15.0" />
-                                  </HBox.margin>
-                              </Button>
-                          </children>
-                      </HBox>
-                  <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                     <children>
-                        <Button id="btnRename" fx:id="btnRename" onAction="#renameFile" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Rename">
+    <Pane prefHeight="100.0" prefWidth="465.0">
+        <GridPane id="upperPanelLogged" fx:id="upperPanelLogged" prefHeight="100.0" prefWidth="465.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
+                <Button onAction="#createFolder" prefHeight="28.0" prefWidth="100.0"
+                        styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css"
+                        text="New Folder">
+                    <HBox.margin>
+                        <Insets left="5.0" right="5.0" top="15.0"/>
+                    </HBox.margin>
+                </Button>
+                <Button id="btnUpload" fx:id="btnUpload" mnemonicParsing="false" onAction="#uploadFile"
+                        prefHeight="28" prefWidth="45" styleClass="fontverdabold"
+                        stylesheets="@../css/currentStyleCSS.css">
+                    <graphic>
+                        <ImageView fitHeight="20" fitWidth="20">
+                            <Image url="@../img/upload.png"/>
+                        </ImageView>
+                    </graphic>
+                    <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="15.0"/>
+                    </HBox.margin>
+                </Button>
+                <Button mnemonicParsing="false" onAction="#downloadFile" prefHeight="28" prefWidth="45">
 
-                           <HBox.margin>
-                              <Insets left="5.0" right="5.0" top="5.0" />
-                           </HBox.margin>
-                        </Button>
-                        <Button id="btnDelete" fx:id="btnDelete" layoutX="15.0" layoutY="25.0" onAction="#deleteFile" prefHeight="28.0" prefWidth="100.0" styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Delete">
+                    <graphic>
+                        <ImageView fitHeight="20" fitWidth="20">
+                            <Image url="@../img/download.png"/>
+                        </ImageView>
+                    </graphic>
+                    <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="15.0"/>
+                    </HBox.margin>
+                </Button>
+            </HBox>
+            <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <children>
+                    <Button id="btnRename" fx:id="btnRename" onAction="#renameFile" prefHeight="28.0"
+                            prefWidth="100.0" styleClass="fontverdabold"
+                            stylesheets="@../css/currentStyleCSS.css" text="Rename">
 
-                           <HBox.margin>
-                              <Insets left="5.0" right="5.0" top="5.0" />
-                           </HBox.margin>
-                        </Button>
-                     </children>
-                  </HBox>
-                  <HBox prefHeight="100.0" prefWidth="200.0">
-                     <children>
-                        <Button id="btnOptions" fx:id="btnOptions" onAction="#openOptions" prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/currentStyleCSS.css">
+                        <HBox.margin>
+                            <Insets left="5.0" right="5.0" top="5.0"/>
+                        </HBox.margin>
+                    </Button>
+                    <Button id="btnDelete"   layoutX="15.0" layoutY="25.0"
+                            onAction="#deleteFile" prefHeight="28.0" prefWidth="100.0"
+                            styleClass="fontverdabold" stylesheets="@../css/currentStyleCSS.css" text="Delete">
 
-                           <graphic>
-                              <ImageView fitHeight="25.0" fitWidth="25.0">
-                                 <image>
-                                    <Image url="@../img/options.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                           <HBox.margin>
-                              <Insets left="15.0" right="10.0" top="15.0" />
-                           </HBox.margin>
-                        </Button>
-                        <Button id="btnLogout" fx:id="btnLogout" layoutX="25.0" layoutY="25.0" onAction="#logOut" prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/currentStyleCSS.css">
+                        <HBox.margin>
+                            <Insets left="5.0" right="5.0" top="5.0"/>
+                        </HBox.margin>
+                    </Button>
+                </children>
+            </HBox>
+            <HBox prefHeight="100.0" prefWidth="200.0">
+                <children>
+                    <Button id="btnOptions"  onAction="#openOptions" prefHeight="30.0"
+                            prefWidth="30.0" stylesheets="@../css/currentStyleCSS.css">
 
-                           <graphic>
-                              <ImageView fitHeight="25.0" fitWidth="25.0">
-                                 <image>
-                                    <Image url="@../img/logout.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                           <HBox.margin>
-                              <Insets right="10.0" top="15.0" />
-                           </HBox.margin>
-                        </Button>
-                        <Button id="btnSync" fx:id="btnSync" layoutX="74.0" layoutY="25.0" onAction="#syncFileBox" prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/style.css">
-                           <graphic>
-                              <ImageView fitHeight="25.0" fitWidth="25.0">
-                                 <image>
-                                    <Image url="@../img/sync.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                           <HBox.margin>
-                              <Insets top="15.0" />
-                           </HBox.margin>
-                        </Button>
-                     </children>
-                  </HBox>
-                  <VBox prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="1">
-                     <children>
-                        <Label id="lbLoggedAs" fx:id="lblLogedInfo" styleClass="fontverdabold, lbInfo" stylesheets="@../css/style.css" text="Logged in as ">
-                           <VBox.margin>
-                              <Insets bottom="5.0" left="15.0" top="5.0" />
-                           </VBox.margin>
-                        </Label>
-                        <Label id="lbFreeSpace" fx:id="lblFreeSpaceInfo" layoutX="25.0" layoutY="20.0" styleClass="fontverdabold, lbInfo" stylesheets="@../css/style.css" text="Free space">
-                           <VBox.margin>
-                              <Insets left="15.0" />
-                           </VBox.margin>
-                        </Label>
-                     </children>
-                  </VBox>
-                  </children>
-                  <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                  </columnConstraints>
-                  <rowConstraints>
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                  </rowConstraints>
-              </GridPane>
-         </children>
-      </Pane>
-      <VBox>
-         <children>
-                <TableView fx:id="tblContent" editable="true" minWidth="-Infinity" onDragDropped="#handleDrop" onDragOver="#handleDragOver" prefHeight="490.0" prefWidth="430.0" stylesheets="@../css/style.css">
-                    <columns>
-                        <TableColumn fx:id="fileNameColumn" editable="false" prefWidth="337.0" resizable="false" text="File" />
-                        <TableColumn fx:id="sizeColumn" editable="false" minWidth="1.0" prefWidth="97.0" resizable="false" text="Size (kb)" />
-                    </columns>
-                </TableView>
-            <Label id="lastUpd" fx:id="lbLastUpd" styleClass="fontverdabold, lbInfo" stylesheets="@../css/style.css" text="Last update: ">
-               <VBox.margin>
-                  <Insets top="5.0" />
-               </VBox.margin>
-            </Label>
-         </children>
-         <VBox.margin>
-            <Insets bottom="10.0" left="15.0" right="15.0" />
-         </VBox.margin>
-      </VBox>
-    </children>
+                        <graphic>
+                            <ImageView fitHeight="25.0" fitWidth="25.0">
+                                <image>
+                                    <Image url="@../img/options.png"/>
+                                </image>
+                            </ImageView>
+                        </graphic>
+                        <HBox.margin>
+                            <Insets left="15.0" right="10.0" top="15.0"/>
+                        </HBox.margin>
+                    </Button>
+                    <Button id="btnLogout"  layoutX="25.0" layoutY="25.0" onAction="#logOut"
+                            prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/currentStyleCSS.css">
 
+                        <graphic>
+                            <ImageView fitHeight="25.0" fitWidth="25.0">
+                                <image>
+                                    <Image url="@../img/logout.png"/>
+                                </image>
+                            </ImageView>
+                        </graphic>
+                        <HBox.margin>
+                            <Insets right="10.0" top="15.0"/>
+                        </HBox.margin>
+                    </Button>
+                    <Button id="btnSync"  layoutX="74.0" layoutY="25.0" onAction="#syncFileBox"
+                            prefHeight="30.0" prefWidth="30.0" stylesheets="@../css/style.css">
+                        <graphic>
+                            <ImageView fitHeight="25.0" fitWidth="25.0">
+                                <Image url="@../img/sync.png"/>
+                            </ImageView>
+                        </graphic>
+                        <HBox.margin>
+                            <Insets top="15.0"/>
+                        </HBox.margin>
+                    </Button>
+                </children>
+            </HBox>
+            <VBox prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="1">
+                <Label id="lbLoggedAs" fx:id="lblLogedInfo" styleClass="fontverdabold, lbInfo"
+                       stylesheets="@../css/style.css" text="Logged in as ">
+                    <VBox.margin>
+                        <Insets bottom="5.0" left="15.0" top="5.0"/>
+                    </VBox.margin>
+                </Label>
+                <Label id="lbFreeSpace" fx:id="lblFreeSpaceInfo" layoutX="25.0" layoutY="20.0"
+                       styleClass="fontverdabold, lbInfo" stylesheets="@../css/style.css" text="Free space">
+                    <VBox.margin>
+                        <Insets left="15.0"/>
+                    </VBox.margin>
+                </Label>
+            </VBox>
+        </GridPane>
+    </Pane>
+    <VBox>
+        <VBox.margin>
+            <Insets bottom="10.0" left="15.0" right="15.0"/>
+        </VBox.margin>
+        <TableView fx:id="tblContent" editable="true" minWidth="-Infinity" onDragDropped="#handleDrop"
+                   onDragOver="#handleDragOver" prefHeight="490.0" prefWidth="430.0"
+                   stylesheets="@../css/style.css">
+            <columns>
+                <TableColumn fx:id="fileNameColumn" editable="false" prefWidth="337.0" resizable="false"
+                             text="File"/>
+                <TableColumn fx:id="sizeColumn" editable="false" minWidth="1.0" prefWidth="97.0" resizable="false"
+                             text="Size (kb)"/>
+            </columns>
+        </TableView>
+        <Label id="lastUpd" fx:id="lbLastUpd" styleClass="fontverdabold, lbInfo" stylesheets="@../css/style.css"
+               text="Last update: ">
+            <VBox.margin>
+                <Insets top="5.0"/>
+            </VBox.margin>
+        </Label>
+    </VBox>
 </VBox>
