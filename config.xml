@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<config>
+    <current_style>file:///C:/java/course/FileBox/client/src/ru/geekbrains/filebox/client/css/styles/GrayTheme.css</current_style>
+    <path>C:\FileBoxFolder\</path>
+    <style_list>
+        <style>DarkTheme</style>
+    </style_list>
+    <style_list>
+        <style>GrayTheme</style>
+    </style_list>
+</config>
